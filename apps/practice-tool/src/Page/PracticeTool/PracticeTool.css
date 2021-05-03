@@ -1,0 +1,47 @@
+#practice-tool{
+    height: 100vh;
+}
+
+#practice-tool .practice-tool-container-title {
+    /* height: 5vh; */
+
+    display: flex;
+    flex-flow: column;
+    height: 5%;
+}
+
+#practice-tool .practice-tool-container-outter {
+    margin: 5px;
+    /* height: 94vh; */
+
+    display: flex;
+    flex-flow: column;
+    height: 94%;
+}
+
+.practice-tool-container-outter .practice-tool-container {
+    padding: 0;
+    height: 100%;
+}
+
+.practice-tool-container .practice-tool-row {
+    padding: 0;
+    margin:0;
+    height: 50%;
+}
+
+.practice-tool-container .practice-tool-row .practice-tool-col-container{
+    padding: 2px;
+    margin:0;
+}
+
+.practice-tool-col-container .practice-tool-col {
+    background: #222222;
+    display: block;
+    height: 100%;
+}
+
+.practice-tool-col h1 {
+    text-align: center;
+    vertical-align:middle;
+}

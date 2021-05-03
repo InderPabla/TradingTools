@@ -1,0 +1,23 @@
+.candlestick-chart-container {
+    border: 1px solid white;
+    padding: 10px 10px;
+}
+
+.candlestick-chart-container .candlestick-chart-header{
+    color:white;
+}
+
+.candlestick-chart-container .candlestick-chart-main{
+    padding: 10px 10px;
+    border: solid 1px white;
+}
+
+.candlestick-chart-container .candlestick-chart-action{
+    background: dimgrey;
+    margin: 5px;
+    padding: 5px;
+}
+
+.candlestick-chart-container .candlestick-chart-footer{
+    color:white;
+}
