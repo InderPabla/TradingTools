@@ -24,7 +24,7 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
-    "react-stockcharts": "^0.7.8",
+    "react-stockcharts": "file:Dependencies/react-stockcharts",
     "typescript": "^4.2.4",
     "web-vitals": "^1.1.1"
   },
