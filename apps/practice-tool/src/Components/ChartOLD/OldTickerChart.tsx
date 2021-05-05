@@ -15,7 +15,7 @@ import { EdgeIndicator } from "react-stockcharts/lib/coordinates";
 import { COLOR } from "../../Common/ColorConst";
 import { Button } from "react-bootstrap";
 
-import './Chart.css';
+import './OldChart.css';
 
 export interface CandleStickData {
 	date:Date,
@@ -156,7 +156,11 @@ export class CandleStickChart extends React.Component<CandleStickChartProps,Cand
 		return (<React.Fragment>
 			<ChartCanvas 
 				ref={(ref) => this.canvasChartRef = ref}
+
 				panEvent={this.state.panEvent}
+				clamp={false}
+				zoomAnchor={lastVisibleItemBasedZoomAnchor}
+
 				height={totalChartHeight}
 				ratio={1}
 				width={chartWidth}
@@ -171,8 +175,8 @@ export class CandleStickChart extends React.Component<CandleStickChartProps,Cand
 				displayXAccessor={xDateAccessor}
 				//xExtents={xExtents}
 				
-				zoomAnchor={lastVisibleItemBasedZoomAnchor}
-
+				
+				
 				onLoadMore={(start:Date,end:Date)=> {}}
 				onSelect={(event:Object)=>{}}>
 				

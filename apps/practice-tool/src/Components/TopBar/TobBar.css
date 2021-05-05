@@ -1,0 +1,22 @@
+.tool-toolbar {
+    background: ivory;
+    padding-left: 10px;
+    color: black;
+}
+
+.tool-toolbar .tool-title-container {
+    display: inline-block;
+}
+
+.tool-title-container p {
+    font-weight: bold;
+    font-size: 30px;
+    margin-bottom: 7px;
+    padding-right: 10px;
+    border-right: solid black 3px;
+    display: inline;
+}
+
+.tool-title-container i {
+    margin-right: 4px;
+}

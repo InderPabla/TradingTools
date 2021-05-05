@@ -1,23 +1,24 @@
-.candlestick-chart-container {
-    border: 1px solid white;
-    padding: 10px 10px;
+div.chart-container {
+    background: #222222;
+    display: block;
+    height: 100%;
 }
 
-.candlestick-chart-container .candlestick-chart-header{
-    color:white;
+.chart-container .chart-topbar {
+    height: 30px;
+    border: dashed 1px white;
 }
 
-.candlestick-chart-container .candlestick-chart-main{
-    padding: 10px 10px;
-    border: solid 1px white;
+.chart-topbar .dropdown {
+    display: inline-block;
 }
 
-.candlestick-chart-container .candlestick-chart-action{
-    background: dimgrey;
-    margin: 5px;
-    padding: 5px;
+.chart-topbar .dropdown button{
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
-.candlestick-chart-container .candlestick-chart-footer{
-    color:white;
+.chart-container .chart-main-content {
+    background: #222222;
+    height: calc(100% - (30px));
 }

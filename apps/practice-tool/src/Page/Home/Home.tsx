@@ -1,5 +1,6 @@
 
 import * as React from 'react';
+import { TopBar } from '../../Components/TopBar/TopBar';
 
 export interface HomeProps {
 
@@ -26,13 +27,10 @@ export class Home extends React.Component<HomeProps,HomeState> {
 
       return (
           <React.Fragment>
-              <div>
-                  <div>
-                      <h1>Home</h1>
-                  </div>
-                  <div >
+              <div id="home-tool" style={{height:"100vh"}}>
+                  <TopBar title="Home" icon="home">
 
-                  </div>
+                  </TopBar>
               </div>
           </React.Fragment>
       );

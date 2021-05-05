@@ -1,18 +1,30 @@
-#practice-tool{
-    height: 100vh;
+
+#practice-tool .practice-tool-chart-dropdown-container {
+    display: inline-block;
+    height: 100%;
+    position: relative;
+}   
+
+.practice-tool-chart-dropdown-container .dropdown {
+    bottom: 7px;
+    left: 10px;
+    display: inline-block;
 }
 
-#practice-tool .practice-tool-container-title {
-    /* height: 5vh; */
+.practice-tool-chart-dropdown-container .refresh-chart {
+    left: 20px;
+    position: relative;
+    font-size: 30px;
+    cursor: pointer;
+}
 
-    display: flex;
-    flex-flow: column;
-    height: 5%;
+.practice-tool-chart-dropdown-container .refresh-chart:hover {
+    color:green;
+    font-weight: bold;
 }
 
 #practice-tool .practice-tool-container-outter {
     margin: 5px;
-    /* height: 94vh; */
 
     display: flex;
     flex-flow: column;
@@ -27,7 +39,6 @@
 .practice-tool-container .practice-tool-row {
     padding: 0;
     margin:0;
-    height: 50%;
 }
 
 .practice-tool-container .practice-tool-row .practice-tool-col-container{

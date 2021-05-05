@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
-import {CandleStickChart, CandleStickData} from '../../Components/Chart/TickerChart';
+import {CandleStickChart, CandleStickData} from '../../Components/ChartOLD/OldTickerChart';
 import { fitWidth } from "react-stockcharts/lib/helper";
 import { dateSpecifics, genUniqueKey, largestInAccessor, smallestInAccessor } from '../../Common/Utils';
 import { TypeChooser } from "react-stockcharts/lib/helper";
@@ -19,6 +19,8 @@ data.array.forEach(element => {
 export interface PracticeToolOLDProps {
   width:number;
   height:number;
+  ticker:string;
+  day:string;
 }
 
 export interface PracticeToolOLDState {
@@ -141,13 +143,14 @@ export class PracticeToolOLD extends React.Component<PracticeToolOLDProps,Practi
             this.startTicks();
         });
 
-      },1000);
+      },100);
     }
 
     async componentDidMount() {
       try {
-        const ticker = "MVIS";
-        const day = "2021/04/28";
+        const ticker = this.props.ticker;
+        const day = this.props.day;
+        
         const realtimeDuration = CANDLESTICK_DURATION.SEC_5;
         const animateDuration = CANDLESTICK_DURATION.MIN_1;
         const specifics = dateSpecifics(day,ticker,realtimeDuration,animateDuration);
