@@ -20,11 +20,13 @@
     "font-awesome": "^4.7.0",
     "react": "^17.0.2",
     "react-bootstrap": "^1.5.2",
+    "react-datetime": "^3.0.4",
     "react-dom": "^17.0.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
     "react-stockcharts": "file:Dependencies/react-stockcharts",
+    "react-toastify": "^7.0.4",
     "typescript": "^4.2.4",
     "web-vitals": "^1.1.1"
   },

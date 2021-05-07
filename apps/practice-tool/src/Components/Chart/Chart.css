@@ -11,7 +11,28 @@ div.chart-container {
 
 .chart-topbar .dropdown {
     display: inline-block;
+    bottom: 1px;
 }
+
+.chart-topbar .input-group {
+    width: 50px;
+    display: inline-block;
+    margin-left: 4px !important;
+}
+
+.chart-topbar .chart-ticker-form-control {
+    text-transform: uppercase;
+}
+
+.chart-topbar .input-group input{
+    padding: 2px;
+    padding-left: 7px;
+    height: 28px;
+    font-size: 13px;
+    font-weight: bold;
+    width: 50px;
+}
+
 
 .chart-topbar .dropdown button{
     padding-top: 2px;

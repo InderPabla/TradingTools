@@ -84,7 +84,7 @@ export function candlestickTimeToD3Time(duration:string):Function {
  * @param animateDuration animate duration
  * @returns date specific info
  */
-export function dateSpecifics(date:string, ticker:string, realtimeDuration:string, animateDuration:string) {
+export function dateSpecifics(date:Date, ticker:string, realtimeDuration:string, animateDuration:string) {
     
     function formatToFileName(_date:Date,_ticker:string,duration:string):string {
         let yyyy = _date.getFullYear() + '';
@@ -95,7 +95,7 @@ export function dateSpecifics(date:string, ticker:string, realtimeDuration:strin
         return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-DAY_1-${duration}.csv`;
     }
 
-    let dayStart = new Date(date);
+    let dayStart = date;
 
     let dayEnd = new Date(dayStart);
     dayEnd.setHours(23,59,59);
@@ -119,4 +119,13 @@ export function dateSpecifics(date:string, ticker:string, realtimeDuration:strin
  */
 export function genUniqueKey():string {
     return '_' + Math.random().toString(36).substr(2, 9);
+}
+
+export function getTodayTradingDay():Date {
+    let tradingDay = new Date();
+    tradingDay.setHours(0);
+    tradingDay.setMinutes(0);
+    tradingDay.setSeconds(0);
+    tradingDay.setMilliseconds(0);
+    return tradingDay;
 }

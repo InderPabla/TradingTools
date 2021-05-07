@@ -19,8 +19,9 @@ data.array.forEach(element => {
 export interface PracticeToolOLDProps {
   width:number;
   height:number;
-  ticker:string;
-  day:string;
+
+  ticker?:string;
+  tradingDate?:Date;
 }
 
 export interface PracticeToolOLDState {
@@ -149,11 +150,13 @@ export class PracticeToolOLD extends React.Component<PracticeToolOLDProps,Practi
     async componentDidMount() {
       try {
         const ticker = this.props.ticker;
-        const day = this.props.day;
+        const tradingDate = this.props.tradingDate;
         
+        if(!ticker || !tradingDate) return null;
+
         const realtimeDuration = CANDLESTICK_DURATION.SEC_5;
         const animateDuration = CANDLESTICK_DURATION.MIN_1;
-        const specifics = dateSpecifics(day,ticker,realtimeDuration,animateDuration);
+        const specifics = dateSpecifics(tradingDate,ticker,realtimeDuration,animateDuration);
         const animateCandleData = await this.loadTickerDataFromFile(specifics.animateFilename);
         const realtimeCandleData = await this.loadTickerDataFromFile(specifics.realtimeFilename);
         

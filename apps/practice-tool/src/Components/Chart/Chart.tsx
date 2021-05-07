@@ -1,35 +1,29 @@
 //https://github.com/rrag/react-stockcharts/issues/519
 
 import React from "react";
-import { scaleTime } from "d3-scale";
-import { format } from "d3-format";
-import { timeFormat } from "d3-time-format";
-import { ChartCanvas, Chart as ReactStockCharts } from "react-stockcharts";
-import { CandlestickSeries, BarSeries, LineSeries } from "react-stockcharts/lib/series";
-import { XAxis, YAxis } from "react-stockcharts/lib/axes";
-import { last, timeIntervalBarWidth } from "react-stockcharts/lib/utils";
-import { lastVisibleItemBasedZoomAnchor } from "react-stockcharts/lib/utils/zoomBehavior"
-import { candlestickTimeToD3Time} from "../../Common/Utils";
-import { EdgeIndicator } from "react-stockcharts/lib/coordinates";
-import { COLOR } from "../../Common/ColorConst";
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
 import './Chart.css';
-import { Dropdown, DropdownButton } from "react-bootstrap";
+import { Dropdown, DropdownButton, FormControl, InputGroup } from "react-bootstrap";
 import { PracticeToolOLD } from "../../Page/PracticeToolOLD/PracticeToolOLD";
 
+
 export interface ChartSelection {
-    candlestickDuration:string;
-	ticker:string;
-	day:string;
+	chartId:string;
+    candlestickDuration?:string;
+	ticker?:string;
+	tradingDay?:Date;
 }
 
 export interface ChartProps {
-	id:string;
+	chartKey:string;
     selection:ChartSelection;
+
+	onTickerChanged:(key:string,ticker:string)=>void;
+	onTickerSelected:(key:string)=>void;
 }
 
 export interface ChartState {
-	
+
 }
 
 export class Chart extends React.Component<ChartProps,ChartState> {
@@ -45,14 +39,14 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		this.divChartMainContent = null;
 
 		this.state = { 
-			
+	
 		};
 
 		this.keyDownEvent = this.keyDownEvent.bind(this);
 		this.keyUpEvent = this.keyUpEvent.bind(this);
 	}
 
-	componentDidMount() {
+	async componentDidMount() {
 		window.addEventListener("keydown", this.keyDownEvent, false);
 		window.addEventListener("keyup", this.keyUpEvent, false);
 		this.forceUpdate();
@@ -63,14 +57,14 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		window.removeEventListener("keyup", this.keyUpEvent, false);
 	}
 
-	componentDidUpdate(prevProps:ChartProps, prevState:ChartProps) {
-		if(prevProps.id!==this.props.id) {
+	async componentDidUpdate(prevProps:ChartProps, prevState:ChartState) {
+		if(prevProps.chartKey!==this.props.chartKey) {
 			this.forceUpdate();
 		}
 	}
 	
 	shouldComponentUpdate(nextProps: Readonly<ChartProps>, nextState: Readonly<ChartState>,nextContext: any):boolean {
-		return nextProps.id!==this.props.id;
+		return nextProps.chartKey!==this.props.chartKey;
 	}
 
 	keyDownEvent (event) {
@@ -86,31 +80,50 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
 	render() {
-
-        const { selection, id } = this.props;
-
-
+        const { selection, chartKey, onTickerChanged, onTickerSelected } = this.props;
+		
         let candlestickDurationTitle = selection.candlestickDuration || 'Duration';
-		const chartId = `${id}-duration-dropdown`;
-		return (<React.Fragment key={`fragment-${id}`}>
-            <div id={id} className="chart-container">
+		const chartDivId = `${chartKey}-duration-dropdown`;
+		return (<React.Fragment key={`fragment-chart-${chartKey}`}>
+            <div className="chart-container">
                 <div className="chart-topbar">
-					<DropdownButton id={chartId} title={candlestickDurationTitle} size="sm">
+					<DropdownButton id={chartDivId} title={candlestickDurationTitle} size="sm">
 						{Object.keys(CANDLESTICK_DURATION).map((key)=> {
-							return <Dropdown.Item key={`${chartId}-${key}`}>{key}</Dropdown.Item>;
+							return <Dropdown.Item key={`${chartDivId}-${key}`}>{key}</Dropdown.Item>;
 						})}
 					</DropdownButton>
+					<InputGroup>
+						<FormControl 
+							className="chart-ticker-form-control"
+							placeholder="" 
+							onChange={(event)=>{onTickerChanged(chartKey,event.target.value)}}
+							onKeyPress={(event)=>{if(event.code==='Enter') onTickerSelected(chartKey)}}
+							defaultValue={selection.ticker} 
+						/>
+					</InputGroup>
                 </div>
                 <div ref={(ref) => this.divChartMainContent = ref} className="chart-main-content" >
-					{this.divChartMainContent && <PracticeToolOLD 
-							width={this.divChartMainContent.clientWidth} 
-							height={this.divChartMainContent.clientHeight}
-							ticker={selection.ticker}
-							day={selection.day}
-						/>}
+					{this.renderMainChartContent()}
                 </div>
             </div>
         </React.Fragment>);
+	}
+
+	private renderMainChartContent() {
+		const { selection, chartKey } = this.props;
+		const shouldRenderChart = selection.ticker != null && selection.tradingDay != null && selection.candlestickDuration != null 
+		 						&& this.divChartMainContent != null;
+		
+		if(!shouldRenderChart) return null;
+
+		return (<React.Fragment key={`fragment-chart-main-${chartKey}`}>
+				{/* {this.divChartMainContent && <PracticeToolOLD 
+					width={this.divChartMainContent.clientWidth} 
+					height={this.divChartMainContent.clientHeight}
+					ticker={selection.ticker}
+					tradingDay={selection.tradingDay}
+				/>} */}
+		</React.Fragment>);
 	}
 
 }
