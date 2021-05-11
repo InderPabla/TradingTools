@@ -20,7 +20,7 @@ export class TopBar extends React.Component<TopBarProps> {
             <React.Fragment>
                 <div className="tool-toolbar">
                     <div className="tool-title-container">
-                        <p> <i className={`fa fa-${icon}`} />{title}</p>
+                        <p className="tool-name"> <i className={`tool-icon fa fa-${icon}`} />{title}</p>
                         {children}
                     </div>
                 </div>

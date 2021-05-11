@@ -4,30 +4,35 @@ import React from "react";
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
 import './Chart.css';
 import { Dropdown, DropdownButton, FormControl, InputGroup } from "react-bootstrap";
-import { PracticeToolOLD } from "../../Page/PracticeToolOLD/PracticeToolOLD";
-
-
-export interface ChartSelection {
-	chartId:string;
-    candlestickDuration?:string;
-	ticker?:string;
-	tradingDay?:Date;
-}
+import { ChartContinousData, ChartDataSet, ChartSelection, isChartSelectionValid } from "./ChartUtils";
+import { ChartDataLoader } from "./DataLoader/ChartDataLoader";
+import { ReactStockChartsWrapper } from "./ReactStockChartsWrapper";
 
 export interface ChartProps {
 	chartKey:string;
     selection:ChartSelection;
 
-	onTickerChanged:(key:string,ticker:string)=>void;
-	onTickerSelected:(key:string)=>void;
+	onTickerChanged:(chartKey:string,ticker:string)=>void;
+	onTickerSelected:(chartKey:string)=>void;
+	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
+
+	notifyErrorChartLoadingData:(sel:ChartSelection)=>void;
+	notifySuccessChartLoadingData:(sel:ChartSelection)=>void;
+
+	dataLoader:ChartDataLoader;
+
+	clock:Date;
 }
 
 export interface ChartState {
+	activeSelection?:ChartSelection;
 
+	completeSet:ChartDataSet;
+	activeSet:ChartDataSet;
 }
 
 export class Chart extends React.Component<ChartProps,ChartState> {
-	private divChartMainContent: HTMLDivElement | null;
+	private divChartMainContent: HTMLDivElement;
 
 	public static defaultProps = {
 
@@ -38,28 +43,65 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		
 		this.divChartMainContent = null;
 
-		this.state = { 
-	
-		};
-
-		this.keyDownEvent = this.keyDownEvent.bind(this);
-		this.keyUpEvent = this.keyUpEvent.bind(this);
+		this.state = { activeSelection:null, activeSet:null, completeSet:null };
 	}
 
-	async componentDidMount() {
-		window.addEventListener("keydown", this.keyDownEvent, false);
-		window.addEventListener("keyup", this.keyUpEvent, false);
-		this.forceUpdate();
-	}
-	
-	componentWillUnmount() {
-		window.removeEventListener("keydown", this.keyDownEvent, false);
-		window.removeEventListener("keyup", this.keyUpEvent, false);
-	}
+	async componentDidMount() { }
+
+	componentWillUnmount() { }
 
 	async componentDidUpdate(prevProps:ChartProps, prevState:ChartState) {
-		if(prevProps.chartKey!==this.props.chartKey) {
-			this.forceUpdate();
+		const { selection:curPropSel, chartKey:curKey, dataLoader, 
+				notifyErrorChartLoadingData, notifySuccessChartLoadingData,
+				clock:curClock
+		} = this.props;
+		const { chartKey:preKey, clock:preClock } = prevProps;
+		const { activeSelection:curActiveSel, activeSet:curActiveSet } = this.state;
+
+		function _shouldFetchSelectionData():boolean {
+			if(!isChartSelectionValid(curPropSel)) 
+				return false;
+
+			return curActiveSel==null
+				|| curActiveSel.candlestickDuration!==curPropSel.candlestickDuration 
+				|| curActiveSel.ticker!==curPropSel.ticker 
+				|| curActiveSel.tradingDayTime.getTime()!==curPropSel.tradingDayTime.getTime();
+		}
+
+		function _shouldUpdateActiveSet():boolean {
+			return curActiveSet!=null && curActiveSet.candle.length>0 && curClock.getTime()>preClock.getTime();
+		}
+
+		if(curKey!==preKey) {
+			if(_shouldFetchSelectionData()) {
+				const activeSelection:ChartSelection = {...curPropSel};
+				let activeSet:ChartDataSet = null;
+				let completeSet:ChartDataSet = null;
+
+				const loaded = await dataLoader.load(curPropSel); 
+				if(loaded.err) {
+					notifyErrorChartLoadingData(curPropSel);
+				}
+				else {
+					notifySuccessChartLoadingData(curPropSel);
+					completeSet = { candle:loaded.data, inds:[] };
+					
+					const tradingTimeMs = activeSelection.tradingDayTime.getTime();
+					const completeSetTradingTimeIndex = completeSet.candle.findIndex(v=>v.date.getTime()===tradingTimeMs);
+					
+					const activeCandle = completeSet.candle.slice(0,completeSetTradingTimeIndex);
+					const activeInd = completeSet.inds.slice(0,completeSetTradingTimeIndex);
+
+					activeSet = { candle:activeCandle, inds:activeInd };
+				}
+
+				this.setState({ activeSelection, activeSet, completeSet },()=>{
+					this.forceUpdate();
+				});
+			}
+			else if(_shouldUpdateActiveSet()) {
+				console.log("==================== CLOCK")
+			}
 		}
 	}
 	
@@ -67,29 +109,23 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		return nextProps.chartKey!==this.props.chartKey;
 	}
 
-	keyDownEvent (event) {
-		if(event.code==='KeyX') {
-			
-		}
-	}
-
-	keyUpEvent (event) {
-		if(event.code==='KeyX') {
-		
-		}
-	}
-
 	render() {
-        const { selection, chartKey, onTickerChanged, onTickerSelected } = this.props;
+        const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected } = this.props;
 		
         let candlestickDurationTitle = selection.candlestickDuration || 'Duration';
 		const chartDivId = `${chartKey}-duration-dropdown`;
 		return (<React.Fragment key={`fragment-chart-${chartKey}`}>
             <div className="chart-container">
                 <div className="chart-topbar">
-					<DropdownButton id={chartDivId} title={candlestickDurationTitle} size="sm">
-						{Object.keys(CANDLESTICK_DURATION).map((key)=> {
-							return <Dropdown.Item key={`${chartDivId}-${key}`}>{key}</Dropdown.Item>;
+					<DropdownButton 
+						id={chartDivId} 
+						title={candlestickDurationTitle} 
+						size="sm"
+						onSelect={(_duration)=>{onCandleStickDurationSelected(chartKey,_duration as string)}}>
+						{Object.keys(CANDLESTICK_DURATION).map((_duration)=> {
+							return <Dropdown.Item 
+										key={`${chartDivId}-${_duration}`}
+										eventKey={_duration}>{_duration}</Dropdown.Item>;
 						})}
 					</DropdownButton>
 					<InputGroup>
@@ -101,6 +137,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 							defaultValue={selection.ticker} 
 						/>
 					</InputGroup>
+					<p className="chart-id-name">{selection.chartId}</p>
                 </div>
                 <div ref={(ref) => this.divChartMainContent = ref} className="chart-main-content" >
 					{this.renderMainChartContent()}
@@ -110,19 +147,22 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
 	private renderMainChartContent() {
-		const { selection, chartKey } = this.props;
-		const shouldRenderChart = selection.ticker != null && selection.tradingDay != null && selection.candlestickDuration != null 
-		 						&& this.divChartMainContent != null;
-		
-		if(!shouldRenderChart) return null;
+		const { chartKey } = this.props;
+		const { activeSet, activeSelection } = this.state;
 
+		const shouldRenderChart = activeSelection!=null && activeSelection.ticker != null && activeSelection.tradingDayTime != null 
+								&& activeSelection.candlestickDuration != null && this.divChartMainContent != null 
+								&& activeSet!=null && activeSet.candle!=null && activeSet.candle.length>0;
+
+		if(!shouldRenderChart) return null;
+		
 		return (<React.Fragment key={`fragment-chart-main-${chartKey}`}>
-				{/* {this.divChartMainContent && <PracticeToolOLD 
+				<ReactStockChartsWrapper 
 					width={this.divChartMainContent.clientWidth} 
 					height={this.divChartMainContent.clientHeight}
-					ticker={selection.ticker}
-					tradingDay={selection.tradingDay}
-				/>} */}
+					data={activeSet}
+					selection={activeSelection}
+				/>
 		</React.Fragment>);
 	}
 

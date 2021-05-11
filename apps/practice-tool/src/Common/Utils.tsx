@@ -121,10 +121,10 @@ export function genUniqueKey():string {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
 
-export function getTodayTradingDay():Date {
+export function getTodayTradingDayTime():Date {
     let tradingDay = new Date();
-    tradingDay.setHours(0);
-    tradingDay.setMinutes(0);
+    tradingDay.setHours(9);
+    tradingDay.setMinutes(30);
     tradingDay.setSeconds(0);
     tradingDay.setMilliseconds(0);
     return tradingDay;

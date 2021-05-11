@@ -1,14 +1,20 @@
 
 import * as React from 'react';
+import classNames from 'classnames';
 import {Container,Row,Col, DropdownButton, Dropdown} from 'react-bootstrap';
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
-import { genUniqueKey, getTodayTradingDay } from '../../Common/Utils';
-import { Chart, ChartSelection } from '../../Components/Chart/Chart';
+import { genUniqueKey, getTodayTradingDayTime } from '../../Common/Utils';
+import { Chart } from '../../Components/Chart/Chart';
 import { TopBar } from '../../Components/TopBar/TopBar';
 import './PracticeTool.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { toChartRenderRowMeta } from './PracticeToolUtils';
+import { ChartSelectionSuper, toChartRenderRowMeta } from './PracticeToolUtils';
+import Datetime from "react-datetime";
+import "react-datetime/css/react-datetime.css";
+import moment from 'moment';
+import { ChartContinousData, ChartSelection } from '../../Components/Chart/ChartUtils';
+import { PublicFileChartDataLoader } from '../../Components/Chart/DataLoader/ChartDataLoader';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6];
@@ -18,42 +24,102 @@ export interface PracticeToolProps {
 
 }
 
-export interface ChartSelectionSuper {
-    chartKey:string;
-    chartSelection:ChartSelection;
-}
-
 export interface PracticeToolState {
     chartDataArr:ChartSelectionSuper[];
-    
+    tradingDayTime:Date;
+
+    clock:Date;
+    clockCopyAtUnpaused?:Date;
+    timeAtClockUnpaused?:Date;
+    clockUpdateInterval?:NodeJS.Timeout;
 }
-
-
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
     
-    private tradingDay:Date;
-    
-    private notifyAllChartsReset = () => toast.info(`Charts reset.`);
+    private notifyAllChartsReset = () => toast.info(`All charts reset.`);
     private notifyChartReset = (chartId:string) => toast.info(`${chartId} reset.`);
     private notifyChartSizeChanged = () => toast.info(`Charts size changed.`);
     private notifyChartTickerChanged = (chartId:string,ticker:string) => toast.info(`${chartId} ticker changed to ${ticker}.`);
-    
-   
+    private notifyTradingDayChanged = (tradingDayTime:Date) => toast.info(`Trading day changed to ${tradingDayTime.toDateString()}.`);
+    private notifyChartDurationChanged = (chartId:string, duration:string) => toast.info(`${chartId} duration changed to ${duration}.`);
+
+    private notifyErrorChartLoadingData = (sel:ChartSelection) => toast.error(`Error loading ${sel.chartId} data.`);
+    private notifySuccessChartLoadingData = (sel:ChartSelection) => toast.success(`Successful loading ${sel.chartId} data.`);
+
+    private notifyClockState = (isClockRunning:boolean) => toast.info(isClockRunning?'Clock started.':'Clock paused.');
+    private customCsvFileDataLoader:PublicFileChartDataLoader;
 
     constructor(props) {
         super(props);
-        this.tradingDay = getTodayTradingDay();
+
+        let tradingDayTime = getTodayTradingDayTime();
+        let clock = tradingDayTime;
         let chartDataArr:ChartSelectionSuper[] = [];
+ 
+        this.customCsvFileDataLoader = new PublicFileChartDataLoader('data',(sel:ChartSelection)=> {
+            const {tradingDayTime,ticker,candlestickDuration} = sel;
+            let yyyy = tradingDayTime.getFullYear() + '';
+            let mm = tradingDayTime.getMonth() + 1 + '';
+            let dd = tradingDayTime.getDate() + '';
+            dd = dd.length<2?'0'+dd:dd;
+            mm = mm.length<2?'0'+mm:mm;
+            return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-DAY_1-${candlestickDuration}.csv`;
+        });
+
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
-            chartDataArr.push(this.getNewChart());
-        this.state = { 
-          chartDataArr,
-        }
+            chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
+
+        this.state = { chartDataArr, tradingDayTime, clock}; 
     }
 
-    async componentDidMount() {
+    componentDidMount() {
+		window.addEventListener("keydown", this.keyDownEvent, false);
+		window.addEventListener("keyup", this.keyUpEvent, false);
+	}
+	
+	componentWillUnmount() {
+		window.removeEventListener("keydown", this.keyDownEvent, false);
+		window.removeEventListener("keyup", this.keyUpEvent, false);
+	}
 
+	keyDownEvent = (event) => {
+		if(event.code==='KeyP') {
+           
+		}
+	}
+
+	keyUpEvent = (event) => {
+		if(event.code==='KeyP') {
+            this.toggleClock();
+		}
+	}
+
+    private toggleClock =() => {
+        let clockUpdateInterval = this.state.clockUpdateInterval;
+        let timeAtClockUnpaused:Date  = null;
+        let clockCopyAtUnpaused:Date = null;
+
+        if(clockUpdateInterval) {
+            clearInterval(clockUpdateInterval);
+            clockUpdateInterval = null;
+        }
+        else {
+            timeAtClockUnpaused = new Date();
+            clockCopyAtUnpaused = this.state.clock;
+            clockUpdateInterval = setInterval(this.updateClock,1000);
+        }
+
+        this.setState({clockUpdateInterval,timeAtClockUnpaused,clockCopyAtUnpaused},()=> {
+            this.notifyClockState(this.isClockRunning());
+        });
+    }
+
+    private updateClock = () => {
+        const newDate = new Date();
+        const msDiff = newDate.getTime() - this.state.timeAtClockUnpaused.getTime();
+        let clock = new Date(this.state.clockCopyAtUnpaused.getTime() + msDiff);
+        this.state.chartDataArr.forEach(v=>v.chartKey = genUniqueKey());
+        this.setState({clock});
     }
 
     private getChartWithChartKey(chartKey:string):ChartSelectionSuper {
@@ -66,21 +132,19 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         return chart;
     }
 
-    private getNewChart():ChartSelectionSuper {
-        console.log(this.state);
+    private getNewChart(duration:string,tradingDay:Date):ChartSelectionSuper {
         return {
             chartKey: genUniqueKey(),
 
             chartSelection: {
                 chartId:genUniqueKey(),
-                candlestickDuration:DEFAULT_CANDLESTICK_DURATION, 
-                tradingDay:new Date(this.tradingDay),
-                // ticker:"MVIS", tradingDay:"2021/04/28",
+                candlestickDuration:duration, 
+                tradingDayTime:tradingDay,
             }
         };
     }
 
-    private onChangeChartSize = (numberOfChartsStr:any) => {
+    private onChartSizeSelected = (numberOfChartsStr:any) => {
         let chartDataArr = this.state.chartDataArr;
         
         const newNumberOfCharts:number = parseInt(numberOfChartsStr);
@@ -90,7 +154,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         if(chartDiff>0) {
             if(currentNumberOfCharts<newNumberOfCharts) {
                 for(let i = 0; i <chartDiff;i++) 
-                    chartDataArr.push(this.getNewChart());
+                    chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,this.state.tradingDayTime));
             }
             else {
                 for(let i = 0; i <chartDiff;i++) 
@@ -116,28 +180,62 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         this.setState({});
     }
 
-    private resetChart = (key:string) => {
-        let chart = this.getChartWithChartKey(key);
+    private resetChart = (chartKey:string) => {
+        let chart = this.getChartWithChartKey(chartKey);
         chart.chartKey = genUniqueKey();
         this.notifyChartReset(chart.chartSelection.chartId);
         this.setState({});
     }
 
-    private onTickerChanged = (key:string, ticker:string) =>{
-        let chart = this.getChartWithChartKey(key);
+    private onTickerChanged = (chartKey:string, ticker:string) =>{
+        let chart = this.getChartWithChartKey(chartKey);
         chart.chartSelection.ticker=ticker?ticker.toUpperCase():ticker;
         this.setState({});
     }
 
-    private onTickerSelected = (key:string) => {
-        let chart = this.getChartWithChartKey(key);
+    private onTickerSelected = (chartKey:string) => {
+        let chart = this.getChartWithChartKey(chartKey);
         if(chart.chartSelection.ticker) {
             this.notifyChartTickerChanged(chart.chartSelection.chartId,chart.chartSelection.ticker);
-            this.resetChart(key);
+            this.resetChart(chartKey);
         }
     }
 
+    private onTradingDayTimeChanged (newTradingDayTime:Date) {
+        const { tradingDayTime, chartDataArr } = this.state;
+        if(tradingDayTime.getTime() !== newTradingDayTime.getTime()) {
+            
+            for(let chart of chartDataArr)
+                chart.chartSelection.tradingDayTime = newTradingDayTime;
+
+            this.notifyTradingDayChanged(newTradingDayTime);
+            this.setState({tradingDayTime:newTradingDayTime});
+            this.resetAllChart();
+        }
+    }
+
+    private onCandleStickDurationSelected = (chartKey:string, duration:string) => {
+        let chart = this.getChartWithChartKey(chartKey);
+        if(chart.chartSelection.candlestickDuration!==duration) {
+            chart.chartSelection.candlestickDuration = duration;
+            this.setState({});
+
+            this.notifyChartDurationChanged(chart.chartSelection.chartId,duration);
+            this.resetChart(chartKey);
+        }
+    }
+
+    private isClockRunning():boolean {
+        const { clockUpdateInterval } = this.state;
+        return clockUpdateInterval!=null;
+    }
+
     public render() {
+        const { clock } = this.state;
+        const isClockRunning = this.isClockRunning();
+        const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
+        const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
+
         return (
             <React.Fragment>
                 <div id="practice-tool" style={{height:"100vh"}}>
@@ -147,15 +245,21 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                 id="practice-tool-chart-dropdown-button" 
                                 title={`${this.state.chartDataArr.length} Charts`} 
                                 size="sm"
-                                onSelect={this.onChangeChartSize}>
+                                onSelect={this.onChartSizeSelected}>
                                 {VALID_CHART_SIZES.map((numberOfCharts)=> {
                                     return <Dropdown.Item 
                                                 key={`practice-tool-chart-dropdown-button-${numberOfCharts}`} 
                                                 eventKey={numberOfCharts.toString()}>{numberOfCharts}</Dropdown.Item>;
                                 })}
                             </DropdownButton>
-
+                            <Datetime 
+                                initialValue={this.state.tradingDayTime}
+                                onChange={(value)=>{this.onTradingDayTimeChanged(moment(value).toDate())}}  
+                            />
                             <i className={`refresh-chart fa fa-refresh`} onClick={this.resetAllChart}/>
+                            <i className={pauseplayClass} onClick={this.toggleClock}/>
+                            <p className={clockClass}>{moment(clock).format('hh:mm:ss A')}</p>
+                            
                         </div>
      
                     </TopBar>
@@ -177,7 +281,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
     
     public renderCharts() {
-        const {chartDataArr} = this.state;
+        const {chartDataArr, clock} = this.state;
         const renderMeta = toChartRenderRowMeta(chartDataArr.length);
         
         return (<React.Fragment>
@@ -192,6 +296,14 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     selection={chartData.chartSelection}
                                     onTickerChanged={this.onTickerChanged}
                                     onTickerSelected={this.onTickerSelected}
+                                    onCandleStickDurationSelected={this.onCandleStickDurationSelected}
+
+                                    notifyErrorChartLoadingData={this.notifyErrorChartLoadingData}
+                                    notifySuccessChartLoadingData={this.notifySuccessChartLoadingData}
+
+                                    dataLoader={this.customCsvFileDataLoader}
+
+                                    clock={clock}
                                 /> 
                             </div>
                         </Col>);

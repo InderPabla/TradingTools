@@ -11,6 +11,27 @@
     display: inline-block;
 }
 
+.practice-tool-chart-dropdown-container .rdt {
+    bottom: 7px;
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.practice-tool-chart-dropdown-container .rdt input{
+    font-weight: bold;
+    position: relative;
+    padding: 3px;
+    top: 2px;
+    height: 30px;
+    width: 95px;
+    border: solid 1px black;
+}
+
+.practice-tool-chart-dropdown-container .rdt .rdtPicker .rdtTimeToggle{
+    /* display: none; */
+}
+
+
 .practice-tool-chart-dropdown-container .refresh-chart {
     left: 20px;
     position: relative;
@@ -21,6 +42,69 @@
 .practice-tool-chart-dropdown-container .refresh-chart:hover {
     color:green;
     font-weight: bold;
+}
+
+.practice-tool-chart-dropdown-container .pauseplay-chart {
+    /* left: 30px;
+    position: relative;
+    font-size: 30px;
+    cursor: pointer;
+    border-radius: 10px;
+    padding:4px;
+    background: crimson; */
+
+    left: 30px;
+    position: relative;
+    font-size: 20px;
+    cursor: pointer;
+    
+    border-radius: 50%;
+    bottom: 4px;
+
+    
+}
+
+.practice-tool-chart-dropdown-container .pauseplay-chart.paused {
+    color: black;
+    background: greenyellow;
+    padding: 6px 9px 6px 7px;
+    border: 1px solid slategray;
+}
+
+.practice-tool-chart-dropdown-container .pauseplay-chart.playing {
+    color: white;
+    background: crimson;
+    padding: 6px 6px 6px 10px;
+    border: 1px solid slategray;
+}
+
+.practice-tool-chart-dropdown-container .pauseplay-chart:hover{
+    color:orange !important;
+    font-weight: bold;
+}
+
+.practice-tool-chart-dropdown-container .clock-chart {
+    display: inline-block;
+    margin: 0;
+    font-weight: 400;
+    margin-left: 40px;
+    position: relative;
+    bottom: 4px;
+    font-size: 17px;
+    
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-bottom: 2px;
+    color: white;
+    border: 1px solid black;
+}
+
+.practice-tool-chart-dropdown-container .clock-chart.playing {
+    background-color: darkred;
+}
+
+.practice-tool-chart-dropdown-container .clock-chart.paused {
+    background-color: green;
 }
 
 #practice-tool .practice-tool-container-outter {

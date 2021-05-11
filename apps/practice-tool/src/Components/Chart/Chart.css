@@ -12,12 +12,13 @@ div.chart-container {
 .chart-topbar .dropdown {
     display: inline-block;
     bottom: 1px;
+    margin-left: 5px;
 }
 
 .chart-topbar .input-group {
     width: 50px;
     display: inline-block;
-    margin-left: 4px !important;
+    margin-left: 5px !important;
 }
 
 .chart-topbar .chart-ticker-form-control {
@@ -33,10 +34,18 @@ div.chart-container {
     width: 50px;
 }
 
-
 .chart-topbar .dropdown button{
     padding-top: 2px;
     padding-bottom: 2px;
+}
+
+.chart-topbar p.chart-id-name {
+    margin: 0;
+    position: relative;
+    display: inline-block;
+    font-weight: 500;
+    margin-left: 10px;
+    color: burlywood;
 }
 
 .chart-container .chart-main-content {

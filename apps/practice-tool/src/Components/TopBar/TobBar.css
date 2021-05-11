@@ -8,7 +8,7 @@
     display: inline-block;
 }
 
-.tool-title-container p {
+.tool-title-container p.tool-name{
     font-weight: bold;
     font-size: 30px;
     margin-bottom: 7px;
@@ -17,6 +17,6 @@
     display: inline;
 }
 
-.tool-title-container i {
+.tool-title-container i.tool-icon {
     margin-right: 4px;
 }

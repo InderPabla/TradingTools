@@ -1,3 +1,10 @@
+import { ChartSelection } from "../../Components/Chart/ChartUtils";
+
+export interface ChartSelectionSuper {
+    chartKey:string;
+    chartSelection:ChartSelection;
+}
+
 export interface ChartRenderMeta {
     chartIndex:number;
     numberOfColumns:number;
@@ -57,3 +64,5 @@ export function toChartRenderRowMeta(numberOfCharts:number):ChartRenderRowMeta[]
         default: throw new Error(`Invalid Chart Size: ${numberOfCharts}`);
     }
 }
+
+
