@@ -1,8 +1,10 @@
+import { Chart } from "../../Components/Chart/Chart";
 import { ChartSelection } from "../../Components/Chart/ChartUtils";
 
 export interface ChartSelectionSuper {
     chartKey:string;
     chartSelection:ChartSelection;
+    chart:Chart;
 }
 
 export interface ChartRenderMeta {

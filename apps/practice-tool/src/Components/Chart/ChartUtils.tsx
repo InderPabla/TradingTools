@@ -11,7 +11,7 @@ export interface ChartSelection {
 
 export interface ChartDataSet {
 	candle:ChartContinousData[],
-	inds:ChartIndicator[],	
+	inds?:ChartIndicator[],	
 }
 
 export interface ChartIndicator {

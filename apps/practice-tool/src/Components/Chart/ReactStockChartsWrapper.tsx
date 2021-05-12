@@ -15,6 +15,8 @@ import { EdgeIndicator } from "react-stockcharts/lib/coordinates";
 import { COLOR } from "../../Common/ColorConst";
 
 export interface ReactStockChartsWrapperProps {
+    renderKey:string;
+
     width:number;
     height:number;
 
@@ -51,20 +53,20 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
 	keyDownEvent = (event) => {
 		if(event.code==='KeyX') {
-            if(!this.state.panEvent) this.setState({panEvent:true});
+            //if(!this.state.panEvent) this.setState({panEvent:true});
 		}
 	}
 
 	keyUpEvent = (event) => {
 		if(event.code==='KeyX') {
-            if(this.state.panEvent) this.setState({panEvent:false});
+            //if(this.state.panEvent) this.setState({panEvent:false});
 		}
 	}
 
-
 	render() {
+        console.log(this.props.renderKey,'rendered AGAIN??WTF')
         const { panEvent } = this.state;
-        const { width, height, data, selection, type} = this.props;
+        const { width, height, data, selection, type, renderKey} = this.props;
         const xDateAccessor = d => d.date;
 
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
@@ -74,8 +76,12 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 		const chartVolumeHeight = height*0.25;
 		const chartWidth = width;
 
-		return (<ChartCanvas 
-            panEvent={panEvent}
+		return (
+        <React.Fragment key={renderKey}>
+
+       
+        <ChartCanvas 
+            panEvent={true}
             clamp={false}
             zoomAnchor={lastVisibleItemBasedZoomAnchor}
 
@@ -147,7 +153,8 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                 />
             </Chart>
             
-        </ChartCanvas>);
+        </ChartCanvas>
+        </React.Fragment>);
 	}
 
 
