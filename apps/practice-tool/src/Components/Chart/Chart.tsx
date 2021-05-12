@@ -22,7 +22,7 @@ export interface ChartProps {
 
 	dataLoader:ChartDataLoader;
 
-	clock:Date;
+	initialClock:Date;
 }
 
 export interface ChartState {
@@ -30,6 +30,7 @@ export interface ChartState {
 	renderChartKey:string;
 	completeSet:ChartDataSet;
 	activeSet:ChartDataSet;
+	activeClock:Date;
 }
 
 export class Chart extends React.Component<ChartProps,ChartState> {
@@ -42,51 +43,61 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	constructor(props:ChartProps) {
 		super(props);
 		this.divChartMainContent = null;
-		this.state = { activeSelection:null, activeSet:null, completeSet:null, renderChartKey:genUniqueKey() };
+		this.state = { activeSelection:null, activeSet:null, completeSet:null, renderChartKey:genUniqueKey(), activeClock:null, };
 	}
 
 	async componentDidMount() { }
 
 	componentWillUnmount() { }
+	
+	shouldComponentUpdate(nextProps: Readonly<ChartProps>, nextState: Readonly<ChartState>,nextContext: any):boolean {
+		return nextProps.chartKey!==this.props.chartKey;
+	}
+
 
 	async componentDidUpdate(prevProps:ChartProps, prevState:ChartState) {
 		if(prevProps.chartKey===this.props.chartKey) return;
-
-		const { selection:curPropSel, clock:curClock } = this.props;
-		const { clock:preClock } = prevProps;
-		const { activeSelection:curActiveSel, activeSet:curActiveSet } = this.state;
+		
+		const { selection:curPropSel, initialClock } = this.props;
+		const { activeSelection:curActiveSel } = this.state;
 
 		function _shouldFetchSelectionData():boolean {
-			if(!isChartSelectionValid(curPropSel)) 
-				return false;
-
-			return curActiveSel==null
+			if(!isChartSelectionValid(curPropSel)) return false;
+			return curActiveSel==null 
 				|| curActiveSel.candlestickDuration!==curPropSel.candlestickDuration 
 				|| curActiveSel.ticker!==curPropSel.ticker 
 				|| curActiveSel.tradingDayTime.getTime()!==curPropSel.tradingDayTime.getTime();
 		}
-
-		function _shouldUpdateActiveSet():boolean {
-			return curActiveSet!=null && curActiveSet.candle.length>0 && curClock.getTime()>preClock.getTime();
-		}
-
-
-		if(_shouldFetchSelectionData()) {
-			await this.onShouldFetchSelectionData({...curPropSel});
-		}
-		else if(_shouldUpdateActiveSet()) {
-			await this.onUpdateActiveSet();
-		}
+		
+		if(_shouldFetchSelectionData()) await this.onShouldFetchSelectionData();
 	}
 
-	async onUpdateActiveSet() {
-		const { completeSet, activeSet, activeSelection } = this.state;
-		const { clock } = this.props;
 
-		console.log(clock.getTime(),activeSet.candle.length,completeSet.candle.length,activeSelection.chartId);
+
+	public async onClockUpdate(newClock:Date) {
+		const { completeSet, activeSet, activeSelection, activeClock:oldClock } = this.state;
+		if(!activeSet || !completeSet || !oldClock || !activeSelection) return;
+
+		const { chartKey } = this.props;
+		const oldClockTs = oldClock.getTime();
+		const newClockTs = newClock.getTime();
+
+		const _shouldUpdate =  newClockTs>oldClockTs;
+	
+		if(!_shouldUpdate) return;
+
+		console.log(activeSelection.chartId,_shouldUpdate,newClockTs,oldClockTs,activeSet.candle.length,completeSet.candle.length);
+		activeSet.candle = completeSet.candle.slice(0,activeSet.candle.length+1);
+		console.log(activeSelection.chartId,activeSet.candle.length,completeSet.candle.length);
+
+		this.setState({activeClock:newClock,activeSet},()=>{
+			this.forceUpdate();
+		});
 	}
 
-	async onShouldFetchSelectionData(activeSelection:ChartSelection) {
+	private async onShouldFetchSelectionData() {
+		const { selection, initialClock } = this.props;
+		const activeSelection = {...selection};
 		const { dataLoader,notifyErrorChartLoadingData,notifySuccessChartLoadingData } = this.props;
 		const tradingTimeMs = activeSelection.tradingDayTime.getTime();
 		const renderChartKey = genUniqueKey();
@@ -106,13 +117,9 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 			notifySuccessChartLoadingData(activeSelection);
 		}
 
-		this.setState({ activeSelection, activeSet, completeSet, renderChartKey },()=>{
+		this.setState({ activeSelection, activeSet, completeSet, renderChartKey, activeClock:initialClock },()=>{
 			this.forceUpdate();
 		});
-	}
-	
-	shouldComponentUpdate(nextProps: Readonly<ChartProps>, nextState: Readonly<ChartState>,nextContext: any):boolean {
-		return nextProps.chartKey!==this.props.chartKey;
 	}
 
 	render() {
@@ -161,8 +168,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 								&& activeSet!=null && activeSet.candle!=null && activeSet.candle.length>0;
 
 		if(!shouldRenderChart) return null;
-		
-		console.log(`renderMainChartContent`,chartKey,renderChartKey);
+
 		return (<React.Fragment key={`${renderChartKey}-${chartKey}`}>
 			<ReactStockChartsWrapper 
 				renderKey={renderChartKey}
@@ -170,7 +176,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 				height={this.divChartMainContent.clientHeight}
 				data={activeSet}
 				selection={activeSelection}
-			/>;
+			/>
 		</React.Fragment>);
 		
 	}

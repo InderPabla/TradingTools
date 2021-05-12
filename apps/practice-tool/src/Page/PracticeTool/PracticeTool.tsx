@@ -45,7 +45,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
     private notifyClockState = (isClockRunning:boolean) => toast.info(isClockRunning?'Clock started.':'Clock paused.');
     private customCsvFileDataLoader:PublicFileChartDataLoader;
-
+    
     constructor(props) {
         super(props);
 
@@ -99,7 +99,10 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             this.notifyClockState(true);
         }
 
-        this.resetAllChart();
+        for(let chart of this.state.chartDataArr)
+            chart.chart.onClockUpdate(this.state.tradingClock.getClock());
+
+        //this.resetAllChart();
         this.setState({});
     }
 
@@ -150,14 +153,19 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         }
 
         this.resetAllChart();
-        this.notifyChartSizeChanged();
-        this.setState({});
+        this.setState({},()=>{
+            this.notifyChartSizeChanged();
+            this.forceUpdate();
+            this.resetAllChartsInState();
+        });
     }
     
     private resetAllChartsInState = () => {
         this.resetAllChart();
-        this.notifyAllChartsReset();
-        this.setState({});
+        this.setState({},()=>{
+            this.notifyAllChartsReset();
+            this.forceUpdate();
+        });
     }
 
     private resetAllChart = () => {
@@ -275,7 +283,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
                                     dataLoader={this.customCsvFileDataLoader}
 
-                                    clock={tradingClock.getClock()}
+                                    initialClock={tradingClock.getClock()}
                                 /> 
                             </div>
                         </Col>);
