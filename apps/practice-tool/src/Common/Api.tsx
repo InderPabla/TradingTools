@@ -1,4 +1,4 @@
-import { ChartContinousData } from "../Components/Chart/ChartUtils";
+import { ChartContinousData } from "../Components/Chart/Commom/ChartUtils";
 var csv=require("csvtojson");
 
 type IAjaxErrorType = 'UNEXPECTED_ERROR'|'NOT_FOUND'|'BAD_REQUEST';

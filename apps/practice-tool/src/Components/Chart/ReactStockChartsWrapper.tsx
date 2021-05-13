@@ -1,7 +1,7 @@
 //https://github.com/rrag/react-stockcharts/issues/519
 
 import React from "react";
-import { ChartDataSet, ChartSelection } from "./ChartUtils";
+import { ChartDataSet, ChartSelection } from "./Commom/ChartUtils";
 import { scaleTime } from "d3-scale";
 import { format } from "d3-format";
 import { timeFormat } from "d3-time-format";
@@ -12,7 +12,9 @@ import { last, timeIntervalBarWidth } from "react-stockcharts/lib/utils";
 import { lastVisibleItemBasedZoomAnchor } from "react-stockcharts/lib/utils/zoomBehavior"
 import { candlestickTimeToD3Time} from "../../Common/Utils";
 import { EdgeIndicator } from "react-stockcharts/lib/coordinates";
+import { discontinuousTimeScaleProvider } from "react-stockcharts/lib/scale";
 import { COLOR } from "../../Common/ColorConst";
+import { min as d3Min, max as d3Max } from 'd3-array';
 
 export interface ReactStockChartsWrapperProps {
     renderKey:string;
@@ -53,18 +55,21 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
 	keyDownEvent = (event) => {
 		if(event.code==='KeyX') {
-            //if(!this.state.panEvent) this.setState({panEvent:true});
+            if(!this.state.panEvent) this.setState({panEvent:true});
 		}
 	}
 
 	keyUpEvent = (event) => {
 		if(event.code==='KeyX') {
-            //if(this.state.panEvent) this.setState({panEvent:false});
+            if(this.state.panEvent) this.setState({panEvent:false});
 		}
 	}
 
+    private dateD3MaxPlusPadding = (values:Date[], valueof:Function):Date => {
+        return new Date(d3Max(values, valueof).getTime()+(1000*5*60));
+    }
+
 	render() {
-        console.log(this.props.renderKey,'rendered AGAIN??WTF')
         const { panEvent } = this.state;
         const { width, height, data, selection, type, renderKey} = this.props;
         const xDateAccessor = d => d.date;
@@ -76,12 +81,17 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 		const chartVolumeHeight = height*0.25;
 		const chartWidth = width;
 
+        
+
 		return (
         <React.Fragment key={renderKey}>
             <ChartCanvas 
-                panEvent={true}
+                panEvent={panEvent}
                 clamp={false}
                 zoomAnchor={lastVisibleItemBasedZoomAnchor}
+
+                //xExtents={[d3Min, this.dateD3MaxPlusPadding]}
+                    //new Date(data.candle[data.candle.length-1].date.getTime()+(1000*5*60))
 
                 height={totalChartHeight}
                 ratio={1}
@@ -92,9 +102,16 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                 data={data.candle}
                 xAccessor={xDateAccessor}
                 xScale={scaleTime()}
-                displayXAccessor={xDateAccessor}>
-
-                <Chart id={1} origin={(w, h) => [0, 0]} yExtents={d => [d.high+0.25, d.low-0.25]} height={chartHeight}>
+                displayXAccessor={xDateAccessor}
+                xScaleProvider={discontinuousTimeScaleProvider}>
+                    
+                <Chart  
+                    id={1} 
+                    origin={(w, h) => [0, 0]} 
+                    yExtents={d => [d.high, d.low]} 
+                    padding={{ top: 20, bottom: 20 }}
+                    
+                    height={chartHeight}>
                     <XAxis 
                         axisAt="bottom" 
                         orient="bottom"
@@ -106,6 +123,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         
                         stroke={COLOR.WHITE}
                     />
+
                     <YAxis 
                         axisAt="right" 
                         orient="right" 
@@ -116,6 +134,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         tickFormat={format(".2f")}
                         stroke={COLOR.WHITE}
                     />
+
                     <CandlestickSeries 
                         width={timeIntervalBarWidth(intervalFunction)}
                         wickStroke={COLOR.WHITE}

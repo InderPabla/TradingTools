@@ -7,13 +7,22 @@ export class TradingClock {
     private timeAtClockUnpaused:Date;
     private clockUpdateInterval:NodeJS.Timeout;
     private update:Function;
-
+    private clockSpeedMultiplier:number;
     private clockState:ClockStateType;
 
     constructor(clock:Date,update:Function) {
         this.clock = clock;
         this.update = update;
+        this.clockSpeedMultiplier = 1;
         this.clockState = 'STOPPED';
+    }
+
+    public getClockSpeedMultipler() {
+        return this.clockSpeedMultiplier;
+    }
+
+    public setClockSpeedMultiplier(clockSpeedMultiplier:number) {
+        this.clockSpeedMultiplier = clockSpeedMultiplier;
     }
 
     public getClock() {
@@ -52,7 +61,7 @@ export class TradingClock {
     private updateClock = () => {
         const newDate = new Date();
         const msDiff = newDate.getTime() - this.timeAtClockUnpaused.getTime();
-        this.clock = new Date(this.clockCopyAtUnpaused.getTime() + msDiff);
+        this.clock = new Date(this.clockCopyAtUnpaused.getTime() + msDiff*this.clockSpeedMultiplier);
         this.update();
     }
 

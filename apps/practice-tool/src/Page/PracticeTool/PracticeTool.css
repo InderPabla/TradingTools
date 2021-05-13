@@ -65,15 +65,15 @@
 }
 
 .practice-tool-chart-dropdown-container .pauseplay-chart.paused {
-    color: black;
-    background: greenyellow;
+    color: white;
+    background: crimson;
     padding: 6px 9px 6px 7px;
     border: 1px solid slategray;
 }
 
 .practice-tool-chart-dropdown-container .pauseplay-chart.playing {
-    color: white;
-    background: crimson;
+    color: black;
+    background: greenyellow;
     padding: 6px 6px 6px 10px;
     border: 1px solid slategray;
 }
@@ -89,9 +89,8 @@
     font-weight: 400;
     margin-left: 40px;
     position: relative;
-    bottom: 4px;
+    bottom: 5px;
     font-size: 17px;
-    
     padding-left: 5px;
     padding-right: 5px;
     padding-bottom: 2px;

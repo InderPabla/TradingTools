@@ -4,8 +4,8 @@ import React from "react";
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
 import './Chart.css';
 import { Dropdown, DropdownButton, FormControl, InputGroup } from "react-bootstrap";
-import { ChartContinousData, ChartDataSet, ChartSelection, isChartSelectionValid } from "./ChartUtils";
-import { ChartDataLoader } from "./DataLoader/ChartDataLoader";
+import { ChartContinousData, ChartDataSet, ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
+import { ChartDataLoader } from "../../Common/DataLoader/ChartDataLoader";
 import { ReactStockChartsWrapper } from "./ReactStockChartsWrapper";
 import { genUniqueKey } from "../../Common/Utils";
 
@@ -28,9 +28,11 @@ export interface ChartProps {
 export interface ChartState {
 	activeSelection?:ChartSelection;
 	renderChartKey:string;
+
+	activeClock:Date;
+	
 	completeSet:ChartDataSet;
 	activeSet:ChartDataSet;
-	activeClock:Date;
 }
 
 export class Chart extends React.Component<ChartProps,ChartState> {
@@ -72,24 +74,18 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		if(_shouldFetchSelectionData()) await this.onShouldFetchSelectionData();
 	}
 
-
-
-	public async onClockUpdate(newClock:Date) {
+	public onClockUpdate(newClock:Date) {
 		const { completeSet, activeSet, activeSelection, activeClock:oldClock } = this.state;
 		if(!activeSet || !completeSet || !oldClock || !activeSelection) return;
 
-		const { chartKey } = this.props;
 		const oldClockTs = oldClock.getTime();
 		const newClockTs = newClock.getTime();
 
-		const _shouldUpdate =  newClockTs>oldClockTs;
-	
-		if(!_shouldUpdate) return;
+		if(newClockTs<=oldClockTs) return;
 
-		console.log(activeSelection.chartId,_shouldUpdate,newClockTs,oldClockTs,activeSet.candle.length,completeSet.candle.length);
-		activeSet.candle = completeSet.candle.slice(0,activeSet.candle.length+1);
-		console.log(activeSelection.chartId,activeSet.candle.length,completeSet.candle.length);
-
+		const completeSetTradingTimeIndex = completeSet.candle.findIndex(v=>v.date.getTime()>=newClockTs);
+		activeSet.candle = completeSet.candle.slice(0,completeSetTradingTimeIndex)
+		
 		this.setState({activeClock:newClock,activeSet},()=>{
 			this.forceUpdate();
 		});
@@ -98,19 +94,20 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	private async onShouldFetchSelectionData() {
 		const { selection, initialClock } = this.props;
 		const activeSelection = {...selection};
-		const { dataLoader,notifyErrorChartLoadingData,notifySuccessChartLoadingData } = this.props;
+		const { dataLoader, notifyErrorChartLoadingData, notifySuccessChartLoadingData } = this.props;
 		const tradingTimeMs = activeSelection.tradingDayTime.getTime();
 		const renderChartKey = genUniqueKey();
 
 		let activeSet:ChartDataSet = null;
 		let completeSet:ChartDataSet = null;
 
-		const loaded = await dataLoader.load(activeSelection); 
-		if(loaded.err) {
+		const loaded = await dataLoader.getData(activeSelection); 
+		
+		if(!loaded) {
 			notifyErrorChartLoadingData(activeSelection);
 		}
 		else {
-			completeSet = { candle:loaded.data };
+			completeSet = { candle:loaded };
 			const completeSetTradingTimeIndex = completeSet.candle.findIndex(v=>v.date.getTime()>=tradingTimeMs);
 			const activeCandle = completeSet.candle.slice(0,completeSetTradingTimeIndex);
 			activeSet = { candle:activeCandle };
@@ -178,7 +175,6 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 				selection={activeSelection}
 			/>
 		</React.Fragment>);
-		
 	}
 
 }

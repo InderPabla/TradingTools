@@ -1,5 +1,5 @@
-import { Chart } from "../../Components/Chart/Chart";
-import { ChartSelection } from "../../Components/Chart/ChartUtils";
+import { Chart } from "../../../Components/Chart/Chart";
+import { ChartSelection } from "../../../Components/Chart/Commom/ChartUtils";
 
 export interface ChartSelectionSuper {
     chartKey:string;

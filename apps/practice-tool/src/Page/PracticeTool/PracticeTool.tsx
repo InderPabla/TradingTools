@@ -9,17 +9,18 @@ import { TopBar } from '../../Components/TopBar/TopBar';
 import './PracticeTool.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ChartSelectionSuper, toChartRenderRowMeta } from './PracticeToolUtils';
+import { ChartSelectionSuper, toChartRenderRowMeta } from './Common/PracticeToolUtils';
 import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
-import { ChartContinousData, ChartSelection } from '../../Components/Chart/ChartUtils';
-import { PublicFileChartDataLoader } from '../../Components/Chart/DataLoader/ChartDataLoader';
-import { TradingClock } from './TradingClock/TradingClock';
+import { ChartContinousData, ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
+import { PublicFileChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
+import { TradingClock } from '../../Common/TradingClock/TradingClock';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6];
 const DEFAULT_CANDLESTICK_DURATION = CANDLESTICK_DURATION.MIN_5;
+const VALID_CLOCK_SPEED_MULTIPLIERS = [1,10,100];
 
 export interface PracticeToolProps {
 
@@ -39,6 +40,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     private notifyChartTickerChanged = (chartId:string,ticker:string) => toast.info(`${chartId} ticker changed to ${ticker}.`);
     private notifyTradingDayChanged = (tradingDayTime:Date) => toast.info(`Trading day changed to ${tradingDayTime.toDateString()}.`);
     private notifyChartDurationChanged = (chartId:string, duration:string) => toast.info(`${chartId} duration changed to ${duration}.`);
+    private notifyClockSpeedChanged = (speed:number) => toast.info(`Clock speed changed to ${speed}x.`);
 
     private notifyErrorChartLoadingData = (sel:ChartSelection) => toast.error(`Error loading ${sel.chartId} data.`);
     private notifySuccessChartLoadingData = (sel:ChartSelection) => toast.success(`Successful loading ${sel.chartId} data.`);
@@ -102,7 +104,6 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         for(let chart of this.state.chartDataArr)
             chart.chart.onClockUpdate(this.state.tradingClock.getClock());
 
-        //this.resetAllChart();
         this.setState({});
     }
 
@@ -119,15 +120,28 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     private getNewChart(duration:string,tradingDay:Date):ChartSelectionSuper {
         return {
             chartKey: genUniqueKey(),
-
             chartSelection: {
                 chartId:genUniqueKey(),
                 candlestickDuration:duration, 
                 tradingDayTime:tradingDay,
             },
-
             chart:null,
         };
+    }
+
+    private onClockSpeedSelected = (speed:any) => {
+        const { tradingClock } = this.state;
+        const newSpeed:number = parseInt(speed);
+        const curSpeed:number = tradingClock.getClockSpeedMultipler();
+        if(newSpeed!==curSpeed) {
+            if(tradingClock.isClockRunning()) {
+                tradingClock.toggleClock();
+            }
+            tradingClock.setClockSpeedMultiplier(newSpeed);
+            this.setState({},()=>{
+                this.notifyClockSpeedChanged(newSpeed);
+            });
+        }
     }
 
     private onChartSizeSelected = (numberOfChartsStr:any) => {
@@ -220,7 +234,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                     <TopBar title="Practice Tool" icon="book">
                         <div className="practice-tool-chart-dropdown-container">
                             <DropdownButton 
-                                id="practice-tool-chart-dropdown-button" 
+                                id="practice-tool-chart-size-button" 
                                 title={`${this.state.chartDataArr.length} Charts`} 
                                 size="sm"
                                 onSelect={this.onChartSizeSelected}>
@@ -237,7 +251,17 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                             <i className={`refresh-chart fa fa-refresh`} onClick={this.resetAllChartsInState}/>
                             <i className={pauseplayClass} onClick={tradingClock.toggleClock}/>
                             <p className={clockClass}>{moment(tradingClock.getClock()).format('hh:mm:ss A')}</p>
-                            
+                            <DropdownButton 
+                                id="practice-tool-chart-clockspeed-button" 
+                                title={`${this.state.tradingClock.getClockSpeedMultipler()}x`} 
+                                size="sm"
+                                onSelect={this.onClockSpeedSelected}>
+                                {VALID_CLOCK_SPEED_MULTIPLIERS.map((speed)=> {
+                                    return <Dropdown.Item 
+                                                key={`practice-tool-chart-clockspeed-button-${speed}`} 
+                                                eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
+                                })}
+                            </DropdownButton>
                         </div>
      
                     </TopBar>
