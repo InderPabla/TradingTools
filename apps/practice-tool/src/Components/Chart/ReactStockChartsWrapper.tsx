@@ -1,7 +1,7 @@
 //https://github.com/rrag/react-stockcharts/issues/519
 
 import React from "react";
-import { ChartDataSet, ChartSelection } from "./Commom/ChartUtils";
+import { ChartSelection } from "./Commom/ChartUtils";
 import { scaleTime } from "d3-scale";
 import { format } from "d3-format";
 import { timeFormat } from "d3-time-format";
@@ -15,6 +15,7 @@ import { EdgeIndicator } from "react-stockcharts/lib/coordinates";
 import { discontinuousTimeScaleProvider } from "react-stockcharts/lib/scale";
 import { COLOR } from "../../Common/ColorConst";
 import { min as d3Min, max as d3Max } from 'd3-array';
+import { ChartSet } from "./Commom/ChartSet";
 
 export interface ReactStockChartsWrapperProps {
     renderKey:string;
@@ -23,7 +24,7 @@ export interface ReactStockChartsWrapperProps {
     height:number;
 
     selection:ChartSelection;
-    data:ChartDataSet;
+    data:ChartSet;
 
     type?:string;
 }
@@ -90,7 +91,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                 clamp={false}
                 zoomAnchor={lastVisibleItemBasedZoomAnchor}
 
-                //xExtents={[d3Min, this.dateD3MaxPlusPadding]}
+                //xExtents={[d3Min, d3Max]}
                     //new Date(data.candle[data.candle.length-1].date.getTime()+(1000*5*60))
 
                 height={totalChartHeight}
@@ -99,7 +100,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                 margin={{ left: 0, right: 40, top: 0, bottom: 5 }}
                 type={type}
                 seriesName={selection.ticker}
-                data={data.candle}
+                data={data.getCandles()}
                 xAccessor={xDateAccessor}
                 xScale={scaleTime()}
                 displayXAccessor={xDateAccessor}

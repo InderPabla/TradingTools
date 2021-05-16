@@ -1,6 +1,10 @@
 import { CANDLESTICK_DURATION } from "./Constant";
 import { utcDay, utcMinute, utcHour, utcSecond  } from "d3-time";
 
+export function logBase(num:number,base:number):number {
+    return Math.log(num)/Math.log(base);
+}
+
 /**
  * Return the largest data in accessor
  * @param data 
@@ -124,7 +128,7 @@ export function genUniqueKey():string {
 export function getTodayTradingDayTime():Date {
     let tradingDay = new Date();
     tradingDay.setHours(9);
-    tradingDay.setMinutes(30);
+    tradingDay.setMinutes(29);
     tradingDay.setSeconds(0);
     tradingDay.setMilliseconds(0);
     return tradingDay;

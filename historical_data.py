@@ -26,7 +26,7 @@ header = ['date','open','high','low','close','average','volume','count']
 path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/apps/practice-tool/public/data/'
 
 ticker = 'NIO'
-end_date = datetime.datetime(2021, 5, 12, 23, 59, 59)
+end_date = datetime.datetime(2021, 5, 14, 23, 59, 59)
 time_duration = TimeDuration.DAY_1
 #Get and save 5 seconds, 1 min and 5 mins
 candlestick_durations = [CandleStickDuration.SEC_5, CandleStickDuration.MIN_1, CandleStickDuration.MIN_5]

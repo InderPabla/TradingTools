@@ -1,4 +1,9 @@
+import { logBase } from "../Utils";
+
 type ClockStateType = 'STOPPED'|'UNPAUSED'|'STARTED'|'PAUSED';
+export const VALID_CLOCK_SPEED_MULTIPLIERS = [1,5,10,50,100,500,1000];
+export const MAX_RESET_MS = 1000;
+export const MIN_RESET_MS = 100;
 
 export class TradingClock {
 
@@ -13,7 +18,7 @@ export class TradingClock {
     constructor(clock:Date,update:Function) {
         this.clock = clock;
         this.update = update;
-        this.clockSpeedMultiplier = 1;
+        this.clockSpeedMultiplier = VALID_CLOCK_SPEED_MULTIPLIERS[0];
         this.clockState = 'STOPPED';
     }
 
@@ -23,10 +28,25 @@ export class TradingClock {
 
     public setClockSpeedMultiplier(clockSpeedMultiplier:number) {
         this.clockSpeedMultiplier = clockSpeedMultiplier;
+        if(this.isClockRunning()) {
+            this.toggleClock();
+        }
+    }
+
+    private static getClockResetTimeMs(clockSpeedMulti:number):number {
+        const RESET = Math.max(MAX_RESET_MS/(logBase(clockSpeedMulti,2.15)+1),MIN_RESET_MS);
+        return RESET;
     }
 
     public getClock() {
         return this.clock;
+    }
+
+    public setClock(clock:Date) {
+        this.clock = clock;
+        if(this.isClockRunning()) {
+            this.toggleClock();
+        }
     }
 
     public toggleClock = () =>{
@@ -40,7 +60,7 @@ export class TradingClock {
         else {
             this.timeAtClockUnpaused = new Date();
             this.clockCopyAtUnpaused = this.clock;
-            this.clockUpdateInterval = setInterval(this.updateClock,1000);
+            this.clockUpdateInterval = setInterval(this.updateClock,TradingClock.getClockResetTimeMs(this.clockSpeedMultiplier));
             this.clockState = 'UNPAUSED';
         }
 

@@ -15,12 +15,12 @@ import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
 import { ChartContinousData, ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
 import { PublicFileChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
-import { TradingClock } from '../../Common/TradingClock/TradingClock';
+import { TradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/TradingClock';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6];
 const DEFAULT_CANDLESTICK_DURATION = CANDLESTICK_DURATION.MIN_5;
-const VALID_CLOCK_SPEED_MULTIPLIERS = [1,10,100];
+
 
 export interface PracticeToolProps {
 
@@ -30,7 +30,6 @@ export interface PracticeToolState {
     chartDataArr:ChartSelectionSuper[];
     tradingDayTime:Date;
     tradingClock:TradingClock;
-    
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -56,10 +55,10 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         let chartDataArr:ChartSelectionSuper[] = [];
  
         this.customCsvFileDataLoader = new PublicFileChartDataLoader('data',(sel:ChartSelection)=> {
-            const {tradingDayTime,ticker,candlestickDuration} = sel;
-            let yyyy = tradingDayTime.getFullYear() + '';
-            let mm = tradingDayTime.getMonth() + 1 + '';
-            let dd = tradingDayTime.getDate() + '';
+            const {tradingDayTime:_tradingDayTime,ticker,candlestickDuration} = sel;
+            const yyyy = _tradingDayTime.getFullYear() + '';
+            let mm = _tradingDayTime.getMonth() + 1 + '';
+            let dd = _tradingDayTime.getDate() + '';
             dd = dd.length<2?'0'+dd:dd;
             mm = mm.length<2?'0'+mm:mm;
             return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-DAY_1-${candlestickDuration}.csv`;
@@ -134,9 +133,6 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         const newSpeed:number = parseInt(speed);
         const curSpeed:number = tradingClock.getClockSpeedMultipler();
         if(newSpeed!==curSpeed) {
-            if(tradingClock.isClockRunning()) {
-                tradingClock.toggleClock();
-            }
             tradingClock.setClockSpeedMultiplier(newSpeed);
             this.setState({},()=>{
                 this.notifyClockSpeedChanged(newSpeed);
@@ -202,13 +198,15 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
 
     private onTradingDayTimeChanged (newTradingDayTime:Date) {
-        const { tradingDayTime, chartDataArr } = this.state;
+        const { tradingDayTime, chartDataArr, tradingClock } = this.state;
         if(tradingDayTime.getTime() !== newTradingDayTime.getTime()) {
             for(let chart of chartDataArr) 
                 chart.chartSelection.tradingDayTime = newTradingDayTime;
-            this.notifyTradingDayChanged(newTradingDayTime);
             this.resetAllChart();
-            this.setState({tradingDayTime:newTradingDayTime});
+            tradingClock.setClock(newTradingDayTime);
+            this.setState({tradingDayTime:newTradingDayTime},()=>{
+                this.notifyTradingDayChanged(newTradingDayTime);
+            });
         }
     }
 
@@ -306,8 +304,6 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     notifySuccessChartLoadingData={this.notifySuccessChartLoadingData}
 
                                     dataLoader={this.customCsvFileDataLoader}
-
-                                    initialClock={tradingClock.getClock()}
                                 /> 
                             </div>
                         </Col>);

@@ -9,11 +9,6 @@ export interface ChartSelection {
 	tradingDayTime?:Date,
 }
 
-export interface ChartDataSet {
-	candle:ChartContinousData[],
-	inds?:ChartIndicator[],	
-}
-
 export interface ChartIndicator {
 	name:string,
 	id:string,
