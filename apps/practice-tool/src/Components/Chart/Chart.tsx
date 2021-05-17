@@ -6,7 +6,7 @@ import './Chart.css';
 import { Dropdown, DropdownButton, FormControl, InputGroup } from "react-bootstrap";
 import { ChartContinousData, ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
 import { ChartDataLoader } from "../../Common/DataLoader/ChartDataLoader";
-import { ReactStockChartsWrapper } from "./ReactStockChartsWrapper";
+import ReactStockChartsWrapper from "./ReactStockChartsWrapper";
 import { genUniqueKey } from "../../Common/Utils";
 import { ChartOrchestrator } from './Commom/ChartOrchestrator';
 import { ChartSet } from "./Commom/ChartSet";
@@ -27,7 +27,6 @@ export interface ChartProps {
 
 export interface ChartState {
 	activeSelection?:ChartSelection;
-	renderChartKey:string;
 	activeClock:Date;
 	orch:ChartOrchestrator;
 }
@@ -42,14 +41,14 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	constructor(props:ChartProps) {
 		super(props);
 		this.divChartMainContent = null;
-		this.state = { activeSelection:null, orch:null, renderChartKey:genUniqueKey(), activeClock:null, };
+		this.state = { activeSelection:null, orch:null, activeClock:null, };
 	}
 
 	async componentDidMount() { }
 
 	componentWillUnmount() { }
 	
-	shouldComponentUpdate(nextProps: Readonly<ChartProps>, nextState: Readonly<ChartState>,nextContext: any):boolean {
+	shouldComponentUpdate(nextProps: Readonly<ChartProps>, nextState: Readonly<ChartState>):boolean {
 		return nextProps.chartKey!==this.props.chartKey;
 	}
 
@@ -85,11 +84,10 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		}
 		else {
 			orch = new ChartOrchestrator(activeSelection.tradingDayTime,completeSetData,realtimeSetData);
-			orch.update(activeSelection.tradingDayTime);
 			notifySuccessChartLoadingData(activeSelection);
 		}
 
-		this.setState({ activeSelection, orch, renderChartKey, activeClock:new Date(activeSelection.tradingDayTime) },()=>{
+		this.setState({ activeSelection, orch, activeClock:new Date(activeSelection.tradingDayTime) },()=>{
 			this.forceUpdate();
 		});
 	}
@@ -103,8 +101,9 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 
 		if(newTimeTs<=oldTimeTs) return;
 
-		orch.update(newTime)
-		
+		const renderChartKey = genUniqueKey();
+		orch.update(newTime);
+
 		this.setState({activeClock:newTime},()=>{
 			this.forceUpdate();
 		});
@@ -149,20 +148,20 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 
 	private renderMainChartContent() {
 		const { chartKey } = this.props;
-		const { orch, activeSelection, renderChartKey } = this.state;
+		const { orch, activeSelection } = this.state;
 
-		const shouldRenderChart = activeSelection!=null && activeSelection.ticker != null && activeSelection.tradingDayTime != null 
-								&& activeSelection.candlestickDuration != null && this.divChartMainContent != null 
-								&& orch!=null;
+		const shouldRenderChart = isChartSelectionValid(activeSelection) != null 
+								&& this.divChartMainContent != null && orch!=null;
 
 		if(!shouldRenderChart) return null;
 
-		return (<React.Fragment key={`${renderChartKey}-${chartKey}`}>
+		const activeSet = orch.getActiveSet();
+
+		return (<React.Fragment>
 			<ReactStockChartsWrapper 
-				renderKey={renderChartKey}
 				width={this.divChartMainContent.clientWidth} 
 				height={this.divChartMainContent.clientHeight}
-				data={orch.getActiveSet()}
+				data={activeSet.getCandles()}
 				selection={activeSelection}
 			/>
 		</React.Fragment>);

@@ -61,7 +61,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             let dd = _tradingDayTime.getDate() + '';
             dd = dd.length<2?'0'+dd:dd;
             mm = mm.length<2?'0'+mm:mm;
-            return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-DAY_1-${candlestickDuration}.csv`;
+            return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-DAY_3-${candlestickDuration}.csv`;
         });
 
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
@@ -99,10 +99,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         if(this.state.tradingClock.wasClockUnpaused()) {
             this.notifyClockState(true);
         }
-
         for(let chart of this.state.chartDataArr)
             chart.chart.onClockUpdate(this.state.tradingClock.getClock());
-
         this.setState({});
     }
 
