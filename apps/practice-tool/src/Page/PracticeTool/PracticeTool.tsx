@@ -61,7 +61,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             let dd = _tradingDayTime.getDate() + '';
             dd = dd.length<2?'0'+dd:dd;
             mm = mm.length<2?'0'+mm:mm;
-            return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-DAY_3-${candlestickDuration}.csv`;
+            let days = sel.candlestickDuration===CANDLESTICK_DURATION.MIN_5?'DAY_3':'DAY_1';
+            return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-${days}-${candlestickDuration}.csv`;
         });
 
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 

@@ -17,6 +17,7 @@ import { COLOR } from "../../Common/ColorConst";
 import { min as d3Min, max as d3Max } from 'd3-array';
 import { ChartSet } from "./Commom/ChartSet";
 import { fitWidth } from "react-stockcharts/lib/helper";
+import { start } from "node:repl";
 
 interface ReactStockChartsWrapperProps {
     width:number;
@@ -35,6 +36,8 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 	public static defaultProps = {
         type: "svg",
     };
+
+    private chartCanvas:ChartCanvas;
 
     constructor(props:ReactStockChartsWrapperProps) {
         super(props);
@@ -70,6 +73,14 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
     shouldComponentUpdate(nextProps: Readonly<ReactStockChartsWrapperProps>, nextState: Readonly<ReactStockChartsWrapperState>):boolean {
 		return true;
 	}
+    
+    componentDidUpdate() {
+        if(!this.chartCanvas) {
+            this.setState(()=>{
+                this.forceUpdate();
+            });
+        }
+    }
 
 	render() {
         const { panEvent } = this.state;
@@ -81,8 +92,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 		const chartWidth = width;
         const xDateAccessor = d=>d.date;
 
-        const xScaleProvider = discontinuousTimeScaleProvider
-			.inputDateAccessor(d => d.date);
+        const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(xDateAccessor);
 		const {
 			data,
 			xScale,
@@ -90,18 +100,44 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 			displayXAccessor,
 		} = xScaleProvider(initialData);
 
+        let startIndex = data.length-100;
+        startIndex = startIndex<0?0:startIndex;
+        let endIndex = data.length-1;
+
+        if(this.chartCanvas) {
+            const plotData = this.chartCanvas.state.plotData;
+            const plotStartIndex = plotData[0].idx.index;
+            const plotEndIndex = plotData[plotData.length-1].idx.index;
+            const dataEndIndex = endIndex;
+            
+            startIndex = plotStartIndex;
+
+            if(dataEndIndex-plotEndIndex>=2) {
+                endIndex = plotEndIndex;
+            }
+            else {
+                endIndex = dataEndIndex;
+                endIndex = endIndex + 1; //Show just 1 more
+            }
+        }
+        else {
+            endIndex = endIndex + 1; //Show just 1 more
+        }
+        
+        let xExtents=[startIndex,endIndex];
+        
+
+        //console.log(this.chartCanvas);
 		return (
         <React.Fragment>
-            <ChartCanvas 
-                data={initialData}
-                xAccessor={xDateAccessor}
-                xScale={scaleTime()}
-                displayXAccessor={xDateAccessor}
-
-                // data={data}
-                // xAccessor={xAccessor}
-                // xScale={xScale}
-                // displayXAccessor={displayXAccessor}
+            <ChartCanvas ref={(ref) => this.chartCanvas = ref}
+                
+                
+                data={data}
+                xAccessor={xAccessor}
+                xScale={xScale}
+                displayXAccessor={displayXAccessor}
+                xExtents = {xExtents}
                 //xExtents={[d3Min, d3Max]}
                     //new Date(data.candle[data.candle.length-1].date.getTime()+(1000*5*60))
 
@@ -114,7 +150,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                 margin={{ left: 0, right: 40, top: 0, bottom: 5 }}
                 type={type}
                 seriesName={selection.ticker}>
-                    
+                
                 <Chart  
                     id={1} 
                     origin={(w, h) => [0, 0]} 
@@ -122,13 +158,19 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                     padding={{ top: 20, bottom: 20 }}
                     height={chartHeight}>
                     <XAxis 
-                        axisAt="bottom" 
-                        orient="bottom"
+                       
                         ticks={10} 
                         innerTickSize={chartHeight*-1} 
+                        outerTickSize={chartHeight*-1}
+
+                        axisAt="bottom" 
+                        orient="bottom"
                         tickStrokeOpacity={0.2}
                         tickStroke={COLOR.WHITE}
-                        tickFormat={timeFormat("%H:%M")}
+                        tickFormat={(index:number)=>{
+                            //console.log(this.chartCanvas?this.chartCanvas.state.plotData.length:-1+'');
+                            return timeFormat("%H:%M")(data[index].date);
+                        }}
                         stroke={COLOR.WHITE}
                     />
                     <YAxis 
@@ -147,7 +189,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 						displayFormat={format(".2f")} 
                     />
                     <CandlestickSeries 
-                        width={timeIntervalBarWidth(intervalFunction)}
+                        //width={timeIntervalBarWidth(intervalFunction)}
                         wickStroke={COLOR.WHITE}
                         stroke={(d)=> {
                             let diff = Math.abs(d.close-d.open);
@@ -173,13 +215,13 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                         stroke={COLOR.WHITE}
                     />
                     <MouseCoordinateX
-						at="middle"
-						orient="bottom"
+						at="bottom"
+						orient="top"
 						displayFormat={timeFormat("%Y-%m-%d %H:%M")} 
                     />
                     <BarSeries yAccessor={d => d.volume} 
                         fill={(d) => d.close > d.open ? COLOR.LIMEGREEN : COLOR.RED} 
-                        width={timeIntervalBarWidth(intervalFunction)}
+                        //width={timeIntervalBarWidth(intervalFunction)}
                     />
                 </Chart>
                 <CrossHairCursor stroke={COLOR.WHITE} opacity={0.75}/>

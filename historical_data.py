@@ -20,23 +20,21 @@ def savedata(_path,_data,_ticker,_end_date,_time_duration,_stick_duration,_heade
 #https://interactivebrokers.github.io/tws-api/historical_limitations.html
 
 #Port:7497 for TWS, 4002 fpr IB Gateway
-ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':7497,'client_id':1237})
+ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1237})
 
 header = ['date','open','high','low','close','average','volume','count']
 path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/apps/practice-tool/public/data/'
 
 ticker = 'NIO'
-end_date = datetime.datetime(2021, 5, 14, 23, 59, 59)
-time_duration = TimeDuration.DAY_1
+end_date = datetime.datetime(2021, 5, 17, 23, 59, 59)
+
 #Get and save 5 seconds, 1 min and 5 mins
-candlestick_durations = [CandleStickDuration.SEC_5, CandleStickDuration.MIN_1, CandleStickDuration.MIN_5]
+time_durations = [TimeDuration.DAY_3,TimeDuration.DAY_1,TimeDuration.DAY_1]
+candlestick_durations = [CandleStickDuration.MIN_5,CandleStickDuration.MIN_1,CandleStickDuration.SEC_5]
 
-time_duration = TimeDuration.DAY_3
-candlestick_durations = [CandleStickDuration.MIN_5]
-
-for stick_duration in candlestick_durations:
-    data = ibkr.historicdata(ticker,time_duration,stick_duration,end_date=end_date,include_non_trading_hours=True)
-    savedata(path,data,ticker,end_date,time_duration,stick_duration,header)
+for i in range(0,len(candlestick_durations)):
+    data = ibkr.historicdata(ticker,time_durations[i],candlestick_durations[i],end_date=end_date,include_non_trading_hours=True)
+    savedata(path,data,ticker,end_date,time_durations[i],candlestick_durations[i],header)
 
 
 ibkr.close()
