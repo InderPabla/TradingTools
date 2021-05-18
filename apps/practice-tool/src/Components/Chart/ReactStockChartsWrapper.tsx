@@ -131,16 +131,13 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 		return (
         <React.Fragment>
             <ChartCanvas ref={(ref) => this.chartCanvas = ref}
-                
-                
+
                 data={data}
                 xAccessor={xAccessor}
                 xScale={xScale}
                 displayXAccessor={displayXAccessor}
                 xExtents = {xExtents}
-                //xExtents={[d3Min, d3Max]}
-                    //new Date(data.candle[data.candle.length-1].date.getTime()+(1000*5*60))
-
+  
                 panEvent={panEvent}
                 clamp={false}
                 zoomAnchor={lastVisibleItemBasedZoomAnchor}
@@ -159,7 +156,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                     height={chartHeight}>
                     <XAxis 
                        
-                        ticks={10} 
+                        ticks={20} 
                         innerTickSize={chartHeight*-1} 
                         outerTickSize={chartHeight*-1}
 
@@ -167,8 +164,8 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                         orient="bottom"
                         tickStrokeOpacity={0.2}
                         tickStroke={COLOR.WHITE}
+                        
                         tickFormat={(index:number)=>{
-                            //console.log(this.chartCanvas?this.chartCanvas.state.plotData.length:-1+'');
                             return timeFormat("%H:%M")(data[index].date);
                         }}
                         stroke={COLOR.WHITE}
