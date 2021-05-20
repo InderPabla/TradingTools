@@ -1,3 +1,4 @@
+import { CANDLESTICK_DURATION } from "../../../Common/Constant";
 import { Chart } from "../../../Components/Chart/Chart";
 import { ChartSelection } from "../../../Components/Chart/Commom/ChartUtils";
 
@@ -67,4 +68,21 @@ export function toChartRenderRowMeta(numberOfCharts:number):ChartRenderRowMeta[]
     }
 }
 
+function selectionToTimeDuration(sel:ChartSelection):string {
+    let days = sel.candlestickDuration===CANDLESTICK_DURATION.MIN_5?'DAY_3'
+    :sel.candlestickDuration===CANDLESTICK_DURATION.DAY_1?'WEEK_26'
+    :'DAY_1';
+    return days;
+}
+
+export function practiceToolDefaultSelectionToFilename(sel:ChartSelection):string {
+    const days = selectionToTimeDuration(sel);
+    const {tradingDayTime:_tradingDayTime,ticker,candlestickDuration} = sel;
+    const yyyy = _tradingDayTime.getFullYear() + '';
+    let mm = _tradingDayTime.getMonth() + 1 + '';
+    let dd = _tradingDayTime.getDate() + '';
+    dd = dd.length<2?'0'+dd:dd;
+    mm = mm.length<2?'0'+mm:mm;
+    return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-${days}-${candlestickDuration}.csv`;
+}
 

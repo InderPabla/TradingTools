@@ -75,9 +75,36 @@ export class CommonAPI {
           headers: ['date','open','high','low','close','average','volume','count']
         }).fromString(dataCsv);
 
+        if(dataJson.length===0) return [];
+
+        //Unix generally starts with 16 (1620979200), maybe not for older data
+        //TODO: Try to determine correctly if the timestamp is unix!
+        const firstDate = dataJson[0].date;
+        const isUnixTime = (firstDate as string).startsWith('16') && firstDate.length>=10;
+
         let chartData:ChartContinousData[] = dataJson.map((v:any,index:number)=>{
+            let date:Date = null;
+            if(isUnixTime) {
+                date = new Date(parseInt(v.date)*1000);
+            }
+            else {
+                let strDate:string = v.date;
+                let year = strDate.substr(0,4);
+                let month = strDate.substr(4,2);
+                let day = strDate.substr(6,2);
+                date = new Date(`${year}-${month}-${day}`);
+                //Converting from GMT to local EST time 
+                //Example: "2020-11-18 00:00:00" => "2020-11-17 20:00:00 EST"
+                //We want to add the local offset to keep exactly "2020-11-18 00:00:00" format 
+                date.setTime(date.getTime()+date.getTimezoneOffset()*60*1000);   
+                date.setHours(4);
+                date.setMinutes(0);
+                date.setSeconds(0);
+                date.setMilliseconds(0);
+            }
+         
             let tick = {
-              date: new Date(parseInt(v.date)*1000),
+              date: date,
               open: parseFloat(v.open),
               high: parseFloat(v.high),
               low: parseFloat(v.low),

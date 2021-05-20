@@ -17,6 +17,7 @@ class TimeDuration(Enum):
     DAY_5 = 9
     DAY_6 = 10
     WEEK_1 = 11
+    WEEK_26 = 12
 
 class CandleStickDuration(Enum):
     SEC_1 = 1
@@ -64,7 +65,8 @@ class BrokerConnector:
             TimeDuration.DAY_4.value: "4 D",
             TimeDuration.DAY_5.value: "5 D",
             TimeDuration.DAY_6.value: "6 D",
-            TimeDuration.WEEK_1.value: "1 W"
+            TimeDuration.WEEK_1.value: "1 W",
+            TimeDuration.WEEK_26.value: "26 W"
         }
 
         value = switcher.get(duration.value,None)

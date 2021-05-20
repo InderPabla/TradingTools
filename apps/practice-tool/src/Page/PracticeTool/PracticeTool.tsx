@@ -9,7 +9,7 @@ import { TopBar } from '../../Components/TopBar/TopBar';
 import './PracticeTool.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ChartSelectionSuper, toChartRenderRowMeta } from './Common/PracticeToolUtils';
+import { ChartSelectionSuper, practiceToolDefaultSelectionToFilename, toChartRenderRowMeta } from './Common/PracticeToolUtils';
 import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
@@ -54,16 +54,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         let tradingClock = new TradingClock(tradingDayTime,this.clockUpdate);
         let chartDataArr:ChartSelectionSuper[] = [];
  
-        this.customCsvFileDataLoader = new PublicFileChartDataLoader('data',(sel:ChartSelection)=> {
-            const {tradingDayTime:_tradingDayTime,ticker,candlestickDuration} = sel;
-            const yyyy = _tradingDayTime.getFullYear() + '';
-            let mm = _tradingDayTime.getMonth() + 1 + '';
-            let dd = _tradingDayTime.getDate() + '';
-            dd = dd.length<2?'0'+dd:dd;
-            mm = mm.length<2?'0'+mm:mm;
-            let days = sel.candlestickDuration===CANDLESTICK_DURATION.MIN_5?'DAY_3':'DAY_1';
-            return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-${days}-${candlestickDuration}.csv`;
-        });
+        this.customCsvFileDataLoader = new PublicFileChartDataLoader('data',practiceToolDefaultSelectionToFilename);
 
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));

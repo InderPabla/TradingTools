@@ -106,7 +106,7 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
      * @returns 
      */
     public useRealtime():boolean {
-        return this.realSet != null;
+        return this.realSet != null && this.realIndex>=0;
     }
 
     /**
@@ -120,28 +120,44 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
         const useReal = this.useRealtime();
         const cIdx = this.compSet.getClosestDateIndex(this.compIndex,newDate);
         const rIdx = useReal?this.realSet.getClosestDateIndex(this.realIndex,newDate):-1; //1 candles before just incase
-
+        
         if(cIdx>this.compIndex) {
             for(let i = this.compIndex+1; i<=cIdx; i++) {
-                const cCan = this.compSet.getCandleAtIndex(i);
-                const precCan = this.compSet.getCandleAtIndex(i-1);
+                const curCan = this.compSet.getCandleAtIndex(i);
+                const preCan = this.compSet.getCandleAtIndex(i-1);
                 if(useReal && i===cIdx) {
-                    const rCan = this.realSet.getCandleAtIndex(rIdx);   
-                    this.addCandle({...rCan,date:cCan.date});
+                    let curCanDateMs = curCan.date.getTime();
+                    let rIdxCopy = rIdx;
+                    while(true) {
+                        let rCan = this.realSet.getCandleAtIndex(rIdxCopy); 
+                        if(curCanDateMs<rCan.date.getTime()){
+                            rIdxCopy--;
+                            if(rIdxCopy<0) break;
+                        }
+                        else break; 
+                    }
+                    if(rIdxCopy<rIdx) rIdxCopy++;
+                    let newCurCan = {...this.realSet.getCandleAtIndex(rIdxCopy)}
+                    for(let j = rIdxCopy; j <= rIdx; j++) {
+                        newCurCan = ChartSet.applyRealToBase(newCurCan,this.realSet.getCandleAtIndex(j));
+                    }
+                    this.addCandle({...newCurCan, open:curCan.open, date:curCan.date});
                 }
                 else {
-                    this.addCandle({...cCan});
+                    this.addCandle({...curCan});
                 }
 
-                this.setCandleAtIndex(i-1,{...precCan}); 
+                this.setCandleAtIndex(i-1,{...preCan}); 
             }
-            
         }
         else if(useReal && rIdx>this.realIndex){
             const lastIndex = this.size()-1;
             const aCan = this.getCandleAtIndex(lastIndex);
-            const rCan = this.realSet.getCandleAtIndex(rIdx);   
-            const nCan = ChartSet.applyRealToBase(aCan,rCan)
+            let nCan = {...aCan};
+            for(let i = this.realIndex + 1; i <= rIdx; i++) {
+                const rCan = this.realSet.getCandleAtIndex(i);   
+                nCan = ChartSet.applyRealToBase(nCan,rCan);
+            }
             this.setCandleAtIndex(lastIndex,{...nCan}); 
         }
 

@@ -73,7 +73,6 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		const { selection } = this.props;
 		const activeSelection = {...selection};
 		const { dataLoader, notifyErrorChartLoadingData, notifySuccessChartLoadingData } = this.props;
-		const renderChartKey = genUniqueKey();
 		let orch:ChartOrchestrator = null;
 
 		const completeSetData = await dataLoader.getData(activeSelection); 
@@ -101,7 +100,6 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 
 		if(newTimeTs<=oldTimeTs) return;
 
-		const renderChartKey = genUniqueKey();
 		orch.update(newTime);
 
 		this.setState({activeClock:newTime},()=>{
@@ -139,9 +137,15 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 					</InputGroup>
 					<p className="chart-id-name">{selection.chartId}</p>
                 </div>
-                <div ref={(ref) => this.divChartMainContent = ref} className="chart-main-content" >
+
+
+
+				
+				<div ref={(ref) => this.divChartMainContent = ref} className="chart-main-content" >
 					{this.renderMainChartContent()}
                 </div>
+			
+              
             </div>
         </React.Fragment>);
 	}

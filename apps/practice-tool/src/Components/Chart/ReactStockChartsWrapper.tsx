@@ -91,6 +91,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 		const chartVolumeHeight = height*0.25;
 		const chartWidth = width;
         const xDateAccessor = d=>d.date;
+        const leftMargin = initialData[0].close.toString().split(".")[0].length===3?50:40;
 
         const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(xDateAccessor);
 		const {
@@ -103,6 +104,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
         let startIndex = data.length-100;
         startIndex = startIndex<0?0:startIndex;
         let endIndex = data.length-1;
+        let showExtra = true;
 
         if(this.chartCanvas) {
             const plotData = this.chartCanvas.state.plotData;
@@ -110,24 +112,36 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
             const plotEndIndex = plotData[plotData.length-1].idx.index;
             const dataEndIndex = endIndex;
             
-            startIndex = plotStartIndex;
-
-            if(dataEndIndex-plotEndIndex>=2) {
-                endIndex = plotEndIndex;
+            //This looks like a werid state to be in. The chart paramters could have been changed!
+            //Don't do anything and let's just view the last ~100 candles
+            if(plotStartIndex>=endIndex) {
+                showExtra = true;
             }
+
+            //Looks good
             else {
-                endIndex = dataEndIndex;
-                endIndex = endIndex + 1; //Show just 1 more
+                startIndex = plotStartIndex;
+
+                //Keep watching the current candle
+                if(dataEndIndex-plotEndIndex>=2) {
+                    endIndex = plotEndIndex;
+                    showExtra = false;
+                }
+                //View the new candle
+                else {
+                    endIndex = dataEndIndex;
+                    showExtra = true;
+                }
             }
         }
         else {
-            endIndex = endIndex + 1; //Show just 1 more
+            showExtra = true;
         }
         
-        let xExtents=[startIndex,endIndex];
-        
+        if(showExtra) endIndex++; //show 1 more candle area
 
-        //console.log(this.chartCanvas);
+        let xExtents=[startIndex,endIndex];
+
 		return (
         <React.Fragment>
             <ChartCanvas ref={(ref) => this.chartCanvas = ref}
@@ -144,7 +158,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                 height={totalChartHeight}
                 ratio={1}
                 width={chartWidth}
-                margin={{ left: 0, right: 40, top: 0, bottom: 5 }}
+                margin={{ left: 0, right: leftMargin, top: 0, bottom: 5 }}
                 type={type}
                 seriesName={selection.ticker}>
                 
@@ -166,7 +180,11 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                         tickStroke={COLOR.WHITE}
                         
                         tickFormat={(index:number)=>{
-                            return timeFormat("%H:%M")(data[index].date);
+                            let date = timeFormat("%H:%M")(data[index].date);
+                            if(date === "04:00") {
+                                return timeFormat("%m/%d")(data[index].date);
+                            }
+                            return date;
                         }}
                         stroke={COLOR.WHITE}
                     />
