@@ -39,6 +39,25 @@ div.chart-container {
     padding-bottom: 2px;
 }
 
+.chart-topbar .chart-trade-button  {
+    display: inline-block;
+    margin-left: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    bottom: 1px;
+    position: relative;
+    border: solid 1px gray;
+}
+
+.chart-topbar .chart-buy-button  {
+    background-color:green;
+}
+
+.chart-topbar .chart-sell-button  {
+    background-color:crimson;
+}
+
+
 .chart-topbar p.chart-id-name {
     margin: 0;
     position: relative;

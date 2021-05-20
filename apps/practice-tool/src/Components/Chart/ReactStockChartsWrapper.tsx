@@ -86,13 +86,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
         const { panEvent } = this.state;
         const { width, height, data:initialData, selection, type} = this.props;
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
-		const totalChartHeight = height;
-		const chartHeight = height*0.7;
-		const chartVolumeHeight = height*0.25;
-		const chartWidth = width;
         const xDateAccessor = d=>d.date;
-        const leftMargin = initialData[0].close.toString().split(".")[0].length===3?50:40;
-
         const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(xDateAccessor);
 		const {
 			data,
@@ -101,11 +95,18 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 			displayXAccessor,
 		} = xScaleProvider(initialData);
 
+        const rightCanvasMargin = initialData[0].close.toString().split(".")[0].length===3?50:40;
+		const totalChartHeight = height;
+		const chartHeight = height*0.7;
+		const chartVolumeHeight = height*0.25;
+		const chartWidth = width;
+
         let startIndex = data.length-100;
         startIndex = startIndex<0?0:startIndex;
         let endIndex = data.length-1;
-        let showExtra = true;
+        let showExtra = false;
 
+        
         if(this.chartCanvas) {
             const plotData = this.chartCanvas.state.plotData;
             const plotStartIndex = plotData[0].idx.index;
@@ -158,7 +159,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                 height={totalChartHeight}
                 ratio={1}
                 width={chartWidth}
-                margin={{ left: 0, right: leftMargin, top: 0, bottom: 5 }}
+                margin={{ left: 0, right: rightCanvasMargin, top: 0, bottom: 5 }}
                 type={type}
                 seriesName={selection.ticker}>
                 

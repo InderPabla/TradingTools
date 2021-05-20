@@ -3,7 +3,7 @@
 import React from "react";
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
 import './Chart.css';
-import { Dropdown, DropdownButton, FormControl, InputGroup } from "react-bootstrap";
+import { Dropdown, DropdownButton, FormControl, InputGroup, Button } from "react-bootstrap";
 import { ChartContinousData, ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
 import { ChartDataLoader } from "../../Common/DataLoader/ChartDataLoader";
 import ReactStockChartsWrapper from "./ReactStockChartsWrapper";
@@ -22,6 +22,8 @@ export interface ChartProps {
 	notifyErrorChartLoadingData:(sel:ChartSelection)=>void;
 	notifySuccessChartLoadingData:(sel:ChartSelection)=>void;
 
+	isClockRunning:boolean;
+	initialActiveClock:Date;
 	dataLoader:ChartDataLoader;
 }
 
@@ -70,7 +72,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
 	private async onShouldFetchSelectionData() {
-		const { selection } = this.props;
+		const { selection, initialActiveClock } = this.props;
 		const activeSelection = {...selection};
 		const { dataLoader, notifyErrorChartLoadingData, notifySuccessChartLoadingData } = this.props;
 		let orch:ChartOrchestrator = null;
@@ -82,11 +84,11 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 			notifyErrorChartLoadingData(activeSelection);
 		}
 		else {
-			orch = new ChartOrchestrator(activeSelection.tradingDayTime,completeSetData,realtimeSetData);
+			orch = new ChartOrchestrator(initialActiveClock,completeSetData,realtimeSetData);
 			notifySuccessChartLoadingData(activeSelection);
 		}
 
-		this.setState({ activeSelection, orch, activeClock:new Date(activeSelection.tradingDayTime) },()=>{
+		this.setState({ activeSelection, orch, activeClock:new Date(initialActiveClock) },()=>{
 			this.forceUpdate();
 		});
 	}
@@ -107,9 +109,17 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		});
 	}
 
+	private isChartActive():boolean {
+		const { activeSelection, orch } = this.state;
+
+		return isChartSelectionValid(activeSelection) !=null
+			&& this.divChartMainContent != null
+			&& orch!=null;
+	}
+
 	render() {
         const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected } = this.props;
-		
+		const _isChartActive = this.isChartActive();
         let candlestickDurationTitle = selection.candlestickDuration || 'Duration';
 		const chartDivId = `${chartKey}-duration-dropdown`;
 		return (<React.Fragment key={`fragment-chart-${chartKey}`}>
@@ -135,17 +145,24 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 							defaultValue={selection.ticker} 
 						/>
 					</InputGroup>
+					<Button 
+						className="chart-trade-button chart-buy-button" 
+						variant="primary" 
+						size="sm"
+						onClick={()=>{}}
+						disabled={!_isChartActive}>Buy</Button>
+					<Button 
+						className="chart-trade-button chart-sell-button" 
+						variant="primary" 
+						size="sm"
+						onClick={()=>{}}
+						disabled={!_isChartActive}>Sell</Button>
 					<p className="chart-id-name">{selection.chartId}</p>
                 </div>
 
-
-
-				
 				<div ref={(ref) => this.divChartMainContent = ref} className="chart-main-content" >
 					{this.renderMainChartContent()}
                 </div>
-			
-              
             </div>
         </React.Fragment>);
 	}

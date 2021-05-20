@@ -294,6 +294,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     notifySuccessChartLoadingData={this.notifySuccessChartLoadingData}
 
                                     dataLoader={this.customCsvFileDataLoader}
+                                    isClockRunning={tradingClock.isClockRunning()}
+                                    initialActiveClock={tradingClock.getClock()}
                                 /> 
                             </div>
                         </Col>);
