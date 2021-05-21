@@ -140,8 +140,16 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						<FormControl 
 							className="chart-ticker-form-control"
 							placeholder="" 
-							onChange={(event)=>{onTickerChanged(chartKey,event.target.value)}}
-							onKeyPress={(event)=>{if(event.code==='Enter') onTickerSelected(chartKey)}}
+							onKeyUp={(event)=> {
+								event.stopPropagation();
+								event.nativeEvent.stopImmediatePropagation();
+							}}
+							onChange={(event)=>{
+								onTickerChanged(chartKey,event.target.value)
+							}}
+							onKeyPress={(event)=>{
+								if(event.code==='Enter') onTickerSelected(chartKey)
+							}}
 							defaultValue={selection.ticker} 
 						/>
 					</InputGroup>
