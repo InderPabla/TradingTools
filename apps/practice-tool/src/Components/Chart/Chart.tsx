@@ -84,6 +84,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 			notifyErrorChartLoadingData(activeSelection);
 		}
 		else {
+			//initilize ChartOrchestrator
 			orch = new ChartOrchestrator(initialActiveClock,completeSetData,realtimeSetData);
 			notifySuccessChartLoadingData(activeSelection);
 		}
