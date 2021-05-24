@@ -1,0 +1,76 @@
+import express, { NextFunction } from "express";
+import path from "path";
+import winston from 'winston';
+import expressWinston from 'express-winston';
+
+export interface ICommonRouterConfig {
+    logger:winston.Logger;
+    app:express.Express;
+    port:number;
+    unexpectedErrorHandler:(func: (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>)=>express.Handler;
+}
+
+export abstract class CommonRouterConfig implements ICommonRouterConfig{
+
+    logger:winston.Logger;
+
+    app:express.Express;
+    port:number;
+
+    constructor(port:number=3000) {
+        this.port = port;
+        this.logger = winston.createLogger({
+            transports: [
+                new winston.transports.Console()
+            ]
+        });
+        
+        this.app = express();
+        
+        this.app.use(expressWinston.logger({
+            transports: [
+                new winston.transports.Console()
+            ],
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.json()
+            ),
+            meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+            msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+            expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
+            colorize: false, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+            ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
+        }));
+
+        this.unexpectedErrorHandler.bind(this);
+        this.createBaseRoutes();
+        this.createRoutes();
+
+        this.app.listen(this.port,()=>{
+            this.logger.info(`Started ${this.constructor.name} on port ${this.port}`);
+        });
+    }
+
+    private createBaseRoutes() {
+        this.app.get('/health',this.unexpectedErrorHandler(this.healthCheckRoute));
+    }
+
+    private async healthCheckRoute(req:express.Request,res:express.Response,next:express.NextFunction) {
+        res.status(200).json({error:false,result:{status:'healthy'}});
+    }
+
+    public abstract createRoutes():void;
+
+    //func => async (req:express.Request, res:express.Response, next:express.NextFunction)
+    public unexpectedErrorHandler(func:(req:express.Request, res:express.Response, next:express.NextFunction)=>Promise<void>):express.Handler {
+        return async (req:express.Request, res:express.Response, next:express.NextFunction) => {
+            try {
+                this.logger.info(`Calling Function`);
+                (await func).call(this,req,res,next);
+            } catch (error) {
+                this.logger.info(`Error Calling Function`,error);
+                res.status(500).json({error:true,result:false});
+            }
+        }   
+    };
+}
