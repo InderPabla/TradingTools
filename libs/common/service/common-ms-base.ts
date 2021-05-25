@@ -4,6 +4,7 @@ import winston from 'winston';
 import expressWinston from 'express-winston';
 import { CommonController } from "./common-controller";
 import cors from 'cors';
+import bodyParser from 'body-parser';
 
 export interface ICommonMsBase{
     logger:winston.Logger;
@@ -28,6 +29,8 @@ export abstract class CommonMsBase implements ICommonMsBase{
         
         this.app = express();
         this.app.use(cors());
+        this.app.use(bodyParser.json());
+        
         this.app.use(expressWinston.logger({
             transports: [
                 new winston.transports.Console()

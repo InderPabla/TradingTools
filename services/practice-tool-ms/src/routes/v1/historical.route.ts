@@ -20,7 +20,7 @@ export class HistorialRoute extends CommonRouter {
         router.get(
             `/candles/:ticker/:candlestickDuration/:tradingDayTime/csv`
             ,ValidatorMiddleware.validator(HistorialValidation.validateHistoricalCandlesticks)
-            ,this.controller.unexpectedControllerErrorHandler(this.controller.historicalCsvData)
+            ,this.controller.unexpectedControllerErrorHandler(this.controller.getHistoricalCsvData)
         );
     }
 }

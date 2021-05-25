@@ -10,10 +10,10 @@ export class HistorialController extends CommonController{
     constructor(logger:Logger) {
         super(logger);
         this.service = new HistorialService(logger);
-        this.historicalCsvData = this.historicalCsvData.bind(this);
+        this.getHistoricalCsvData = this.getHistoricalCsvData.bind(this);
     }
 
-    async historicalCsvData(req:Request,res:Response) {
+    async getHistoricalCsvData(req:Request,res:Response) {
         let selection:CandleSelection = {
             ticker:req.params.ticker,
             tradingDayTime:req.params.tradingDayTime,
@@ -21,7 +21,7 @@ export class HistorialController extends CommonController{
         }
         let csv = await this.service.getCandlestickCsv(selection)
         if(csv==null)
-            res.status(404).json(CommonController.notFoundErrorRes("Unable to find candlestick data"));
+            res.status(404).json(CommonController.notFoundErrorRes("Invalid historical selection"));
         else
             res.status(200).json(CommonController.successResp(csv));
     }
