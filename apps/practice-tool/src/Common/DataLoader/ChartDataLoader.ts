@@ -1,4 +1,4 @@
-import { CommonAPI, IAjaxDataError, IAjaxError } from "../Api";
+import { CommonAPI, IAjaxDataError, IAjaxError } from "../CommonAPI";
 import { ChartContinousData, ChartSelection } from "../../Components/Chart/Commom/ChartUtils";
 
 export type FuncSelectionToFilename = (sel:ChartSelection)=>string
@@ -24,6 +24,28 @@ export abstract class ChartDataLoader {
         if(fetchedData.data) this.savedCopy.set(key,fetchedData.data);
 
         return fetchedData.data;
+    }
+}
+
+export class ServiceChartDataLoader extends ChartDataLoader {
+    constructor() {
+        super();
+    }
+
+    async fetchDataFromAPI(sel:ChartSelection):Promise<IAjaxDataError<ChartContinousData[]>> {
+        let _continData:ChartContinousData[] = null;
+        let _err:IAjaxError = null;
+
+        await CommonAPI.ajaxHandler(
+            async () => {
+                _continData = await CommonAPI.getContinousData(sel);
+            },
+            async (err:IAjaxError)=> {
+                _err = err;
+            }
+        );
+
+        return {data:_continData,err:_err};
     }
 }
 

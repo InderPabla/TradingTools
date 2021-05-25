@@ -2,15 +2,16 @@ import express, { NextFunction } from "express";
 import path from "path";
 import winston from 'winston';
 import expressWinston from 'express-winston';
+import { CommonController } from "./common-controller";
+import cors from 'cors';
 
-export interface ICommonRouterConfig {
+export interface ICommonMsBase{
     logger:winston.Logger;
     app:express.Express;
     port:number;
-    unexpectedErrorHandler:(func: (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>)=>express.Handler;
 }
 
-export abstract class CommonRouterConfig implements ICommonRouterConfig{
+export abstract class CommonMsBase implements ICommonMsBase{
 
     logger:winston.Logger;
 
@@ -26,7 +27,7 @@ export abstract class CommonRouterConfig implements ICommonRouterConfig{
         });
         
         this.app = express();
-        
+        this.app.use(cors());
         this.app.use(expressWinston.logger({
             transports: [
                 new winston.transports.Console()
@@ -42,35 +43,24 @@ export abstract class CommonRouterConfig implements ICommonRouterConfig{
             ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
         }));
 
-        this.unexpectedErrorHandler.bind(this);
         this.createBaseRoutes();
         this.createRoutes();
 
+        
         this.app.listen(this.port,()=>{
             this.logger.info(`Started ${this.constructor.name} on port ${this.port}`);
         });
     }
 
     private createBaseRoutes() {
-        this.app.get('/health',this.unexpectedErrorHandler(this.healthCheckRoute));
+        this.app.get('/health',this.healthCheckRoute);
     }
 
     private async healthCheckRoute(req:express.Request,res:express.Response,next:express.NextFunction) {
-        res.status(200).json({error:false,result:{status:'healthy'}});
+        res.status(200).json(CommonController.successResp({status:'healthy'}));
     }
 
     public abstract createRoutes():void;
 
-    //func => async (req:express.Request, res:express.Response, next:express.NextFunction)
-    public unexpectedErrorHandler(func:(req:express.Request, res:express.Response, next:express.NextFunction)=>Promise<void>):express.Handler {
-        return async (req:express.Request, res:express.Response, next:express.NextFunction) => {
-            try {
-                this.logger.info(`Calling Function`);
-                (await func).call(this,req,res,next);
-            } catch (error) {
-                this.logger.info(`Error Calling Function`,error);
-                res.status(500).json({error:true,result:false});
-            }
-        }   
-    };
+    
 }

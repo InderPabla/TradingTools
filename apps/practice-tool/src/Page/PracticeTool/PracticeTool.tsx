@@ -14,7 +14,7 @@ import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
 import { ChartContinousData, ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
-import { PublicFileChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
+import { PublicFileChartDataLoader, ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
 import { TradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/TradingClock';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
@@ -46,7 +46,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
     private notifyClockState = (isClockRunning:boolean) => toast.info(isClockRunning?'Clock started.':'Clock paused.');
     private customCsvFileDataLoader:PublicFileChartDataLoader;
-    
+    private dataLoader:ServiceChartDataLoader;
+
     constructor(props) {
         super(props);
 
@@ -55,6 +56,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         let chartDataArr:ChartSelectionSuper[] = [];
  
         this.customCsvFileDataLoader = new PublicFileChartDataLoader('data',practiceToolDefaultSelectionToFilename);
+        this.dataLoader = new ServiceChartDataLoader();
 
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
@@ -293,7 +295,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     notifyErrorChartLoadingData={this.notifyErrorChartLoadingData}
                                     notifySuccessChartLoadingData={this.notifySuccessChartLoadingData}
 
-                                    dataLoader={this.customCsvFileDataLoader}
+                                    dataLoader={this.dataLoader}
                                     isClockRunning={tradingClock.isClockRunning()}
                                     initialActiveClock={tradingClock.getClock()}
                                 /> 

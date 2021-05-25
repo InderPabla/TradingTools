@@ -1,4 +1,4 @@
-import { ChartContinousData } from "../Components/Chart/Commom/ChartUtils";
+import { ChartContinousData, ChartSelection } from "../Components/Chart/Commom/ChartUtils";
 var csv=require("csvtojson");
 
 type IAjaxErrorType = 'UNEXPECTED_ERROR'|'NOT_FOUND'|'BAD_REQUEST';
@@ -53,26 +53,43 @@ export class CommonAPI {
         }
     }
 
+    public static async getContinousData(sel:ChartSelection) {
+        let tradingDayTime = sel.tradingDayTime.toISOString().split('T')[0];
+        let fetched = await fetch(`http://localhost:3000/v1/historical/candles/${sel.ticker}/${sel.candlestickDuration}/${tradingDayTime}/csv`,{
+            headers : { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+        });
+        if(fetched.status>=400) {
+            throw fetched;
+        }
+        let body = await fetched.json();
+        return await CommonAPI.parseCsvToChartContinous(body.result);
+    }
+
     public static async getContinousDataFromPublicCsvFile(path:string,file:string):Promise<ChartContinousData[]> {
         let _path = path.endsWith('/') || path.endsWith('\\')?path.substr(0,path.length-1):path;
         _path = _path.startsWith('/') || _path.endsWith('\\')?_path.substr(1,_path.length):_path;
-
         let fetched = await fetch(`/${_path}/${file}`,{
             headers : { 
               'Content-Type': 'application/json',
               'Accept': 'application/csv'
             }
         });
-
         if(fetched.status>=400) {
             throw fetched;
         }
-
         let dataCsv = await fetched.text();
+        return await CommonAPI.parseCsvToChartContinous(dataCsv);
+    }
 
+    public static async parseCsvToChartContinous(dataCsv:string) {
+        if(!dataCsv) return [];
+        
         let dataJson:any[] = await csv({
-          noheader: false,
-          headers: ['date','open','high','low','close','average','volume','count']
+        noheader: false,
+        headers: ['date','open','high','low','close','average','volume','count']
         }).fromString(dataCsv);
 
         if(dataJson.length===0) return [];
@@ -102,16 +119,16 @@ export class CommonAPI {
                 date.setSeconds(0);
                 date.setMilliseconds(0);
             }
-         
+        
             let tick = {
-              date: date,
-              open: parseFloat(v.open),
-              high: parseFloat(v.high),
-              low: parseFloat(v.low),
-              close: parseFloat(v.close),
-              volume: parseInt(v.volume)*100,
-              average: parseInt(v.average),
-              count: parseInt(v.count),
+            date: date,
+            open: parseFloat(v.open),
+            high: parseFloat(v.high),
+            low: parseFloat(v.low),
+            close: parseFloat(v.close),
+            volume: parseInt(v.volume)*100,
+            average: parseInt(v.average),
+            count: parseInt(v.count),
             }
             return tick;
         });
