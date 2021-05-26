@@ -1,12 +1,7 @@
 import { Logger } from "winston";
 import { CommonServiceBase } from "../../../../libs/common/service/common-service-base";
 import fs from 'fs';
-
-
-export interface SessionInfo {
-    sessionId:string;
-    isRunning:boolean;
-}
+import { SessionInfo } from 'practice-tool-types';
 
 
 export class SessionService extends CommonServiceBase {
@@ -25,10 +20,11 @@ export class SessionService extends CommonServiceBase {
         return SessionService.sessionMap.get(sessionId);
     }
 
-    public static createSession(sessionId:string) {
+    public static createSession(sessionId:string, tradingDay:string) {
         let info:SessionInfo = {
             sessionId:sessionId,
-            isRunning:false
+            tradingDay:tradingDay,
+            isRunning:false,
         }
         SessionService.addSession(sessionId,info);
         return SessionService.getSession(sessionId);

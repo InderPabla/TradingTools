@@ -3,7 +3,7 @@ import { CommonServiceBase } from "../../../../libs/common/service/common-servic
 import fs from 'fs';
 
 export interface CandleSelection {
-    tradingDayTime:string;
+    tradingDay:string;
     ticker:string;
     candlestickDuration:string;
 }
@@ -21,7 +21,7 @@ export class HistorialService extends CommonServiceBase {
     }
 
     async getCandlestickCsv(sel:CandleSelection):Promise<string> {
-        let filename:string = `${sel.ticker}-${sel.tradingDayTime}-23-59-59-${this.selectionToTimeDuration(sel)}-${sel.candlestickDuration}.csv`;
+        let filename:string = `${sel.ticker}-${sel.tradingDay}-23-59-59-${this.selectionToTimeDuration(sel)}-${sel.candlestickDuration}.csv`;
         let filePath = `${__dirname}/../../public/data/${filename}`;
         try {
             return await fs.readFileSync(filePath,'utf-8');

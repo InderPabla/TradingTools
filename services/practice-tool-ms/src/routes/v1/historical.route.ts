@@ -18,7 +18,7 @@ export class HistorialRoute extends CommonRouter {
         let router = this.getRouter();
 
         router.get(
-            `/candles/:ticker/:candlestickDuration/:tradingDayTime/csv`
+            `/candles/:ticker/:candlestickDuration/:tradingDay/csv`
             ,ValidatorMiddleware.validator(HistorialValidation.validateHistoricalCandlesticks)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.getHistoricalCsvData)
         );

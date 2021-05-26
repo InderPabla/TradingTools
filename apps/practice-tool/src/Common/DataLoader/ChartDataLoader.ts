@@ -1,5 +1,6 @@
 import { CommonAPI, IAjaxDataError, IAjaxError } from "../CommonAPI";
 import { ChartContinousData, ChartSelection } from "../../Components/Chart/Commom/ChartUtils";
+import { HistorialAPI } from "../Api/HistorialAPI";
 
 export type FuncSelectionToFilename = (sel:ChartSelection)=>string
 
@@ -38,7 +39,7 @@ export class ServiceChartDataLoader extends ChartDataLoader {
 
         await CommonAPI.ajaxHandler(
             async () => {
-                _continData = await CommonAPI.getContinousData(sel);
+                _continData = await HistorialAPI.getContinousData(sel);
             },
             async (err:IAjaxError)=> {
                 _err = err;
@@ -65,7 +66,7 @@ export class PublicFileChartDataLoader extends ChartDataLoader{
 
         await CommonAPI.ajaxHandler(
             async () => {
-                _continData = await CommonAPI.getContinousDataFromPublicCsvFile(this.path,this.selToFilename(sel));
+                _continData = await HistorialAPI.getContinousDataFromPublicCsvFile(this.path,this.selToFilename(sel));
             },
             async (err:IAjaxError)=> {
                 _err = err;

@@ -30,6 +30,7 @@ export interface PracticeToolState {
     chartDataArr:ChartSelectionSuper[];
     tradingDayTime:Date;
     tradingClock:TradingClock;
+    //sessionInfo:SessionInfo;
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {

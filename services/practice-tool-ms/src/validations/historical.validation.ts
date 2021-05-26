@@ -1,16 +1,20 @@
 import { Request } from 'express';
-import { param, validationResult, Result, ValidationError } from 'express-validator';
+import { param, validationResult, Result, ValidationError, ValidationChain } from 'express-validator';
+import { CommonValidation } from '../../../../libs/common/service/common-validation';
 
-export class HistorialValidation {
+export class HistorialValidation extends CommonValidation{
 
     public static async validateHistoricalCandlesticks(req:Request):Promise<Result<ValidationError>> {
-        await param('ticker').notEmpty().isString()
+        await CommonValidation.notEmptyStringChain(param('ticker'))
             .toUpperCase()
             .run(req);
-        await param('candlestickDuration').notEmpty()
-            .isString()
+        await CommonValidation.notEmptyStringChain(param('candlestickDuration'))
+            .toUpperCase()
             .run(req);
-        await param('tradingDayTime').notEmpty().isString().matches(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/)
+        await CommonValidation.notEmptyStringChain(param('tradingDay'))
+            .matches(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/)
+                .withMessage('Must be a yyyy-mm-dd format')
+                .bail()
             .run(req);
         return validationResult(req);
     }

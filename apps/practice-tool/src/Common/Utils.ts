@@ -1,6 +1,15 @@
 import { CANDLESTICK_DURATION } from "./Constant";
 import { utcDay, utcMinute, utcHour, utcSecond  } from "d3-time";
 
+/**
+ * Unix generally starts with 16 (1620979200), maybe not for older data
+ * Try to determine correctly if the timestamp is unix!
+ * @param time 
+ */
+export function isUnixTime(time:string) {
+    return time.length>=10;
+}
+
 export function logBase(num:number,base:number):number {
     return Math.log(num)/Math.log(base);
 }

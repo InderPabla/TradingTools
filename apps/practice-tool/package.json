@@ -20,6 +20,7 @@
     "d3-time-format": "^3.0.0",
     "font-awesome": "^4.7.0",
     "moment": "^2.29.1",
+    "practice-tool-types": "file:../../libs/practice-tool-types",
     "react": "^17.0.2",
     "react-bootstrap": "^1.5.2",
     "react-datetime": "^3.0.4",
@@ -55,5 +56,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "env-cmd": "^10.1.0"
   }
 }

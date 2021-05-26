@@ -16,12 +16,12 @@ export class HistorialController extends CommonController{
     async getHistoricalCsvData(req:Request,res:Response) {
         let selection:CandleSelection = {
             ticker:req.params.ticker,
-            tradingDayTime:req.params.tradingDayTime,
+            tradingDay:req.params.tradingDay,
             candlestickDuration:req.params.candlestickDuration
         }
         let csv = await this.service.getCandlestickCsv(selection)
         if(csv==null)
-            res.status(404).json(CommonController.notFoundErrorRes("Invalid historical selection"));
+            res.status(400).json(CommonController.notFoundErrorRes("Invalid historical selection"));
         else
             res.status(200).json(CommonController.successResp(csv));
     }
