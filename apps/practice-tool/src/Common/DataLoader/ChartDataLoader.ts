@@ -49,30 +49,3 @@ export class ServiceChartDataLoader extends ChartDataLoader {
         return {data:_continData,err:_err};
     }
 }
-
-export class PublicFileChartDataLoader extends ChartDataLoader{
-    private selToFilename:FuncSelectionToFilename;
-    private path:string;
-
-    constructor(path:string, selToFilename:FuncSelectionToFilename) {
-        super();
-        this.path = path;
-        this.selToFilename = selToFilename;
-    }
-
-    async fetchDataFromAPI(sel:ChartSelection):Promise<IAjaxDataError<ChartContinousData[]>> {
-        let _continData:ChartContinousData[] = null;
-        let _err:IAjaxError = null;
-
-        await CommonAPI.ajaxHandler(
-            async () => {
-                _continData = await HistorialAPI.getContinousDataFromPublicCsvFile(this.path,this.selToFilename(sel));
-            },
-            async (err:IAjaxError)=> {
-                _err = err;
-            }
-        );
-
-        return {data:_continData,err:_err};
-    }
-}

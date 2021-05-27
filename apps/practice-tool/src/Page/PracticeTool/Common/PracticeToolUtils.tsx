@@ -74,15 +74,3 @@ function selectionToTimeDuration(sel:ChartSelection):string {
     :'DAY_1';
     return days;
 }
-
-export function practiceToolDefaultSelectionToFilename(sel:ChartSelection):string {
-    const days = selectionToTimeDuration(sel);
-    const {tradingDayTime:_tradingDayTime,ticker,candlestickDuration} = sel;
-    const yyyy = _tradingDayTime.getFullYear() + '';
-    let mm = _tradingDayTime.getMonth() + 1 + '';
-    let dd = _tradingDayTime.getDate() + '';
-    dd = dd.length<2?'0'+dd:dd;
-    mm = mm.length<2?'0'+mm:mm;
-    return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-${days}-${candlestickDuration}.csv`;
-}
-

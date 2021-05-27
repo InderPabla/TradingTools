@@ -3,19 +3,21 @@ import * as React from 'react';
 import classNames from 'classnames';
 import {Container,Row,Col, DropdownButton, Dropdown} from 'react-bootstrap';
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
-import { genUniqueKey, getTodayTradingDayTime } from '../../Common/Utils';
+import { genUniqueKey, toDayTradingTime } from '../../Common/Utils';
 import { Chart } from '../../Components/Chart/Chart';
 import { TopBar } from '../../Components/TopBar/TopBar';
 import './PracticeTool.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ChartSelectionSuper, practiceToolDefaultSelectionToFilename, toChartRenderRowMeta } from './Common/PracticeToolUtils';
+import { ChartSelectionSuper, toChartRenderRowMeta } from './Common/PracticeToolUtils';
 import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
-import { ChartContinousData, ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
-import { PublicFileChartDataLoader, ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
+import { ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
+import { ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
 import { TradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/TradingClock';
+import { SessionInfo } from 'practice-tool-types';
+import { SessionInfoModal } from '../../Components/Modal/SessionInfo/SessionInfoModal';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6];
@@ -30,7 +32,9 @@ export interface PracticeToolState {
     chartDataArr:ChartSelectionSuper[];
     tradingDayTime:Date;
     tradingClock:TradingClock;
-    //sessionInfo:SessionInfo;
+
+    showSessionInfoModal:boolean;
+    sessionInfo:SessionInfo;
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -41,28 +45,25 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     private notifyTradingDayChanged = (tradingDayTime:Date) => toast.info(`Trading day changed to ${tradingDayTime.toDateString()}.`);
     private notifyChartDurationChanged = (chartId:string, duration:string) => toast.info(`${chartId} duration changed to ${duration}.`);
     private notifyClockSpeedChanged = (speed:number) => toast.info(`Clock speed changed to ${speed}x.`);
-
     private notifyErrorChartLoadingData = (sel:ChartSelection) => toast.error(`Error loading ${sel.chartId} data.`);
     private notifySuccessChartLoadingData = (sel:ChartSelection) => toast.success(`Successful loading ${sel.chartId} data.`);
-
     private notifyClockState = (isClockRunning:boolean) => toast.info(isClockRunning?'Clock started.':'Clock paused.');
-    private customCsvFileDataLoader:PublicFileChartDataLoader;
+    private notifySessionInfo = (info:SessionInfo) => toast.info(info.sessionId?'Running Server session.':'Running Client session.');
+
     private dataLoader:ServiceChartDataLoader;
 
     constructor(props) {
         super(props);
 
-        let tradingDayTime = getTodayTradingDayTime();
+        let tradingDayTime = toDayTradingTime(new Date());
         let tradingClock = new TradingClock(tradingDayTime,this.clockUpdate);
         let chartDataArr:ChartSelectionSuper[] = [];
- 
-        this.customCsvFileDataLoader = new PublicFileChartDataLoader('data',practiceToolDefaultSelectionToFilename);
         this.dataLoader = new ServiceChartDataLoader();
 
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
 
-        this.state = { chartDataArr, tradingDayTime, tradingClock}; 
+        this.state = { chartDataArr, tradingDayTime, tradingClock, sessionInfo:null, showSessionInfoModal: true}; 
     }
 
     componentDidMount() {
@@ -86,6 +87,11 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             this.state.tradingClock.toggleClock();
 		}
 	}
+
+    private isServerSideSession():boolean {
+        const { sessionInfo } = this.state;
+        return sessionInfo!=null && sessionInfo.sessionId!=null;
+    }
 
     private clockUpdate = () => {
         if(this.state.tradingClock.wasClockPaused()) {
@@ -213,17 +219,27 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         }
     }
 
+    private onSaveSelectionInfo = (sessionInfo:SessionInfo) => {
+        console.log(sessionInfo)
+        let { tradingDayTime } = this.state;
+        tradingDayTime = toDayTradingTime(new Date(sessionInfo.tradingDay));
+        this.setState({showSessionInfoModal:false,sessionInfo,tradingDayTime},()=>{
+            this.notifySessionInfo(sessionInfo);
+        });
+    }
+
     public render() {
-        const { tradingClock } = this.state;
+        const { tradingClock, showSessionInfoModal } = this.state;
         const isClockRunning = tradingClock.isClockRunning();
         const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
         const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
+        const disabled = this.isServerSideSession();
 
         return (
             <React.Fragment>
                 <div id="practice-tool" style={{height:"100vh"}}>
                     <TopBar title="Practice Tool" icon="book">
-                        <div className="practice-tool-chart-dropdown-container">
+                        {!showSessionInfoModal && <div className="practice-tool-chart-dropdown-container">
                             <DropdownButton 
                                 id="practice-tool-chart-size-button" 
                                 title={`${this.state.chartDataArr.length} Charts`} 
@@ -236,6 +252,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                 })}
                             </DropdownButton>
                             <Datetime 
+                                inputProps={{disabled:disabled}}
                                 initialValue={this.state.tradingDayTime}
                                 onChange={(value)=>{this.onTradingDayTimeChanged(moment(value).toDate())}}  
                             />
@@ -243,6 +260,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                             <i className={pauseplayClass} onClick={tradingClock.toggleClock}/>
                             <p className={clockClass}>{moment(tradingClock.getClock()).format('hh:mm:ss A')}</p>
                             <DropdownButton 
+                                disabled={disabled}
                                 id="practice-tool-chart-clockspeed-button" 
                                 title={`${this.state.tradingClock.getClockSpeedMultipler()}x`} 
                                 size="sm"
@@ -253,23 +271,17 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                                 eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
                                 })}
                             </DropdownButton>
-                        </div>
-     
+                        </div>}
                     </TopBar>
                     
                     <div className="practice-tool-container-outter">
                         <Container fluid={true} className="practice-tool-container">
-                            {this.renderCharts()}
+                            {!showSessionInfoModal && this.renderCharts()}
                         </Container>
                     </div>
-
-                    <ToastContainer
-                        autoClose={5000}
-                        hideProgressBar={false}
-                        newestOnTop={true}
-                        closeOnClick
-                    />
                 </div>
+
+                {this.renderNonPageEmbedded()}
             </React.Fragment>
         );
     }
@@ -307,4 +319,24 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             })}
         </React.Fragment>);
     }
-  }
+
+    private renderNonPageEmbedded() {
+        const { showSessionInfoModal } = this.state;
+
+        return (
+            <React.Fragment>
+                <ToastContainer
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={true}
+                    closeOnClick
+                />
+                
+                <SessionInfoModal 
+                    show={showSessionInfoModal} 
+                    save={this.onSaveSelectionInfo}
+                />
+            </React.Fragment>
+        );
+    } 
+}

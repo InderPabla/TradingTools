@@ -1,7 +1,5 @@
 import { Handler, NextFunction, Request, Response } from "express";
 import { Logger } from "winston";
-import { CommonServiceBase } from "./common-service-base";
-
 
 export type CommonErrorType = 'VALIDATION_ERROR'|'SYSTEM_ERROR';
 

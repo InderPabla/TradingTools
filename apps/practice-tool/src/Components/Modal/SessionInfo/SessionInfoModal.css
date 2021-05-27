@@ -1,0 +1,30 @@
+#selection-info-modal {
+    color:black;
+}
+
+#selection-info-modal .session-location p{
+    margin: 0;
+    display: inline-block;
+    font-weight: bold;
+}
+
+#selection-info-modal .session-location .dropdown{
+    display: inline-block;
+    margin-left: 10px;
+}
+
+
+#selection-info-modal .session-server-location-container p{
+    margin: 0;
+    display: inline-block;
+    font-weight: bold;
+}
+
+#selection-info-modal .session-server-location-container .input-group{
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#selection-info-modal .session-server-location-container input{
+    width: 150px;
+}

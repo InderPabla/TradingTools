@@ -88,44 +88,6 @@ export function candlestickTimeToD3Time(duration:string):Function {
     }
 }
 
-
-/**
- * Date specific information for file name and market open date
- * @param date yyyy/mm/dd format
- * @param ticker name of the ticker
- * @param realtimeDuration real time duration
- * @param animateDuration animate duration
- * @returns date specific info
- */
-export function dateSpecifics(date:Date, ticker:string, realtimeDuration:string, animateDuration:string) {
-    
-    function formatToFileName(_date:Date,_ticker:string,duration:string):string {
-        let yyyy = _date.getFullYear() + '';
-        let mm = _date.getMonth() + 1 + '';
-        let dd = _date.getDate() + '';
-        dd = dd.length<2?'0'+dd:dd;
-        mm = mm.length<2?'0'+mm:mm;
-        return `${ticker}-${yyyy}-${mm}-${dd}-23-59-59-DAY_1-${duration}.csv`;
-    }
-
-    let dayStart = date;
-
-    let dayEnd = new Date(dayStart);
-    dayEnd.setHours(23,59,59);
-
-    let dayMarketOpen = new Date(dayStart);
-    dayMarketOpen.setHours(9,30);
-
-    let realtimeDurationSec = candlestickTimeToSeconds(realtimeDuration);
-    let animateDurationSec = candlestickTimeToSeconds(animateDuration);
-    let realtimePerAnimateCount = animateDurationSec/realtimeDurationSec;
-
-    let realtimeFilename = formatToFileName(dayStart,ticker,realtimeDuration);
-    let animateFilename = formatToFileName(dayStart,ticker,animateDuration);
-
-    return {dayStart,dayEnd,dayMarketOpen,realtimePerAnimateCount,realtimeFilename,animateFilename}
-}
-
 /**
  * Generate random unique key
  * @returns Unique key string
@@ -134,11 +96,25 @@ export function genUniqueKey():string {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
 
-export function getTodayTradingDayTime():Date {
-    let tradingDay = new Date();
-    tradingDay.setHours(9);
-    tradingDay.setMinutes(29);
-    tradingDay.setSeconds(0);
-    tradingDay.setMilliseconds(0);
-    return tradingDay;
+export function toDayTradingTime(date:Date) {
+    let _date = new Date(date);
+    _date.setHours(9);
+    _date.setMinutes(29);
+    _date.setSeconds(0);
+    _date.setMilliseconds(0);
+    return _date;
+}
+
+/**
+ * Return yyyy-mm-dd format of given date
+ * @param date 
+ * @returns yyyy-mm-dd
+ */
+export function yyyymmdd(date:Date) {
+    let yyyy = date.getFullYear() + '';
+    let mm = date.getMonth() + 1 + '';
+    let dd = date.getDate() + '';
+    dd = dd.length<2?'0'+dd:dd;
+    mm = mm.length<2?'0'+mm:mm;
+    return `${yyyy}-${mm}-${dd}`;
 }
