@@ -45,17 +45,17 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     private notifyTradingDayChanged = (tradingDayTime:Date) => toast.info(`Trading day changed to ${tradingDayTime.toDateString()}.`);
     private notifyChartDurationChanged = (chartId:string, duration:string) => toast.info(`${chartId} duration changed to ${duration}.`);
     private notifyClockSpeedChanged = (speed:number) => toast.info(`Clock speed changed to ${speed}x.`);
-    private notifyErrorChartLoadingData = (sel:ChartSelection) => toast.error(`Error loading ${sel.chartId} data.`);
+    private notifyErrorChartLoadingData = (sel:ChartSelection) => toast.error(`Error: Unable to load ${sel.chartId} data.`);
     private notifySuccessChartLoadingData = (sel:ChartSelection) => toast.success(`Successful loading ${sel.chartId} data.`);
     private notifyClockState = (isClockRunning:boolean) => toast.info(isClockRunning?'Clock started.':'Clock paused.');
     private notifySessionInfo = (info:SessionInfo) => toast.info(info.sessionId?'Running Server session.':'Running Client session.');
+    private notifyErrorSessionInfo = (message:string) => toast.error(`Error: ${message}`)
 
     private dataLoader:ServiceChartDataLoader;
 
     constructor(props) {
         super(props);
-
-        let tradingDayTime = toDayTradingTime(new Date());
+        let tradingDayTime = toDayTradingTime(new Date(),false);
         let tradingClock = new TradingClock(tradingDayTime,this.clockUpdate);
         let chartDataArr:ChartSelectionSuper[] = [];
         this.dataLoader = new ServiceChartDataLoader();
@@ -84,13 +84,13 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
 	keyUpEvent = (event) => {
 		if(event.code==='KeyP') {
-            this.state.tradingClock.toggleClock();
+            //this.state.tradingClock.toggleClock();
 		}
 	}
 
     private isServerSideSession():boolean {
         const { sessionInfo } = this.state;
-        return sessionInfo!=null && sessionInfo.sessionId!=null;
+        return !!sessionInfo && !!sessionInfo.sessionId;
     }
 
     private clockUpdate = () => {
@@ -220,16 +220,15 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
 
     private onSaveSelectionInfo = (sessionInfo:SessionInfo) => {
-        console.log(sessionInfo)
         let { tradingDayTime } = this.state;
-        tradingDayTime = toDayTradingTime(new Date(sessionInfo.tradingDay));
+        tradingDayTime = toDayTradingTime(new Date(sessionInfo.tradingDay),true);
         this.setState({showSessionInfoModal:false,sessionInfo,tradingDayTime},()=>{
             this.notifySessionInfo(sessionInfo);
         });
     }
 
     public render() {
-        const { tradingClock, showSessionInfoModal } = this.state;
+        const { tradingClock, showSessionInfoModal, sessionInfo } = this.state;
         const isClockRunning = tradingClock.isClockRunning();
         const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
         const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
@@ -239,41 +238,44 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             <React.Fragment>
                 <div id="practice-tool" style={{height:"100vh"}}>
                     <TopBar title="Practice Tool" icon="book">
-                        {!showSessionInfoModal && <div className="practice-tool-chart-dropdown-container">
-                            <DropdownButton 
-                                id="practice-tool-chart-size-button" 
-                                title={`${this.state.chartDataArr.length} Charts`} 
-                                size="sm"
-                                onSelect={this.onChartSizeSelected}>
-                                {VALID_CHART_SIZES.map((numberOfCharts)=> {
-                                    return <Dropdown.Item 
-                                                key={`practice-tool-chart-dropdown-button-${numberOfCharts}`} 
-                                                eventKey={numberOfCharts.toString()}>{numberOfCharts}</Dropdown.Item>;
-                                })}
-                            </DropdownButton>
-                            <Datetime 
-                                inputProps={{disabled:disabled}}
-                                initialValue={this.state.tradingDayTime}
-                                onChange={(value)=>{this.onTradingDayTimeChanged(moment(value).toDate())}}  
-                            />
-                            <i className={`refresh-chart fa fa-refresh`} onClick={this.resetAllChartsInState}/>
-                            <i className={pauseplayClass} onClick={tradingClock.toggleClock}/>
-                            <p className={clockClass}>{moment(tradingClock.getClock()).format('hh:mm:ss A')}</p>
-                            <DropdownButton 
-                                disabled={disabled}
-                                id="practice-tool-chart-clockspeed-button" 
-                                title={`${this.state.tradingClock.getClockSpeedMultipler()}x`} 
-                                size="sm"
-                                onSelect={this.onClockSpeedSelected}>
-                                {VALID_CLOCK_SPEED_MULTIPLIERS.map((speed)=> {
-                                    return <Dropdown.Item 
-                                                key={`practice-tool-chart-clockspeed-button-${speed}`} 
-                                                eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
-                                })}
-                            </DropdownButton>
-                        </div>}
+                        {!showSessionInfoModal && <React.Fragment>
+                            <div className="practice-tool-chart-dropdown-container">
+                                <DropdownButton 
+                                    id="practice-tool-chart-size-button" 
+                                    title={`${this.state.chartDataArr.length} Charts`} 
+                                    size="sm"
+                                    onSelect={this.onChartSizeSelected}>
+                                    {VALID_CHART_SIZES.map((numberOfCharts)=> {
+                                        return <Dropdown.Item 
+                                                    key={`practice-tool-chart-dropdown-button-${numberOfCharts}`} 
+                                                    eventKey={numberOfCharts.toString()}>{numberOfCharts}</Dropdown.Item>;
+                                    })}
+                                </DropdownButton>
+                                <Datetime 
+                                    inputProps={{disabled:disabled}}
+                                    initialValue={this.state.tradingDayTime}
+                                    onChange={(value)=>{this.onTradingDayTimeChanged(moment(value).toDate())}}  
+                                />
+                                <i className={`refresh-chart fa fa-refresh`} onClick={this.resetAllChartsInState}/>
+                                <i className={pauseplayClass} onClick={tradingClock.toggleClock}/>
+                                <p className={clockClass}>{moment(tradingClock.getClock()).format('hh:mm:ss A')}</p>
+                                <DropdownButton 
+                                    disabled={disabled}
+                                    id="practice-tool-chart-clockspeed-button" 
+                                    title={`${this.state.tradingClock.getClockSpeedMultipler()}x`} 
+                                    size="sm"
+                                    onSelect={this.onClockSpeedSelected}>
+                                    {VALID_CLOCK_SPEED_MULTIPLIERS.map((speed)=> {
+                                        return <Dropdown.Item 
+                                                    key={`practice-tool-chart-clockspeed-button-${speed}`} 
+                                                    eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
+                                    })}
+                                </DropdownButton>
+                            </div>
+                            <p className="session-id">{!!sessionInfo.sessionId?`SERVER: ${sessionInfo.sessionId}`:'CLIENT'}</p>
+                        </React.Fragment>
+                        }
                     </TopBar>
-                    
                     <div className="practice-tool-container-outter">
                         <Container fluid={true} className="practice-tool-container">
                             {!showSessionInfoModal && this.renderCharts()}
@@ -335,6 +337,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                 <SessionInfoModal 
                     show={showSessionInfoModal} 
                     save={this.onSaveSelectionInfo}
+                    onError={this.notifyErrorSessionInfo}
                 />
             </React.Fragment>
         );

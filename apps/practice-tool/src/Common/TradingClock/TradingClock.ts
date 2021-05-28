@@ -1,3 +1,4 @@
+import { SessionInfo } from "practice-tool-types";
 import { logBase } from "../Utils";
 
 type ClockStateType = 'STOPPED'|'UNPAUSED'|'STARTED'|'PAUSED';
@@ -14,12 +15,17 @@ export class TradingClock {
     private update:Function;
     private clockSpeedMultiplier:number;
     private clockState:ClockStateType;
+    private sessionInfo:SessionInfo;
 
     constructor(clock:Date,update:Function) {
         this.clock = clock;
         this.update = update;
         this.clockSpeedMultiplier = VALID_CLOCK_SPEED_MULTIPLIERS[0];
         this.clockState = 'STOPPED';
+    }
+
+    public setSessionInfo(sessionInfo:SessionInfo) {
+        this.sessionInfo = sessionInfo;
     }
 
     public getClockSpeedMultipler() {

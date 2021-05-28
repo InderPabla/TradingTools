@@ -4,12 +4,14 @@ import './SessionInfoModal.css';
 import { Modal, Button, DropdownButton, Dropdown, InputGroup, FormControl } from 'react-bootstrap';
 import { SessionInfo } from 'practice-tool-types';
 import { yyyymmdd } from '../../../Common/Utils';
+import { SessionAPI } from '../../../Common/Api/SessionAPI';
 
 type SessionLocation = 'SERVER'|'CLIENT';
 
 export interface SessionInfoModalModalProps {
     show:boolean;
     save:(sessionInfo:SessionInfo)=>void;
+    onError:(errMessage:string)=>void;
 }
 
 export interface SessionInfoModalModalState {
@@ -31,30 +33,55 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         };
     }
     
-    private handleDone = () => {
-        const { save } = this.props;
+    private handleDone = async () => {
+        const { save, onError } = this.props;
         const { sessionInfo } = this.state;
-        save(sessionInfo);
+        try {
+            let newSessionInfo = null;
+            if(this.isServerExistingSession()) 
+                newSessionInfo = await SessionAPI.getSession(sessionInfo.sessionId);
+            else if(this.isServerNewSession()) 
+                newSessionInfo = await SessionAPI.postCreateSession(sessionInfo.tradingDay);
+            else 
+                newSessionInfo = sessionInfo;
+            save(newSessionInfo);
+        }
+        catch(err) {
+            onError('Unable to create or join session')
+        }  
     }
 
-    private handleClose = () => {
-        const { save } = this.props;
-        const { sessionInfo } = this.state;
-        save(sessionInfo);
-    } 
-
-    private getDoneButtonTitle() {
-        if(this.isServer()) return `Begin Server Session`;
-        return `Begin Client Session`;
+    private isServerExistingSession() {
+        const { sessionInfo:{sessionId} } = this.state;
+        return this.isServerSession() && !!sessionId;
     }
 
-    private isServer() {
+    private isServerNewSession() {
+        const { sessionInfo:{sessionId} } = this.state;
+        return this.isServerSession() && !sessionId;
+    }
+
+    private isClientSession() {
+        return !this.isServerSession();
+    }
+
+    private isServerSession() {
         const { sessionLocation } = this.state;
         if(sessionLocation === 'SERVER') return true;
         return false;
     }
 
+    private getDoneButtonTitle() {
+        if(this.isServerExistingSession()) return `Existing Server Session`;
+        else if(this.isServerNewSession()) return `New Server Session`;
+        return `New Client Session`;
+    }
+
     private onSessionLocationSelected = (sessionLocation:string) => {
+        const { sessionInfo } = this.state;
+        if(sessionLocation === 'CLIENT') {
+            sessionInfo.sessionId = null;
+        }
         this.setState({sessionLocation:sessionLocation as SessionLocation})
     }
 
@@ -62,6 +89,11 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         const { sessionInfo } = this.state;
         sessionInfo.sessionId = sessionId;
         this.setState({});
+    }
+
+    private isSaveable () {
+        const { sessionInfo, sessionLocation } = this.state;
+        return true;
     }
 
     public render() {
@@ -93,8 +125,8 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                                 })}
                             </DropdownButton>
                         </div>
-                        {this.isServer() && <div className="session-server-location-container">
-                            <p>Session Id: </p>
+                        {this.isServerSession() && <div className="session-server-location-container">
+                            <p>Existing Session Id: </p>
                             <InputGroup>
                                 <FormControl
                                     className="session-id-capture"
@@ -113,7 +145,10 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                         </div>}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="primary" onClick={this.handleDone}>
+                        <Button   
+                            variant="primary" 
+                            onClick={this.handleDone} 
+                            disabled={!this.isSaveable()}>
                             {this.getDoneButtonTitle()}
                         </Button>
                     </Modal.Footer>

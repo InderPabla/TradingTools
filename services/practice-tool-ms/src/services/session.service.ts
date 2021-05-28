@@ -2,10 +2,10 @@ import { Logger } from "winston";
 import { CommonServiceBase } from "../../../../libs/common/service/common-service-base";
 import fs from 'fs';
 import { SessionInfo } from 'practice-tool-types';
-
+import {v4 as uuidv4} from 'uuid';
 
 export class SessionService extends CommonServiceBase {
-
+    
     private static sessionMap:Map<string,SessionInfo> = new Map();
 
     constructor(logger:Logger) {
@@ -20,14 +20,14 @@ export class SessionService extends CommonServiceBase {
         return SessionService.sessionMap.get(sessionId);
     }
 
-    public static createSession(sessionId:string, tradingDay:string) {
+    public static createSession(tradingDay:string) {
         let info:SessionInfo = {
-            sessionId:sessionId,
+            sessionId:uuidv4().substr(0,8),
             tradingDay:tradingDay,
             isRunning:false,
         }
-        SessionService.addSession(sessionId,info);
-        return SessionService.getSession(sessionId);
+        SessionService.addSession(info.sessionId,info);
+        return SessionService.getSession(info.sessionId);
     }
 
     private static addSession (sessionId:string,info:SessionInfo) {

@@ -106,6 +106,16 @@
     background-color: green;
 }
 
+#practice-tool .tool-title-container .session-id {
+    margin: 0;
+    display: inline-block;
+    position: relative;
+    font-weight: bold;
+    float: right;
+    margin-right: 10px;
+    top: 10px;
+}
+
 #practice-tool .practice-tool-container-outter {
     margin: 5px;
 

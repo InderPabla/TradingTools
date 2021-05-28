@@ -12,10 +12,8 @@ export class SessionValidation extends CommonValidation{
     }
 
     public static async validateCreateSession(req:Request):Promise<Result<ValidationError>> {
-        await SessionValidation.validateSessionIdChain(body,false)
-            .run(req);
         await CommonValidation.notEmptyStringChain(body('tradingDay'))
-            .matches(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/)
+            .matches(/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/)
                 .withMessage('Must be a yyyy-mm-dd format')
                 .bail()
             .run(req);    

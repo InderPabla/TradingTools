@@ -1,5 +1,5 @@
 import { CommonAPI } from "../CommonAPI";
-import { isUnixTime } from "../Utils";
+import { isUnixTime, toDayOpenTime } from "../Utils";
 import { ChartContinousData, ChartSelection } from "../../Components/Chart/Commom/ChartUtils";
 var csv=require("csvtojson");
 
@@ -7,6 +7,9 @@ const PATH_API = `${process.env.REACT_APP_PRACTICE_TOOL_MS}/historical`;
 
 export class HistorialAPI extends CommonAPI {
 
+    /**
+     * TODO DO PROPER ERROR HANDLING
+     */
     public static async getContinousData(sel:ChartSelection) {
         let tradingDayTime = sel.tradingDayTime.toISOString().split('T')[0];
         let fetched = await fetch(`${PATH_API}/candles/${sel.ticker}/${sel.candlestickDuration}/${tradingDayTime}/csv`,
@@ -16,6 +19,9 @@ export class HistorialAPI extends CommonAPI {
         return await HistorialAPI.parseCsvToChartContinous(body.result);
     }
 
+    /**
+     * TODO DO PROPER ERROR HANDLING
+     */
     public static async getContinousDataFromPublicCsvFile(path:string,file:string):Promise<ChartContinousData[]> {
         let _path = path.endsWith('/') || path.endsWith('\\')?path.substr(0,path.length-1):path;
         _path = _path.startsWith('/') || _path.endsWith('\\')?_path.substr(1,_path.length):_path;
@@ -40,15 +46,7 @@ export class HistorialAPI extends CommonAPI {
                 let year = strDate.substr(0,4);
                 let month = strDate.substr(4,2);
                 let day = strDate.substr(6,2);
-                date = new Date(`${year}-${month}-${day}`);
-                //Converting from GMT to local EST time 
-                //Example: "2020-11-18 00:00:00" => "2020-11-17 20:00:00 EST"
-                //We want to add the local offset to keep exactly "2020-11-18 00:00:00" format 
-                date.setTime(date.getTime()+date.getTimezoneOffset()*60*1000);   
-                date.setHours(4);
-                date.setMinutes(0);
-                date.setSeconds(0);
-                date.setMilliseconds(0);
+                date = toDayOpenTime(new Date(`${year}-${month}-${day}`),true);
             }
         
             let tick = {

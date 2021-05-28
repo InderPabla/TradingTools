@@ -96,10 +96,26 @@ export function genUniqueKey():string {
     return '_' + Math.random().toString(36).substr(2, 9);
 }
 
-export function toDayTradingTime(date:Date) {
+export function toDayTradingTime(date:Date,applyTzOffset:boolean) {
     let _date = new Date(date);
+    if(applyTzOffset)
+        _date.setTime(date.getTime()+date.getTimezoneOffset()*60*1000);
     _date.setHours(9);
     _date.setMinutes(29);
+    _date.setSeconds(0);
+    _date.setMilliseconds(0);
+    return _date;
+}
+
+export function toDayOpenTime(date:Date,applyTzOffset:boolean) {
+    let _date = new Date(date);
+    //Converting from GMT to local EST time 
+    //Example: "2020-11-18 00:00:00" => "2020-11-17 20:00:00 EST"
+    //We want to add the local offset to keep exactly "2020-11-18 00:00:00" format 
+    if(applyTzOffset)
+        _date.setTime(date.getTime()+date.getTimezoneOffset()*60*1000);
+    _date.setHours(4);
+    _date.setMinutes(0);
     _date.setSeconds(0);
     _date.setMilliseconds(0);
     return _date;

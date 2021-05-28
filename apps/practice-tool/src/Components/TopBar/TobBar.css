@@ -6,6 +6,7 @@
 
 .tool-toolbar .tool-title-container {
     display: inline-block;
+    width: 100%;
 }
 
 .tool-title-container p.tool-name{

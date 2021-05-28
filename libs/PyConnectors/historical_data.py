@@ -24,11 +24,11 @@ def savedata(_path,_data,_ticker,_end_date,_time_duration,_stick_duration,_heade
 ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1238})
 
 header = ['date','open','high','low','close','average','volume','count']
-path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/apps/practice-tool/public/data/'
+path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
 
 
-tickers = ['SPY']
-end_date = datetime.datetime(2021, 5, 18, 23, 59, 59)
+tickers = ['NIO','SPY']
+end_date = datetime.datetime(2021, 5, 27, 23, 59, 59)
 
 #Get and save 5 seconds, 1 min and 5 mins
 time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_3,TimeDuration.DAY_1,TimeDuration.DAY_1]
