@@ -18,6 +18,7 @@ import { ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader'
 import { TradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/TradingClock';
 import { SessionInfo } from 'practice-tool-types';
 import { SessionInfoModal } from '../../Components/Modal/SessionInfo/SessionInfoModal';
+import {  TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6];
@@ -35,6 +36,8 @@ export interface PracticeToolState {
 
     showSessionInfoModal:boolean;
     sessionInfo:SessionInfo;
+
+    tradeLogs:TradeLog[]
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -63,7 +66,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
 
-        this.state = { chartDataArr, tradingDayTime, tradingClock, sessionInfo:null, showSessionInfoModal: true}; 
+        this.state = { chartDataArr, tradingDayTime, tradingClock, sessionInfo:null, showSessionInfoModal: true, tradeLogs:[]}; 
     }
 
     componentDidMount() {
@@ -87,6 +90,13 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             //this.state.tradingClock.toggleClock();
 		}
 	}
+
+    eventLog = (log:TradeLog)=> {
+        const { tradeLogs } = this.state; 
+        tradeLogs.push(log);
+        this.setState({});
+    }
+
 
     private isServerSideSession():boolean {
         const { sessionInfo } = this.state;
@@ -289,7 +299,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
     
     public renderCharts() {
-        const {chartDataArr, tradingClock} = this.state;
+        const {chartDataArr, tradingClock, tradeLogs} = this.state;
         const renderMeta = toChartRenderRowMeta(chartDataArr.length);
         
         return (<React.Fragment>
@@ -313,6 +323,11 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     dataLoader={this.dataLoader}
                                     isClockRunning={tradingClock.isClockRunning()}
                                     initialActiveClock={tradingClock.getClock()}
+
+                                    buy={this.eventLog}
+                                    sell={this.eventLog}
+
+                                    logs={tradeLogs.filter(v=>v.ticker===chartData.chartSelection.ticker)}
                                 /> 
                             </div>
                         </Col>);

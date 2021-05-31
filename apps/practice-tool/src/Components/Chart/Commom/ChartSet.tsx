@@ -109,6 +109,10 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
         return this.realSet != null && this.realIndex>=0;
     }
 
+    public getLastRealtimeCandle():ChartContinousData {
+        return this.realSet != null ? this.realSet.getCandleAtIndex(this.realIndex) : this.getCandleAtIndex(this.compIndex);
+    }
+
     /**
      * Animate the candles forward based on the given date
      * If realtime candles have been provided then the candle will 

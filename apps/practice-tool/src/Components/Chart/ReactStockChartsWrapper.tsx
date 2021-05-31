@@ -24,6 +24,8 @@ interface ReactStockChartsWrapperProps {
     height:number;
     selection:ChartSelection;
     data:ChartContinousData[];
+    buyPrices:number[],
+    sellPrices:number[],
     type?:string;
 }
 
@@ -31,7 +33,7 @@ interface ReactStockChartsWrapperState {
     panEvent:boolean;
 }
 
-class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperProps,ReactStockChartsWrapperState> {
+export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperProps,ReactStockChartsWrapperState> {
 
 	public static defaultProps = {
         type: "svg",
@@ -84,7 +86,7 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 
 	render() {
         const { panEvent } = this.state;
-        const { width, height, data:initialData, selection, type} = this.props;
+        const { width, height, data:initialData, selection, type, buyPrices, sellPrices} = this.props;
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
         const xDateAccessor = d=>d.date;
         const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(xDateAccessor);
@@ -219,6 +221,43 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
                         }}
                         opacity={1}
                     />
+                    
+                    {Array.from(new Set(buyPrices)).map((price)=> {
+                        return <EdgeIndicator
+                            key = {`edge-indicator-${price}`}
+                            itemType="first"
+                            orient="left"
+                            edgeAt="left"
+                            yAccessor={d=>price}
+                            lineStroke={COLOR.LIMEGREEN}
+                            lineStrokeWidth={1}
+                            lineOpacity={1}
+                            lineWidth={34}
+                            rectHeight={0}
+                            arrowWidth={0}
+                            rectWidth={0}
+                            fontSize={0}
+                        />
+                    })}
+
+                    {Array.from(new Set(sellPrices)).map((price)=> {
+                        return <EdgeIndicator
+                            key = {`edge-indicator-${price}`}
+                            itemType="first"
+                            orient="left"
+                            edgeAt="left"
+                            yAccessor={d=>price}
+                            lineStroke={COLOR.RED}
+                            lineStrokeWidth={1}
+                            lineOpacity={1}
+                            lineWidth={34}
+                            rectHeight={0}
+                            arrowWidth={0}
+                            rectWidth={0}
+                            fontSize={0}
+                        />
+                    })}
+
                 </Chart>
                 
                 <Chart id={2} origin={(w, h) => [0, h - chartVolumeHeight]} height={chartVolumeHeight} yExtents={d => [d.volume,0]}>
@@ -249,4 +288,4 @@ class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperPro
 
 }
 
-export default fitWidth(ReactStockChartsWrapper);
+fitWidth(ReactStockChartsWrapper) as ReactStockChartsWrapper;
