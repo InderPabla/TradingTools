@@ -1,9 +1,9 @@
 
 import * as React from 'react';
 import classNames from 'classnames';
-import {Container,Row,Col, DropdownButton, Dropdown} from 'react-bootstrap';
+import {Container,Row,Col, DropdownButton, Dropdown, Button} from 'react-bootstrap';
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
-import { genUniqueKey, toDayTradingTime } from '../../Common/Utils';
+import { downloadDataToFile, genUniqueKey, toDayTradingTime, convertJsonToCsvString } from '../../Common/Utils';
 import { Chart } from '../../Components/Chart/Chart';
 import { TopBar } from '../../Components/TopBar/TopBar';
 import './PracticeTool.css';
@@ -238,7 +238,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
 
     public render() {
-        const { tradingClock, showSessionInfoModal, sessionInfo } = this.state;
+        const { tradingClock, showSessionInfoModal, sessionInfo, tradeLogs } = this.state;
         const isClockRunning = tradingClock.isClockRunning();
         const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
         const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
@@ -281,6 +281,13 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                                     eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
                                     })}
                                 </DropdownButton>
+
+                                <Button 
+                                    className="download-trade-log-button" 
+                                    variant="primary" 
+                                    size="sm"
+                                    onClick={()=>{downloadDataToFile(`TradeLog-${new Date().toLocaleString()}.csv`,convertJsonToCsvString(tradeLogs))}}
+                                    disabled={!tradeLogs || tradeLogs.length===0}>Download Trade Log</Button>	
                             </div>
                             <p className="session-id">{!!sessionInfo.sessionId?`SERVER: ${sessionInfo.sessionId}`:'CLIENT'}</p>
                         </React.Fragment>

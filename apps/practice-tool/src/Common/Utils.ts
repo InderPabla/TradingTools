@@ -1,5 +1,6 @@
 import { CANDLESTICK_DURATION } from "./Constant";
 import { utcDay, utcMinute, utcHour, utcSecond  } from "d3-time";
+var { Parser } = require('json2csv');
 
 /**
  * Unix generally starts with 16 (1620979200), maybe not for older data
@@ -133,4 +134,19 @@ export function yyyymmdd(date:Date) {
     dd = dd.length<2?'0'+dd:dd;
     mm = mm.length<2?'0'+mm:mm;
     return `${yyyy}-${mm}-${dd}`;
+}
+
+export function convertJsonToCsvString(dataArr:Object[]) {
+    const json2csvParser = new Parser();
+    const csv = json2csvParser.parse(dataArr);
+    return csv;
+}
+
+export function downloadDataToFile(filename:string,str:string) {
+    const element = document.createElement("a");
+    const file = new Blob([str], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = filename;
+    document.body.appendChild(element);
+    element.click();
 }

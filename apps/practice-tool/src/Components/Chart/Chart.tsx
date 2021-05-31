@@ -10,7 +10,6 @@ import {ReactStockChartsWrapper} from "./ReactStockChartsWrapper";
 import { genUniqueKey } from "../../Common/Utils";
 import { AggregatedTradeLog, ChartOrchestrator, TradeLog, TradingActionType } from './Commom/ChartOrchestrator';
 import { ChartSet } from "./Commom/ChartSet";
-import e from "cors";
 
 export interface ChartProps {
 	chartKey:string;
