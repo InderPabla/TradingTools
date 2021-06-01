@@ -21,7 +21,7 @@ import { SessionInfoModal } from '../../Components/Modal/SessionInfo/SessionInfo
 import {  TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
-const VALID_CHART_SIZES = [1,2,4,5,6];
+const VALID_CHART_SIZES = [1,2,4,5,6,10];
 const DEFAULT_CANDLESTICK_DURATION = CANDLESTICK_DURATION.MIN_5;
 
 

@@ -64,6 +64,19 @@ export function toChartRenderRowMeta(numberOfCharts:number):ChartRenderRowMeta[]
                             ,heightPercent:50,numberOfRows:12
                         }
                        ];
+
+        case 10: return [
+                        {
+                            chartRenderMeta:[{chartIndex:0,numberOfColumns:2},{chartIndex:1,numberOfColumns:2},
+                                             {chartIndex:2,numberOfColumns:2},{chartIndex:3,numberOfColumns:3},{chartIndex:4,numberOfColumns:3}]
+                            ,heightPercent:50,numberOfRows:12
+                        },
+                        {
+                            chartRenderMeta:[{chartIndex:5,numberOfColumns:2},{chartIndex:6,numberOfColumns:2},
+                                             {chartIndex:7,numberOfColumns:2},{chartIndex:8,numberOfColumns:3},{chartIndex:9,numberOfColumns:3}]
+                            ,heightPercent:50,numberOfRows:12
+                        }
+                       ];
         default: throw new Error(`Invalid Chart Size: ${numberOfCharts}`);
     }
 }
