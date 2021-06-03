@@ -109,7 +109,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             this.notifyClockState(true);
         }
         for(let chart of this.state.chartDataArr)
-            chart.chart.onClockUpdate(this.state.tradingClock.getClock());
+            chart.chart.onClockUpdate();
         this.setState({});
     }
 
@@ -230,8 +230,6 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     private onSaveSelectionInfo = (sessionInfoWrapper:SessionInfoWrapper) => {
         let { tradingDayTime, tradingClock } = this.state;
         //tradingDayTime = toDayTradingTime(new Date(sessionInfo.tradingDay),true);
-        console.log(sessionInfoWrapper);
-
         tradingDayTime = sessionInfoWrapper.clock;
         let newTradingClock:CommonTradingClock = sessionInfoWrapper.isServerSideSession()
                                                     ?new SessionTradingClock(tradingDayTime,this.clockUpdate,sessionInfoWrapper)
@@ -331,7 +329,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     notifyErrorChartLoadingData={this.notifyErrorChartLoadingData}
                                     notifySuccessChartLoadingData={this.notifySuccessChartLoadingData}
                                     dataLoader={this.dataLoader}
-                                    initialActiveClock={tradingClock.getClock()}
+                                    tradingClock={tradingClock}
                                     buy={this.eventLog}
                                     sell={this.eventLog}
                                     logs={tradeLogs.filter(v=>v.ticker===chartData.chartSelection.ticker)}

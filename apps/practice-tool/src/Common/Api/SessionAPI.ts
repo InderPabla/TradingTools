@@ -7,7 +7,7 @@ export class SessionAPI extends CommonAPI {
 
     /**
      * TODO DO PROPER ERROR HANDLING
-     * @param tradingDay 
+     * @param sessionId 
      * @returns 
      */
     public static async getSession(sessionId:string):Promise<SessionInfo> {
@@ -22,7 +22,8 @@ export class SessionAPI extends CommonAPI {
 
     /**
      * TODO DO PROPER ERROR HANDLING
-     * @param tradingDay 
+     * @param tradingDay
+     * @param initialClock
      * @returns 
      */
     public static async postCreateSession(tradingDay:string, initialClock:Date):Promise<SessionInfo> {
@@ -31,6 +32,40 @@ export class SessionAPI extends CommonAPI {
             method:'post', 
             headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ tradingDay, initialClock })
+        });
+        if(fetched.status>=400) throw fetched;
+        let body = await fetched.json();
+        return body.result;
+    }
+
+    /**
+     * TODO DO PROPER ERROR HANDLING
+     * @param sessionId 
+     * @returns 
+     */
+     public static async putStopSession(sessionId:string):Promise<SessionInfo> {
+        let fetched = await fetch(`${PATH_API}/${sessionId}/stop`,
+        {  
+            method:'put', 
+            headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: null,
+        });
+        if(fetched.status>=400) throw fetched;
+        let body = await fetched.json();
+        return body.result;
+    }
+
+    /**
+     * TODO DO PROPER ERROR HANDLING
+     * @param sessionId 
+     * @returns 
+     */
+     public static async putStartSession(sessionId:string):Promise<SessionInfo> {
+        let fetched = await fetch(`${PATH_API}/${sessionId}/start`,
+        {  
+            method:'put', 
+            headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: null,
         });
         if(fetched.status>=400) throw fetched;
         let body = await fetched.json();

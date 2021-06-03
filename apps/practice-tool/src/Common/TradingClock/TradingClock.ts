@@ -9,16 +9,12 @@ export class TradingClock extends CommonTradingClock{
     constructor(clock:Date,update:Function) {
         super(clock,update)
     }
-
-    public onClockPaused() {
-
-    }
-
-    public shouldPauseClock() {
+    
+    public async shouldPauseClock(): Promise<boolean> {
         return true;
     }
 
-    public shouldUnpauseClock() {
+    public async shouldUnpauseClock(): Promise<boolean> {
         return true;
     }
 

@@ -10,6 +10,7 @@ import {ReactStockChartsWrapper} from "./ReactStockChartsWrapper";
 import { genUniqueKey } from "../../Common/Utils";
 import { AggregatedTradeLog, ChartOrchestrator, TradeLog, TradingActionType } from './Commom/ChartOrchestrator';
 import { ChartSet } from "./Commom/ChartSet";
+import { CommonTradingClock } from "../../Common/TradingClock/CommonTradingClock";
 
 export interface ChartProps {
 	chartKey:string;
@@ -25,7 +26,8 @@ export interface ChartProps {
 	sell:(log:TradeLog)=>void;
 	buy:(log:TradeLog)=>void;
 
-	initialActiveClock:Date;
+	// initialActiveClock:Date;
+	tradingClock:CommonTradingClock;
 	dataLoader:ChartDataLoader;
 
 	logs:TradeLog[]
@@ -77,11 +79,10 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
 	private async onShouldFetchSelectionData() {
-		const { selection, initialActiveClock } = this.props;
-		const activeSelection = {...selection};
+		const { selection, tradingClock } = this.props;
+		const activeSelection = {...selection, tradingDayTime: new Date(tradingClock.getClock())};
 		const { dataLoader, notifyErrorChartLoadingData, notifySuccessChartLoadingData } = this.props;
 		let orch:ChartOrchestrator = null;
-
 		const completeSetData = await dataLoader.getData(activeSelection); 
 		const realtimeSetData = await dataLoader.getData({...activeSelection,candlestickDuration:CANDLESTICK_DURATION.SEC_5});
 
@@ -90,19 +91,19 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		}
 		else {
 			//initilize ChartOrchestrator
-			orch = new ChartOrchestrator(activeSelection.ticker,initialActiveClock,completeSetData,realtimeSetData);
+			orch = new ChartOrchestrator(activeSelection.ticker,tradingClock.getClock(),completeSetData,realtimeSetData);
 			notifySuccessChartLoadingData(activeSelection);
 		}
 
-		this.setState({ activeSelection, orch, activeClock:new Date(initialActiveClock) },()=>{
+		this.setState({ activeSelection, orch, activeClock:new Date(tradingClock.getClock()) },()=>{
 			this.forceUpdate();
 		});
 	}
 
-	public onClockUpdate(newTime:Date) {
+	public onClockUpdate() {
 		const { orch, activeSelection, activeClock:oldTime } = this.state;
 		if(!orch || !oldTime || !activeSelection) return;
-
+		const newTime = this.props.tradingClock.getClock();
 		const oldTimeTs = oldTime.getTime();
 		const newTimeTs = newTime.getTime();
 
@@ -230,8 +231,6 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 			if(i===logs.length-1 && activeOpen!=0) {
 				currentProfits += activeOpen*(currentPrice-baseTradePrice);
 			}
-
-			//console.log(i,newOpen,newPrice,"::::",activeOpen,currentProfits)
 		}
 
 		
@@ -245,7 +244,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		const _isChartActive = this.isChartActive();
         let candlestickDurationTitle = selection.candlestickDuration || 'Duration';
 		const chartDivId = `${chartKey}-duration-dropdown`;
-
+		
 		return (<React.Fragment key={`fragment-chart-${chartKey}`}>
             <div className="chart-container">
                 <div className="chart-topbar">

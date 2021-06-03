@@ -6,13 +6,17 @@ import {v4 as uuidv4} from 'uuid';
 
 export class SessionInfoData {
     private sessionInfo:SessionInfo;
-
-    private updater:NodeJS.Timeout|null;
-
+    private clockUpdateInterval:NodeJS.Timeout|null;
+    private systemTimeAtUnpause:Date|null;
+    private clockDuringUnpause:Date|null;
+    private static CLOCK_SPEED:number = 1;
+    private static CLOCK_RESET_TIME:number = 1000;
     constructor(sessionInfo:SessionInfo) {
         this.sessionInfo = sessionInfo;
-        this.updater = null;
+        this.clockUpdateInterval = null;
         this.sessionInfo.isRunning = false;
+        this.clockDuringUnpause = null;
+        this.systemTimeAtUnpause = null;
         this.updateClock = this.updateClock.bind(this);
     }
 
@@ -21,21 +25,33 @@ export class SessionInfoData {
     }
 
     public isSessionRunning() {
-        return this.updater!=null;
+        return this.clockUpdateInterval!=null;
     }
 
     public startSession() {
-        this.updater = setInterval(this.updateClock,1000);
+        if(this.isSessionRunning()) return;
+        this.systemTimeAtUnpause = new Date();
+        this.clockDuringUnpause = this.sessionInfo.clock;
+        this.clockUpdateInterval = setInterval(this.updateClock,SessionInfoData.CLOCK_RESET_TIME);
         this.sessionInfo.isRunning = true;
     }
 
     public stopSession() {
-        if(this.updater) clearInterval(this.updater);
+        if(this.clockUpdateInterval) clearInterval(this.clockUpdateInterval);
+        this.clockUpdateInterval = null;
+        this.systemTimeAtUnpause = null;
+        this.clockDuringUnpause = null;
         this.sessionInfo.isRunning = false;
     }
 
     public updateClock() {
-        
+        if(!this.systemTimeAtUnpause || !this.clockDuringUnpause) {
+            
+            throw new Error(`Session Id: ${this.sessionInfo.sessionId}. Unexpected senario where System Time At Unpause or Clock During Unpause are null.`);
+        }
+        const newDate = new Date();
+        const msDiff = newDate.getTime() - this.systemTimeAtUnpause.getTime();
+        this.sessionInfo.clock = new Date(this.clockDuringUnpause.getTime() + msDiff*SessionInfoData.CLOCK_SPEED);
     }
 }
 

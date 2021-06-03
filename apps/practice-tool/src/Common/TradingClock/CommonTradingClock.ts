@@ -62,10 +62,11 @@ export abstract class CommonTradingClock {
         return this.clockState === 'PAUSED';
     }
 
-    public toggleClock = () =>{
+    public toggleClock = async () =>{
         
         if(this.isClockRunning()) {
-            if(!this.shouldPauseClock()) return;
+            let res = await this.shouldPauseClock();
+            if(!res) return;
             clearInterval(this.clockUpdateInterval);
             this.clockUpdateInterval = null;
             this.systemTimeAtUnpause = null;
@@ -73,7 +74,8 @@ export abstract class CommonTradingClock {
             this.clockState = 'PAUSED';
         }
         else {
-            if(!this.shouldUnpauseClock()) return;
+            let res = await this.shouldUnpauseClock();
+            if(!res) return;
             this.systemTimeAtUnpause = new Date();
             this.clockDuringUnpause = this.getClock();
             this.clockUpdateInterval = setInterval(this.updateClock,this.getResetTime());
@@ -91,7 +93,7 @@ export abstract class CommonTradingClock {
     }
 
     public async updateClock() {
-        await this.onClockUpdate();
+        this.onClockUpdate();
         this.notifyUpdate();
     }
 
@@ -103,8 +105,8 @@ export abstract class CommonTradingClock {
         return this.systemTimeAtUnpause;
     }
 
-    public abstract shouldPauseClock():boolean;
-    public abstract shouldUnpauseClock():boolean;
+    public abstract shouldPauseClock():Promise<boolean>;
+    public abstract shouldUnpauseClock():Promise<boolean>;
     public abstract onClockUpdate():Promise<void>;
     public abstract getResetTime():number;
 }

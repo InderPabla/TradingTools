@@ -22,10 +22,14 @@ export class SessionTradingClock extends CommonTradingClock
         if(this.lock) return;
         this.lock = true;
 
+
+
         try {
             let sessionInfo = await SessionAPI.getSession(this.sessionInfo.sessionId);
             this.sessionInfo.setSessionInfo(sessionInfo);
-            console.log(sessionInfo);
+            this.setClock(this.sessionInfo.clock);
+            
+            console.log(this.sessionInfo);
         }
         catch(err) {
             console.log(err);
@@ -34,10 +38,26 @@ export class SessionTradingClock extends CommonTradingClock
         this.lock = false;
     }
 
-    public shouldPauseClock(): boolean {
+    public async shouldPauseClock(): Promise<boolean> {
+        try {
+            let sessionInfo = await SessionAPI.putStopSession(this.sessionInfo.sessionId);
+            this.sessionInfo.setSessionInfo(sessionInfo);
+        }
+        catch(err) {
+            console.log(err);
+        }
+
         return true;
     }
-    public shouldUnpauseClock(): boolean {
+    public async shouldUnpauseClock(): Promise<boolean> {
+        try {
+            let sessionInfo = await SessionAPI.putStartSession(this.sessionInfo.sessionId);
+            this.sessionInfo.setSessionInfo(sessionInfo);
+        }
+        catch(err) {
+            console.log(err);
+        }
+
         return true;
     }
 
