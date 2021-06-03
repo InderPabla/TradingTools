@@ -21,8 +21,20 @@ export class SessionController extends CommonController{
 
     async createSession(req:Request,res:Response) {
         let tradingDay:string = req.body.tradingDay;
-        let info = SessionService.createSession(tradingDay);
+        let initialClock:Date = new Date(req.body.initialClock);
+        let info = SessionService.createSession(tradingDay,initialClock);
         res.status(200).json(CommonController.successResp(info));
     }
     
+    async startSession(req:Request,res:Response) {
+        let sessionId = req.params.sessionId;
+        let info = SessionService.startSessionClock(sessionId);
+        res.status(200).json(CommonController.successResp(info));
+    }
+
+    async stopSession(req:Request,res:Response) {
+        let sessionId = req.params.sessionId;
+        let info = SessionService.stopSessionClock(sessionId);
+        res.status(200).json(CommonController.successResp(info));
+    }
 }

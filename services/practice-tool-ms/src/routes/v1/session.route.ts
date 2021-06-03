@@ -17,6 +17,18 @@ export class SessionRoute extends CommonRouter {
     public register() {
         let router = this.getRouter();
 
+        router.put(
+            `/:sessionId/start`
+            ,ValidatorMiddleware.validator(SessionValidation.validateGetSession)
+            ,this.controller.unexpectedControllerErrorHandler(this.controller.startSession)
+        );
+
+        router.put(
+            `/:sessionId/stop`
+            ,ValidatorMiddleware.validator(SessionValidation.validateGetSession)
+            ,this.controller.unexpectedControllerErrorHandler(this.controller.stopSession)
+        );
+
         router.get(
             `/:sessionId`
             ,ValidatorMiddleware.validator(SessionValidation.validateGetSession)

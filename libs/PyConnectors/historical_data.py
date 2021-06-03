@@ -27,8 +27,8 @@ header = ['date','open','high','low','close','average','volume','count']
 path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
 
 
-tickers = ['NIO','X','AAPL','AMD','QQQ','SPY','MARA']
-end_date = datetime.datetime(2021, 2, 2, 23, 59, 59)
+tickers = ['NIO','QQQ','SPY']
+end_date = datetime.datetime(2021, 6, 2, 23, 59, 59)
 
 #Get and save 5 seconds, 1 min and 5 mins
 time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_3,TimeDuration.DAY_1,TimeDuration.DAY_1]

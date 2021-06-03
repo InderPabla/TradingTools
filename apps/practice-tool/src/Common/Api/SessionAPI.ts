@@ -15,6 +15,8 @@ export class SessionAPI extends CommonAPI {
          { headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' } });
         if(fetched.status>=400) throw fetched;
         let body = await fetched.json();
+        let session:SessionInfo = body.result;
+        session.clock = new Date(session.clock);
         return body.result;
     }
 
@@ -23,12 +25,12 @@ export class SessionAPI extends CommonAPI {
      * @param tradingDay 
      * @returns 
      */
-    public static async postCreateSession(tradingDay:string):Promise<SessionInfo> {
+    public static async postCreateSession(tradingDay:string, initialClock:Date):Promise<SessionInfo> {
         let fetched = await fetch(`${PATH_API}`,
         {  
             method:'post', 
             headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ tradingDay })
+            body: JSON.stringify({ tradingDay, initialClock })
         });
         if(fetched.status>=400) throw fetched;
         let body = await fetched.json();

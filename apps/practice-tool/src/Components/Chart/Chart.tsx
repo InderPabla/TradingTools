@@ -25,7 +25,6 @@ export interface ChartProps {
 	sell:(log:TradeLog)=>void;
 	buy:(log:TradeLog)=>void;
 
-	isClockRunning:boolean;
 	initialActiveClock:Date;
 	dataLoader:ChartDataLoader;
 

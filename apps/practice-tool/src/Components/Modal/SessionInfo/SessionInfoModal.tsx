@@ -3,14 +3,15 @@ import * as React from 'react';
 import './SessionInfoModal.css';
 import { Modal, Button, DropdownButton, Dropdown, InputGroup, FormControl } from 'react-bootstrap';
 import { SessionInfo } from 'practice-tool-types';
-import { yyyymmdd } from '../../../Common/Utils';
+import { toDayTradingTime, yyyymmdd } from '../../../Common/Utils';
 import { SessionAPI } from '../../../Common/Api/SessionAPI';
+import { SessionInfoWrapper } from '../../../Common/TradingClock/SessionInfoWrapper';
 
 type SessionLocation = 'SERVER'|'CLIENT';
 
 export interface SessionInfoModalModalProps {
     show:boolean;
-    save:(sessionInfo:SessionInfo)=>void;
+    save:(sessionInfo:SessionInfoWrapper)=>void;
     onError:(errMessage:string)=>void;
 }
 
@@ -23,11 +24,13 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
 
     constructor(props) {
         super(props);
+        let clock = toDayTradingTime(new Date(),false);
         this.state = {
             sessionInfo:{
                 isRunning:false,
                 sessionId:null,
-                tradingDay:yyyymmdd(new Date())
+                tradingDay:yyyymmdd(clock),
+                clock,
             },
             sessionLocation:'CLIENT',
         };
@@ -37,14 +40,16 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         const { save, onError } = this.props;
         const { sessionInfo } = this.state;
         try {
-            let newSessionInfo = null;
+            let newSessionInfo:SessionInfo = null;
+
             if(this.isServerExistingSession()) 
                 newSessionInfo = await SessionAPI.getSession(sessionInfo.sessionId);
             else if(this.isServerNewSession()) 
-                newSessionInfo = await SessionAPI.postCreateSession(sessionInfo.tradingDay);
+                newSessionInfo = await SessionAPI.postCreateSession(sessionInfo.tradingDay, sessionInfo.clock);
             else 
                 newSessionInfo = sessionInfo;
-            save(newSessionInfo);
+                
+            save(new SessionInfoWrapper(newSessionInfo));
         }
         catch(err) {
             onError('Unable to create or join session')

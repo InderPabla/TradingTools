@@ -17,6 +17,24 @@ export class SessionValidation extends CommonValidation{
                 .withMessage('Must be a yyyy-mm-dd format')
                 .bail()
             .run(req);    
+
+        await CommonValidation.notEmptyStringChain(body('initialClock'))    
+            .isISO8601()
+                .withMessage("Must be a date")
+                .bail()
+            .custom(value=> {
+                try {
+                    const tradingDay = new Date(value).toISOString().split('T')[0];
+                    return  tradingDay === req.body.tradingDay;
+                }
+                catch(err) {
+                    return false;
+                }
+            })
+                .withMessage("Must match trading day")
+                .bail()
+            .run(req);    
+
         return validationResult(req);
     }
 

@@ -15,10 +15,13 @@ import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
 import { ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
 import { ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
-import { TradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/TradingClock';
+import { TradingClock } from '../../Common/TradingClock/TradingClock';
 import { SessionInfo } from 'practice-tool-types';
 import { SessionInfoModal } from '../../Components/Modal/SessionInfo/SessionInfoModal';
 import {  TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
+import { SessionInfoWrapper } from '../../Common/TradingClock/SessionInfoWrapper';
+import { SessionTradingClock } from '../../Common/TradingClock/SessionTradingClock';
+import { CommonTradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/CommonTradingClock';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6,10];
@@ -32,10 +35,11 @@ export interface PracticeToolProps {
 export interface PracticeToolState {
     chartDataArr:ChartSelectionSuper[];
     tradingDayTime:Date;
-    tradingClock:TradingClock;
+    tradingClock:CommonTradingClock;
 
     showSessionInfoModal:boolean;
-    sessionInfo:SessionInfo;
+    
+    sessionInfoWrapper:SessionInfoWrapper;
 
     tradeLogs:TradeLog[]
 }
@@ -66,7 +70,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
 
-        this.state = { chartDataArr, tradingDayTime, tradingClock, sessionInfo:null, showSessionInfoModal: true, tradeLogs:[]}; 
+        this.state = { chartDataArr, tradingDayTime, tradingClock, showSessionInfoModal: true, tradeLogs:[], sessionInfoWrapper:null}; 
     }
 
     componentDidMount() {
@@ -79,28 +83,22 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 		window.removeEventListener("keyup", this.keyUpEvent, false);
 	}
 
-	keyDownEvent = (event) => {
+	private keyDownEvent = (event) => {
 		if(event.code==='KeyP') {
            
 		}
 	}
 
-	keyUpEvent = (event) => {
+	private keyUpEvent = (event) => {
 		if(event.code==='KeyP') {
             //this.state.tradingClock.toggleClock();
 		}
 	}
 
-    eventLog = (log:TradeLog)=> {
+    private eventLog = (log:TradeLog)=> {
         const { tradeLogs } = this.state; 
         tradeLogs.push(log);
         this.setState({});
-    }
-
-
-    private isServerSideSession():boolean {
-        const { sessionInfo } = this.state;
-        return !!sessionInfo && !!sessionInfo.sessionId;
     }
 
     private clockUpdate = () => {
@@ -212,7 +210,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             for(let chart of chartDataArr) 
                 chart.chartSelection.tradingDayTime = newTradingDayTime;
             this.resetAllChart();
-            tradingClock.setClock(newTradingDayTime);
+            tradingClock.changeClock(newTradingDayTime);
             this.setState({tradingDayTime:newTradingDayTime},()=>{
                 this.notifyTradingDayChanged(newTradingDayTime);
             });
@@ -229,20 +227,27 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         }
     }
 
-    private onSaveSelectionInfo = (sessionInfo:SessionInfo) => {
-        let { tradingDayTime } = this.state;
-        tradingDayTime = toDayTradingTime(new Date(sessionInfo.tradingDay),true);
-        this.setState({showSessionInfoModal:false,sessionInfo,tradingDayTime},()=>{
-            this.notifySessionInfo(sessionInfo);
+    private onSaveSelectionInfo = (sessionInfoWrapper:SessionInfoWrapper) => {
+        let { tradingDayTime, tradingClock } = this.state;
+        //tradingDayTime = toDayTradingTime(new Date(sessionInfo.tradingDay),true);
+        console.log(sessionInfoWrapper);
+
+        tradingDayTime = sessionInfoWrapper.clock;
+        let newTradingClock:CommonTradingClock = sessionInfoWrapper.isServerSideSession()
+                                                    ?new SessionTradingClock(tradingDayTime,this.clockUpdate,sessionInfoWrapper)
+                                                    :tradingClock;
+        newTradingClock.setClock(tradingDayTime);
+        this.setState({showSessionInfoModal:false,tradingDayTime,sessionInfoWrapper,tradingClock:newTradingClock},()=>{
+            this.notifySessionInfo(sessionInfoWrapper);
         });
     }
 
     public render() {
-        const { tradingClock, showSessionInfoModal, sessionInfo, tradeLogs } = this.state;
+        const { tradingClock, showSessionInfoModal, tradeLogs, sessionInfoWrapper } = this.state;
         const isClockRunning = tradingClock.isClockRunning();
         const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
         const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
-        const disabled = this.isServerSideSession();
+        const disabled = sessionInfoWrapper!=null && sessionInfoWrapper.isServerSideSession();
 
         return (
             <React.Fragment>
@@ -289,7 +294,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     onClick={()=>{downloadDataToFile(`TradeLog-${new Date().toLocaleString()}.csv`,convertJsonToCsvString(tradeLogs))}}
                                     disabled={!tradeLogs || tradeLogs.length===0}>Download Trade Log</Button>	
                             </div>
-                            <p className="session-id">{!!sessionInfo.sessionId?`SERVER: ${sessionInfo.sessionId}`:'CLIENT'}</p>
+                            <p className="session-id">{!!sessionInfoWrapper.sessionId?`SERVER: ${sessionInfoWrapper.sessionId}`:'CLIENT'}</p>
                         </React.Fragment>
                         }
                     </TopBar>
@@ -323,17 +328,12 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     onTickerChanged={this.onTickerChanged}
                                     onTickerSelected={this.onTickerSelected}
                                     onCandleStickDurationSelected={this.onCandleStickDurationSelected}
-
                                     notifyErrorChartLoadingData={this.notifyErrorChartLoadingData}
                                     notifySuccessChartLoadingData={this.notifySuccessChartLoadingData}
-
                                     dataLoader={this.dataLoader}
-                                    isClockRunning={tradingClock.isClockRunning()}
                                     initialActiveClock={tradingClock.getClock()}
-
                                     buy={this.eventLog}
                                     sell={this.eventLog}
-
                                     logs={tradeLogs.filter(v=>v.ticker===chartData.chartSelection.ticker)}
                                 /> 
                             </div>
