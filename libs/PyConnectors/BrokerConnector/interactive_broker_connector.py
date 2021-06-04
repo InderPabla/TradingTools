@@ -172,4 +172,15 @@ class _InteractiveBrokerAPI(EWrapper, EClient):
         super().historicalDataEnd(reqId, start, end)
         print("HistoricalDataEnd. ReqId:", reqId, "from", start, "to", end)
         self.__historialEnd = True
+        
+     #Error List: https://interactivebrokers.github.io/tws-api/message_codes.html
+     def error(self, reqId: int, errorCode: int, errorMessage: str):
+        super().error(reqId, errorCode, errorMessage)
+        #TODO: Error handling is required!
+        #TODO: Throwing error?
+        
+        #Historical market data Service error message.
+        if(errorCode == 162):
+            print("Historical market data Service error message. Stopping historical data collection.");
+            self.__historialEnd = True
  

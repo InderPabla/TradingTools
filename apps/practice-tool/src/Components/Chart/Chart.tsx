@@ -315,8 +315,8 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						onClick={()=>{this.sell(100)}}
 						disabled={!_isChartActive}>-100</Button>	
 
-					{this.state.aggLogs && <p className="chart-id-name">Profits: {this.state.aggLogs.currentProfits}, Open:{this.state.aggLogs.currentOpen}</p>}
-					<p className="chart-id-name">{selection.chartId}</p>
+					{this.state.aggLogs && <p className="chart-id-name">{this.displayProfit(this.state.aggLogs.currentProfits)}, {this.displayOpen(this.state.aggLogs.currentOpen)}</p>}
+					{/* <p className="chart-id-name">{selection.chartId}</p> */}
                 </div>
 
 				<div ref={(ref) => this.divChartMainContent = ref} className="chart-main-content" >
@@ -326,7 +326,17 @@ export class Chart extends React.Component<ChartProps,ChartState> {
         </React.Fragment>);
 	}
 
-	private renderMainChartContent() {
+	private displayProfit(profit:number) {
+		let style = profit<0?{color:"red"}:{color:"limegreen"};
+		return <span style={style}>Profits: {profit.toFixed(2)}</span>
+	}
+
+	private displayOpen(open:number) {
+		let style = open<0?{color:"red"}:{color:"limegreen"};
+		return <span style={style}>Open: {open}</span>
+	}
+
+ 	private renderMainChartContent() {
 		const { chartKey, logs } = this.props;
 		const { orch, activeSelection } = this.state;
 

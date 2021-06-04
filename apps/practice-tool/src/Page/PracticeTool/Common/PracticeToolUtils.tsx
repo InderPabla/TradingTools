@@ -63,8 +63,7 @@ export function toChartRenderRowMeta(numberOfCharts:number):ChartRenderRowMeta[]
                             chartRenderMeta:[{chartIndex:3,numberOfColumns:4},{chartIndex:4,numberOfColumns:4},{chartIndex:5,numberOfColumns:4}]
                             ,heightPercent:50,numberOfRows:12
                         }
-                       ];
-
+                       ];             
         case 10: return [
                         {
                             chartRenderMeta:[{chartIndex:0,numberOfColumns:2},{chartIndex:1,numberOfColumns:2},
