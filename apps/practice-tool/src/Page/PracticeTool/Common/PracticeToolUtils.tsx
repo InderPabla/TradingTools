@@ -1,11 +1,13 @@
 import { CANDLESTICK_DURATION } from "../../../Common/Constant";
 import { Chart } from "../../../Components/Chart/Chart";
+import { ChartOrchestrator } from "../../../Components/Chart/Commom/ChartOrchestrator";
 import { ChartSelection } from "../../../Components/Chart/Commom/ChartUtils";
 
 export interface ChartSelectionSuper {
     chartKey:string;
     chartSelection:ChartSelection;
     chart:Chart;
+    orch:ChartOrchestrator;
 }
 
 export interface ChartRenderMeta {

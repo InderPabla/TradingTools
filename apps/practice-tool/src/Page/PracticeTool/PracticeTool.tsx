@@ -18,7 +18,7 @@ import { ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader'
 import { TradingClock } from '../../Common/TradingClock/TradingClock';
 import { SessionInfo } from 'practice-tool-types';
 import { SessionInfoModal } from '../../Components/Modal/SessionInfo/SessionInfoModal';
-import {  TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
+import {  ChartOrchestrator, TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
 import { SessionInfoWrapper } from '../../Common/TradingClock/SessionInfoWrapper';
 import { SessionTradingClock } from '../../Common/TradingClock/SessionTradingClock';
 import { CommonTradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/CommonTradingClock';
@@ -101,6 +101,37 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         this.setState({});
     }
 
+    private onChartDataLoad = async (chartKey:string):Promise<void> => {
+        const { tradingClock } = this.state;
+        let chart = this.state.chartDataArr.find(v=>v.chartKey===chartKey) as ChartSelectionSuper;
+        const activeSelection = {...chart.chartSelection, tradingDayTime: new Date(tradingClock.getClock())};
+        const realtimeSelection = {...activeSelection,candlestickDuration:CANDLESTICK_DURATION.SEC_5}
+		console.log(activeSelection,realtimeSelection);
+		let orch:ChartOrchestrator = null;
+
+        if(ChartOrchestrator.hasInstance(activeSelection,realtimeSelection)) {
+            orch = ChartOrchestrator.getInstance(activeSelection,realtimeSelection);
+        }
+        else {
+            const completeSetData = await this.dataLoader.getData(activeSelection); 
+            const realtimeSetData = await this.dataLoader.getData(realtimeSelection);
+    
+            if(!completeSetData) {
+                this.notifyErrorChartLoadingData(activeSelection);
+                return;
+            }
+            else {
+                orch = ChartOrchestrator.getInstance(activeSelection,realtimeSelection
+                                                  ,{date:tradingClock.getClock(),completeSetData,realtimeSetData});
+                this.notifySuccessChartLoadingData(activeSelection);
+            }
+        }
+		
+        chart.orch = orch;
+        chart.chartKey = genUniqueKey();
+        this.setState({})
+    }
+
     private clockUpdate = () => {
         if(this.state.tradingClock.wasClockPaused()) {
             this.notifyClockState(false);
@@ -108,6 +139,9 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         if(this.state.tradingClock.wasClockUnpaused()) {
             this.notifyClockState(true);
         }
+
+        ChartOrchestrator.update(this.state.tradingClock.getClock());
+
         for(let chart of this.state.chartDataArr)
             chart.chart.onClockUpdate();
         this.setState({});
@@ -131,6 +165,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                 candlestickDuration:duration, 
                 tradingDayTime:tradingDay,
             },
+            orch:null,
             chart:null,
         };
     }
@@ -237,6 +272,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         newTradingClock.setClock(tradingDayTime);
         this.setState({showSessionInfoModal:false,tradingDayTime,sessionInfoWrapper,tradingClock:newTradingClock},()=>{
             this.notifySessionInfo(sessionInfoWrapper);
+            this.onTradingDayTimeChanged(tradingDayTime);
         });
     }
 
@@ -324,11 +360,11 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     chartKey={chartData.chartKey} 
                                     selection={chartData.chartSelection}
                                     onTickerChanged={this.onTickerChanged}
-                                    onTickerSelected={this.onTickerSelected}
+                                    onTickerSelected={this.onTickerSelected} 
                                     onCandleStickDurationSelected={this.onCandleStickDurationSelected}
-                                    notifyErrorChartLoadingData={this.notifyErrorChartLoadingData}
-                                    notifySuccessChartLoadingData={this.notifySuccessChartLoadingData}
-                                    dataLoader={this.dataLoader}
+                                    onChartDataLoad={this.onChartDataLoad}
+                                    orch={chartData.orch}
+     
                                     tradingClock={tradingClock}
                                     buy={this.eventLog}
                                     sell={this.eventLog}
@@ -348,7 +384,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         return (
             <React.Fragment>
                 <ToastContainer
-                    autoClose={5000}
+                    autoClose={2000}
                     hideProgressBar={false}
                     newestOnTop={true}
                     closeOnClick

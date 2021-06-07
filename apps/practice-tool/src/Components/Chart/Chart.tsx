@@ -15,28 +15,21 @@ import { CommonTradingClock } from "../../Common/TradingClock/CommonTradingClock
 export interface ChartProps {
 	chartKey:string;
     selection:ChartSelection;
+	orch:ChartOrchestrator;
 
 	onTickerChanged:(chartKey:string,ticker:string)=>void;
 	onTickerSelected:(chartKey:string)=>void;
 	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
-
-	notifyErrorChartLoadingData:(sel:ChartSelection)=>void;
-	notifySuccessChartLoadingData:(sel:ChartSelection)=>void;
+	onChartDataLoad:(chartKey:string)=>Promise<void>;
 
 	sell:(log:TradeLog)=>void;
 	buy:(log:TradeLog)=>void;
-
-	// initialActiveClock:Date;
 	tradingClock:CommonTradingClock;
-	dataLoader:ChartDataLoader;
-
+	
 	logs:TradeLog[]
 }
 
 export interface ChartState {
-	activeSelection?:ChartSelection;
-	activeClock:Date;
-	orch:ChartOrchestrator;
 	aggLogs:AggregatedTradeLog;
 }
 
@@ -50,7 +43,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	constructor(props:ChartProps) {
 		super(props);
 		this.divChartMainContent = null;
-		this.state = { activeSelection:null, orch:null, activeClock:null, aggLogs:null };
+		this.state = { aggLogs:null };
 	}
 
 	async componentDidMount() { }
@@ -63,70 +56,42 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 
 	async componentDidUpdate(prevProps:ChartProps, prevState:ChartState) {
 		if(prevProps.chartKey===this.props.chartKey) return;
-		
-		const { selection:curPropSel } = this.props;
-		const { activeSelection:curActiveSel } = this.state;
-
+		const { selection:curPropSel, orch } = this.props;
+		const curActiveSel = orch?orch.getActiveSelection():null;
 		function _shouldFetchSelectionData():boolean {
 			if(!isChartSelectionValid(curPropSel)) return false;
 			return curActiveSel==null 
+				|| orch == null
 				|| curActiveSel.candlestickDuration!==curPropSel.candlestickDuration 
-				|| curActiveSel.ticker!==curPropSel.ticker 
-				|| curActiveSel.tradingDayTime.getTime()!==curPropSel.tradingDayTime.getTime();
+				|| curActiveSel.ticker!==curPropSel.ticker
 		}
-		
-		if(_shouldFetchSelectionData()) await this.onShouldFetchSelectionData();
+
+		console.log(_shouldFetchSelectionData(),curActiveSel,curPropSel)
+		if(_shouldFetchSelectionData()) await this.onFetchSelectionData();
 	}
 
-	private async onShouldFetchSelectionData() {
-		const { selection, tradingClock } = this.props;
-		const activeSelection = {...selection, tradingDayTime: new Date(tradingClock.getClock())};
-		const { dataLoader, notifyErrorChartLoadingData, notifySuccessChartLoadingData } = this.props;
-		let orch:ChartOrchestrator = null;
-		const completeSetData = await dataLoader.getData(activeSelection); 
-		const realtimeSetData = await dataLoader.getData({...activeSelection,candlestickDuration:CANDLESTICK_DURATION.SEC_5});
-
-		if(!completeSetData) {
-			notifyErrorChartLoadingData(activeSelection);
-		}
-		else {
-			//initilize ChartOrchestrator
-			orch = new ChartOrchestrator(activeSelection.ticker,tradingClock.getClock(),completeSetData,realtimeSetData);
-			notifySuccessChartLoadingData(activeSelection);
-		}
-
-		this.setState({ activeSelection, orch, activeClock:new Date(tradingClock.getClock()) },()=>{
-			this.forceUpdate();
-		});
+	private async onFetchSelectionData() {
+		await this.props.onChartDataLoad(this.props.chartKey);	
 	}
 
 	public onClockUpdate() {
-		const { orch, activeSelection, activeClock:oldTime } = this.state;
-		if(!orch || !oldTime || !activeSelection) return;
-		const newTime = this.props.tradingClock.getClock();
-		const oldTimeTs = oldTime.getTime();
-		const newTimeTs = newTime.getTime();
-
-		if(newTimeTs<=oldTimeTs) return;
-
-		orch.update(newTime);
-
+		if(!this.isChartActive()) return;
 		this.aggregatedTradeLog();
-		this.setState({activeClock:newTime},()=>{
+		this.setState({},()=>{
 			this.forceUpdate();
 		});
 	}
 
 	private isChartActive():boolean {
-		const { activeSelection, orch } = this.state;
-
+		const { orch } = this.props;
+		const activeSelection = orch?orch.getActiveSelection():null;
 		return isChartSelectionValid(activeSelection) !=null
 			&& this.divChartMainContent != null
 			&& orch!=null;
 	}
 
 	private buy(quantity:number) {
-		let candle = this.state.orch.getCurrentCandle();
+		let candle = this.props.orch.getCurrentCandle();
 		this.props.buy({ticker:this.props.selection.ticker,
 						action:'BUY',
 						quantity,
@@ -135,35 +100,15 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
 	private sell(quantity:number) {
-		let candle = this.state.orch.getCurrentCandle();
+		let candle = this.props.orch.getCurrentCandle();
 		this.props.sell({ticker:this.props.selection.ticker,
 			action:'SELL',
 			quantity,
 			price:candle.close,
 			date:candle.date});
 	}
-
-
-	// export interface TradeLog {
-	// 	ticker:string;
-	// 	price:number;
-	// 	action:TradingActionType;
-	// 	quantity:number;
-	// 	date:Date;
-	// }
-
-	/**
-	 * $100 BUY 100
-	 * AO:100, TOP: $100, TP: $100
-	 * 
-	 * 
-	 * 
-	 * 
-	 * @returns 
-	 */
 	public aggregatedTradeLog() {
-		let { logs } = this.props;
-		let { orch } = this.state;
+		let { logs, orch } = this.props;
 		if(!orch) return;
 		
 		let actionQuantity = (log:TradeLog)=>(log.action==='SELL'?-1:1)*log.quantity;
@@ -337,23 +282,21 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
  	private renderMainChartContent() {
-		const { chartKey, logs } = this.props;
-		const { orch, activeSelection } = this.state;
+		const { chartKey, logs, orch, selection } = this.props;
 
-		const shouldRenderChart = isChartSelectionValid(activeSelection) != null 
+		const shouldRenderChart = isChartSelectionValid(selection) 
 								&& this.divChartMainContent != null && orch!=null;
 
 		if(!shouldRenderChart) return null;
 
 		const activeSet = orch.getActiveSet();
 
-		
 		return (<React.Fragment>
 			<ReactStockChartsWrapper 
 				width={this.divChartMainContent.clientWidth} 
 				height={this.divChartMainContent.clientHeight}
 				data={activeSet.getCandles()}
-				selection={activeSelection}
+				selection={selection}
 				buyPrices={logs.filter(v=>v.action==='BUY').map(v=>v.price)}
 				sellPrices={logs.filter(v=>v.action==='SELL').map(v=>v.price)}
 			/>
