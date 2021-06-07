@@ -27,6 +27,7 @@ interface ReactStockChartsWrapperProps {
     buyPrices:number[],
     sellPrices:number[],
     type?:string;
+    fontSize?:number;
 }
 
 interface ReactStockChartsWrapperState {
@@ -37,6 +38,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
 	public static defaultProps = {
         type: "svg",
+        fontSize:11,
     };
 
     private chartCanvas:ChartCanvas;
@@ -86,7 +88,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
 	render() {
         const { panEvent } = this.state;
-        const { width, height, data:initialData, selection, type, buyPrices, sellPrices} = this.props;
+        const { width, height, data:initialData, selection, type, buyPrices, sellPrices, fontSize} = this.props;
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
         const xDateAccessor = d=>d.date;
         const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(xDateAccessor);
@@ -97,10 +99,10 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 			displayXAccessor,
 		} = xScaleProvider(initialData);
 
-        const rightCanvasMargin = initialData[0].close.toString().split(".")[0].length===3?50:40;
+        const rightCanvasMargin = initialData[0].close.toString().split(".")[0].length===3?40:33;
 		const totalChartHeight = height;
-		const chartHeight = height*0.7;
-		const chartVolumeHeight = height*0.25;
+		const chartHeight = height*0.75;
+		const chartVolumeHeight = height*0.2;
 		const chartWidth = width;
 
         let startIndex = data.length-100;
@@ -172,16 +174,15 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                     padding={{ top: 20, bottom: 20 }}
                     height={chartHeight}>
                     <XAxis 
-                       
-                        ticks={20} 
+                        fontSize={fontSize}
+                        
+                        // ticks={20} 
                         innerTickSize={chartHeight*-1} 
                         outerTickSize={chartHeight*-1}
-
                         axisAt="bottom" 
                         orient="bottom"
                         tickStrokeOpacity={0.2}
                         tickStroke={COLOR.WHITE}
-                        
                         tickFormat={(index:number)=>{
                             let date = timeFormat("%H:%M")(data[index].date);
                             if(date === "04:00") {
@@ -192,6 +193,8 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         stroke={COLOR.WHITE}
                     />
                     <YAxis 
+                        fontSize={fontSize}
+
                         axisAt="right" 
                         orient="right" 
                         ticks={15} 
@@ -262,6 +265,8 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                 
                 <Chart id={2} origin={(w, h) => [0, h - chartVolumeHeight]} height={chartVolumeHeight} yExtents={d => [d.volume,0]}>
                     <YAxis 
+                        fontSize={fontSize}
+                        
                         axisAt="right" 
                         orient="right" 
                         ticks={5} 

@@ -5,13 +5,29 @@ div.chart-container {
 }
 
 .chart-container .chart-topbar {
-    height: 30px;
+    height: 23px;
     border: dashed 1px white;
+}
+
+.chart-topbar button {
+    height: 19px;
+    bottom:2px;
+    padding-top: 0px;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-bottom: 0px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.chart-topbar input {
+    height: 19px;
+    bottom:2px;
 }
 
 .chart-topbar .dropdown {
     display: inline-block;
-    bottom: 1px;
+    bottom: 3px;
     margin-left: 5px;
 }
 
@@ -28,23 +44,23 @@ div.chart-container {
 .chart-topbar .input-group input{
     padding: 2px;
     padding-left: 7px;
-    height: 28px;
+   
     font-size: 13px;
     font-weight: bold;
     width: 50px;
 }
 
 .chart-topbar .dropdown button{
-    padding-top: 2px;
-    padding-bottom: 2px;
+    /* padding-top: 2px;
+    padding-bottom: 2px; */
 }
 
 .chart-topbar .chart-trade-button  {
     display: inline-block;
     margin-left: 5px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    bottom: 1px;
+    /* padding-top: 2px;
+    padding-bottom: 2px; */
+    /* bottom: 1px; */
     position: relative;
     border: solid 1px gray;
 }

@@ -94,7 +94,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             //this.state.tradingClock.toggleClock();
 		}
 	}
-
+ 
     private eventLog = (log:TradeLog)=> {
         const { tradeLogs } = this.state; 
         tradeLogs.push(log);
@@ -102,31 +102,14 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
 
     private onChartDataLoad = async (chartKey:string):Promise<void> => {
+        const { dataLoader } = this;
         const { tradingClock } = this.state;
         let chart = this.state.chartDataArr.find(v=>v.chartKey===chartKey) as ChartSelectionSuper;
         const activeSelection = {...chart.chartSelection, tradingDayTime: new Date(tradingClock.getClock())};
         const realtimeSelection = {...activeSelection,candlestickDuration:CANDLESTICK_DURATION.SEC_5}
-		console.log(activeSelection,realtimeSelection);
-		let orch:ChartOrchestrator = null;
-
-        if(ChartOrchestrator.hasInstance(activeSelection,realtimeSelection)) {
-            orch = ChartOrchestrator.getInstance(activeSelection,realtimeSelection);
-        }
-        else {
-            const completeSetData = await this.dataLoader.getData(activeSelection); 
-            const realtimeSetData = await this.dataLoader.getData(realtimeSelection);
-    
-            if(!completeSetData) {
-                this.notifyErrorChartLoadingData(activeSelection);
-                return;
-            }
-            else {
-                orch = ChartOrchestrator.getInstance(activeSelection,realtimeSelection
-                                                  ,{date:tradingClock.getClock(),completeSetData,realtimeSetData});
-                this.notifySuccessChartLoadingData(activeSelection);
-            }
-        }
-		
+		const orch = await ChartOrchestrator.getInstance(activeSelection,realtimeSelection,{date:tradingClock.getClock(),dataLoader});
+        if(orch) this.notifySuccessChartLoadingData(activeSelection);
+        else this.notifyErrorChartLoadingData(activeSelection);
         chart.orch = orch;
         chart.chartKey = genUniqueKey();
         this.setState({})

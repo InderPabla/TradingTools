@@ -16,17 +16,15 @@ export interface ChartProps {
 	chartKey:string;
     selection:ChartSelection;
 	orch:ChartOrchestrator;
+	tradingClock:CommonTradingClock;
+	logs:TradeLog[];
 
 	onTickerChanged:(chartKey:string,ticker:string)=>void;
 	onTickerSelected:(chartKey:string)=>void;
 	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
 	onChartDataLoad:(chartKey:string)=>Promise<void>;
-
 	sell:(log:TradeLog)=>void;
 	buy:(log:TradeLog)=>void;
-	tradingClock:CommonTradingClock;
-	
-	logs:TradeLog[]
 }
 
 export interface ChartState {
@@ -65,8 +63,6 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 				|| curActiveSel.candlestickDuration!==curPropSel.candlestickDuration 
 				|| curActiveSel.ticker!==curPropSel.ticker
 		}
-
-		console.log(_shouldFetchSelectionData(),curActiveSel,curPropSel)
 		if(_shouldFetchSelectionData()) await this.onFetchSelectionData();
 	}
 

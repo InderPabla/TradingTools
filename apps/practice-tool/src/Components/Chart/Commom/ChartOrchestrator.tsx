@@ -1,3 +1,4 @@
+import { ChartDataLoader } from "../../../Common/DataLoader/ChartDataLoader";
 import { ActiveChartSet, ChartSet } from "./ChartSet";
 import { ChartSetFactory } from "./ChartSetFactory";
 import { ChartContinousData, ChartSelection } from "./ChartUtils";
@@ -22,7 +23,6 @@ export class ChartOrchestrator {
 
     private activeSelection:ChartSelection;
     private realtimeSelection:ChartSelection;
-
     private activeSet:ActiveChartSet;
     private static orchMap:Map<string,ChartOrchestrator>;
 
@@ -56,23 +56,23 @@ export class ChartOrchestrator {
         this.activeSet.animateForward(newDate); 
     }
 
-    public static getInstance(activeSelection:ChartSelection,realtimeSelection:ChartSelection,
-                        args?:{date:Date,completeSetData:ChartContinousData[],realtimeSetData?:ChartContinousData[]}
-    ) {
+    public static async getInstance(activeSelection:ChartSelection,realtimeSelection:ChartSelection
+        ,args?:{date:Date,dataLoader:ChartDataLoader}):Promise<ChartOrchestrator> {
         let id = ChartOrchestrator.getId(activeSelection,realtimeSelection); 
 
         if(!ChartOrchestrator.orchMap) {
             ChartOrchestrator.orchMap = new Map(); 
         }
 
-        if(ChartOrchestrator.orchMap.has(id)) {
-            return ChartOrchestrator.orchMap.get(id);
-        }
-        else {
+        if(!ChartOrchestrator.orchMap.has(id)) {
             if(!args) return null;
-            ChartOrchestrator.orchMap.set(id,new ChartOrchestrator(activeSelection,realtimeSelection,args.date,args.completeSetData,args.realtimeSetData));
-            return ChartOrchestrator.orchMap.get(id);
+            const completeSetData = await args.dataLoader.getData(activeSelection); 
+            const realtimeSetData = await args.dataLoader.getData(realtimeSelection);
+            if(!completeSetData) return null;    
+            ChartOrchestrator.orchMap.set(id,new ChartOrchestrator(activeSelection,realtimeSelection,args.date,completeSetData,realtimeSetData));
         }
+
+        return ChartOrchestrator.orchMap.get(id);
     }
 
     public static hasInstance(activeSelection:ChartSelection,realtimeSelection:ChartSelection) {
