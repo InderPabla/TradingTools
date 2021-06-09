@@ -1,7 +1,7 @@
 .tool-toolbar {
-    background: ivory;
+    background: #222222;
     padding-left: 10px;
-    color: black;
+    color: white;
 }
 
 .tool-toolbar .tool-title-container {

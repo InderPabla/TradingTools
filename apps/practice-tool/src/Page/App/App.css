@@ -1,10 +1,10 @@
 html {
-  background: #000000 !important;
+  background: #222222 !important;
   color:white;
 }
 
 body {
-  background: #000000 !important;
+  background: #222222 !important;
   color:white;
 }
 
@@ -14,4 +14,8 @@ body {
 
 .sidenav-content-container {
   margin-left: 65px;
+}
+
+.app-navigation {
+  background: black;
 }

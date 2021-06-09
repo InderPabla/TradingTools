@@ -1,6 +1,7 @@
 import { CommonAPI, IAjaxDataError, IAjaxError } from "../CommonAPI";
-import { ChartContinousData, ChartSelection } from "../../Components/Chart/Commom/ChartUtils";
+import { ChartSelection } from "../../Components/Chart/Commom/ChartUtils";
 import { HistorialAPI } from "../Api/HistorialAPI";
+import { ChartContinousData } from "practice-tool-types";
 
 export type FuncSelectionToFilename = (sel:ChartSelection)=>string
 

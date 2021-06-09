@@ -1,7 +1,7 @@
 //https://github.com/rrag/react-stockcharts/issues/519
 
 import React from "react";
-import { ChartContinousData, ChartSelection } from "./Commom/ChartUtils";
+import { ChartSelection } from "./Commom/ChartUtils";
 import { scaleTime } from "d3-scale";
 import { format } from "d3-format";
 import { timeFormat } from "d3-time-format";
@@ -18,6 +18,7 @@ import { min as d3Min, max as d3Max } from 'd3-array';
 import { ChartSet } from "./Commom/ChartSet";
 import { fitWidth } from "react-stockcharts/lib/helper";
 import { start } from "node:repl";
+import { ChartContinousData } from "practice-tool-types";
 
 interface ReactStockChartsWrapperProps {
     width:number;
@@ -38,7 +39,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
 	public static defaultProps = {
         type: "svg",
-        fontSize:11,
+        fontSize:10,
     };
 
     private chartCanvas:ChartCanvas;
@@ -175,8 +176,8 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                     height={chartHeight}>
                     <XAxis 
                         fontSize={fontSize}
-                        
                         // ticks={20} 
+
                         innerTickSize={chartHeight*-1} 
                         outerTickSize={chartHeight*-1}
                         axisAt="bottom" 
@@ -194,10 +195,10 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                     />
                     <YAxis 
                         fontSize={fontSize}
+                        // ticks={15} 
 
                         axisAt="right" 
                         orient="right" 
-                        ticks={15} 
                         innerTickSize={chartWidth*-1} 
                         tickStrokeOpacity={0.2}
                         tickStroke={COLOR.WHITE}
@@ -211,6 +212,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                     />
                     <CandlestickSeries 
                         //width={timeIntervalBarWidth(intervalFunction)}
+                        widthRatio={0.8}
                         wickStroke={COLOR.WHITE}
                         stroke={(d)=> {
                             let diff = Math.abs(d.close-d.open);

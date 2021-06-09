@@ -1,4 +1,4 @@
-import { ChartContinousData, } from "./ChartUtils";
+import { ChartContinousData } from "practice-tool-types";
 
 interface IChartAnimate {
     animateForward(date:Date):void;

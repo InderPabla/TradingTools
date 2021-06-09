@@ -1,7 +1,8 @@
+import { ChartContinousData } from "practice-tool-types";
 import { ChartDataLoader } from "../../../Common/DataLoader/ChartDataLoader";
 import { ActiveChartSet, ChartSet } from "./ChartSet";
 import { ChartSetFactory } from "./ChartSetFactory";
-import { ChartContinousData, ChartSelection } from "./ChartUtils";
+import { ChartSelection } from "./ChartUtils";
 
 export type TradingActionType = 'BUY'|'SELL';
 

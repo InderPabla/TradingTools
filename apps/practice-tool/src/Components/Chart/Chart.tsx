@@ -4,7 +4,7 @@ import React from "react";
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
 import './Chart.css';
 import { Dropdown, DropdownButton, FormControl, InputGroup, Button } from "react-bootstrap";
-import { ChartContinousData, ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
+import { ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
 import { ChartDataLoader } from "../../Common/DataLoader/ChartDataLoader";
 import {ReactStockChartsWrapper} from "./ReactStockChartsWrapper";
 import { genUniqueKey } from "../../Common/Utils";

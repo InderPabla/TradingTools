@@ -1,5 +1,5 @@
+import { ChartContinousData } from "practice-tool-types";
 import { ActiveChartSet, ChartSet, ChartSetType } from "./ChartSet";
-import { ChartContinousData } from "./ChartUtils";
 
 export class ChartSetFactory {
 

@@ -23,6 +23,7 @@ class App extends React.Component {
                 <Route render={({ location, history }) => (
                     <React.Fragment>
                         <SideNav
+                            className={"app-navigation"}
                             onSelect={(selected) => {
                                 const to = '/' + selected;
                                 if (location.pathname !== to) {
