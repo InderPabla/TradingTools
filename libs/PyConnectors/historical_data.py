@@ -51,7 +51,7 @@ for ticker in tickers:
             for _ed in _end_dates:
                 try:
                     filename = ticker+'-'+_ed.strftime("%Y-%m-%d-%H-%M-%S")+"-"+time_dur.name+'-'+candle_dur.name+'.csv'  
-                    data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=_ed,include_non_trading_hours=True)
+                    data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=_ed,include _non_trading_hours=True)
                     savedata(path,data,header,filename)
                 except:
                     print("Error fetching:"+filename)

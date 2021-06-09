@@ -23,13 +23,11 @@ export interface AggregatedTradeLog {
 export class ChartOrchestrator {
 
     private activeSelection:ChartSelection;
-    private realtimeSelection:ChartSelection;
     private activeSet:ActiveChartSet;
     private static orchMap:Map<string,ChartOrchestrator>;
 
-    private constructor(activeSelection:ChartSelection,realtimeSelection:ChartSelection,date:Date,completeSetData:ChartContinousData[],realtimeSetData?:ChartContinousData[]) {
+    private constructor(activeSelection:ChartSelection,date:Date,completeSetData:ChartContinousData[],realtimeSetData?:ChartContinousData[]) {
         this.activeSelection = activeSelection;
-        this.realtimeSelection = realtimeSelection;
         this.activeSet = new ChartSetFactory(date,completeSetData,realtimeSetData).getActiveChartSet();
     }
 
@@ -70,7 +68,7 @@ export class ChartOrchestrator {
             const completeSetData = await args.dataLoader.getData(activeSelection); 
             const realtimeSetData = await args.dataLoader.getData(realtimeSelection);
             if(!completeSetData) return null;    
-            ChartOrchestrator.orchMap.set(id,new ChartOrchestrator(activeSelection,realtimeSelection,args.date,completeSetData,realtimeSetData));
+            ChartOrchestrator.orchMap.set(id,new ChartOrchestrator(activeSelection,args.date,completeSetData,realtimeSetData));
         }
 
         return ChartOrchestrator.orchMap.get(id);

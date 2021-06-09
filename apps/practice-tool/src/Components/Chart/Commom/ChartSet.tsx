@@ -1,5 +1,17 @@
 import { ChartContinousData } from "practice-tool-types";
 
+interface ChartIndicatorData {
+	name:string;
+    color:string;
+    renderKeys:string[];
+}
+
+interface VWAPData {
+    _totalPrice:number;
+    _totalVolume:number;
+    vwap:number
+}
+
 interface IChartAnimate {
     animateForward(date:Date):void;
     useRealtime():boolean;
@@ -92,6 +104,7 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
     private realSet:ChartSet;
     private compIndex:number;
     private realIndex:number;
+    private indicators:ChartIndicatorData[];
 
     constructor(chartType:string,compIndex:number,realIndex:number,compSet:ChartSet,realSet:ChartSet) {
         super(chartType,compSet.getCandlesBetweenRange(0,compIndex));
