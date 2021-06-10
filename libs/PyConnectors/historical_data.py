@@ -26,12 +26,15 @@ ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_
 header = ['date','open','high','low','close','average','volume','count']
 path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
 
+today_year = 2021
+today_month = 2
+today_day = 8
 
-tickers = ['NIO','X','LUV','SNAP','LIZI','MGNI','TIGR','SPY','QQQ']
-end_date = datetime.datetime(2021, 2, 5, 23, 59, 59)
+tickers = ['NIO','LIZI','TIGR','BB','OCGN','MARA','RIOT','CCIV','SPY','QQQ']
+end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
 
 #Get and save 5 seconds, 1 min and 5 mins
-time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_3,TimeDuration.DAY_1,TimeDuration.DAY_1]
+time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_4,TimeDuration.DAY_2,TimeDuration.DAY_1]
 candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1,CandleStickDuration.SEC_5]
 
 #time_durations = [TimeDuration.DAY_1]
@@ -44,14 +47,16 @@ for ticker in tickers:
         
         if(candle_dur.name==CandleStickDuration.SEC_1.name):
             time_dur = TimeDuration.MIN_30
-            _end_dates = [datetime.datetime(2021, 2, 5, 9, 30, 00), datetime.datetime(2021, 2, 5, 10, 00, 00)
-                          ,datetime.datetime(2021, 2, 5, 10, 30, 00), datetime.datetime(2021, 2, 5, 11, 00, 00)
-                          ,datetime.datetime(2021, 2, 5, 11, 30, 00)]
+            _end_dates = [datetime.datetime(today_year, today_month, today_day, 9, 30, 00)
+                          ,datetime.datetime(today_year, today_month, today_day, 10, 00, 00)
+                          ,datetime.datetime(today_year, today_month, today_day, 10, 30, 00)
+                          ,datetime.datetime(today_year, today_month, today_day, 11, 00, 00)
+                          ,datetime.datetime(today_year, today_month, today_day, 11, 30, 00)]
             
             for _ed in _end_dates:
                 try:
                     filename = ticker+'-'+_ed.strftime("%Y-%m-%d-%H-%M-%S")+"-"+time_dur.name+'-'+candle_dur.name+'.csv'  
-                    data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=_ed,include _non_trading_hours=True)
+                    data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=_ed,include_non_trading_hours=True)
                     savedata(path,data,header,filename)
                 except:
                     print("Error fetching:"+filename)

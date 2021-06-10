@@ -292,6 +292,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 				width={this.divChartMainContent.clientWidth} 
 				height={this.divChartMainContent.clientHeight}
 				data={activeSet.getCandles()}
+				indicators={activeSet.getIndicators()}
 				selection={selection}
 				buyPrices={logs.filter(v=>v.action==='BUY').map(v=>v.price)}
 				sellPrices={logs.filter(v=>v.action==='SELL').map(v=>v.price)}

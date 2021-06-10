@@ -16,10 +16,10 @@ export class HistorialService extends CommonServiceBase {
     }
 
     private selectionToTimeDuration(sel:CandleSelection):string {
-        let days = sel.candlestickDuration==="MIN_5"?'DAY_3'
-        :sel.candlestickDuration==="DAY_1"?'WEEK_26'
-        :'DAY_1';
-        return days;
+        if(sel.candlestickDuration==="MIN_5") return 'DAY_4';
+        if(sel.candlestickDuration==="MIN_1") return 'DAY_2';
+        if(sel.candlestickDuration==="DAY_1") return 'WEEK_26';
+        return 'DAY_1';
     }
 
     //5 mins, 9:25 am => 25,26,27,28,29
@@ -34,8 +34,12 @@ export class HistorialService extends CommonServiceBase {
         if(sel.candlestickDuration === 'SEC_5') {
             // let realtimeFiles:string[] = [`${sel.ticker}-${sel.tradingDay}-09-29-59-MIN_30-SEC_1.csv`,`${sel.ticker}-${sel.tradingDay}-09-59-59-MIN_30-SEC_1.csv`
             //                      ,`${sel.ticker}-${sel.tradingDay}-10-29-59-MIN_30-SEC_1.csv`,`${sel.ticker}-${sel.tradingDay}-10-59-59-MIN_30-SEC_1.csv`];
-            let realtimeFiles:string[] = [`${sel.ticker}-${sel.tradingDay}-10-00-00-MIN_30-SEC_1.csv`];
-            
+            let realtimeFiles:string[] = [`${sel.ticker}-${sel.tradingDay}-09-30-00-MIN_30-SEC_1.csv`
+                                          ,`${sel.ticker}-${sel.tradingDay}-10-00-00-MIN_30-SEC_1.csv`
+                                          ,`${sel.ticker}-${sel.tradingDay}-10-30-00-MIN_30-SEC_1.csv`
+                                          ,`${sel.ticker}-${sel.tradingDay}-11-00-00-MIN_30-SEC_1.csv`
+                                          ,`${sel.ticker}-${sel.tradingDay}-11-30-00-MIN_30-SEC_1.csv`];
+
             for(let file of realtimeFiles) {
                 let rtData = await this.getCandlestickDataFromFilename(file);
                 if(rtData) {

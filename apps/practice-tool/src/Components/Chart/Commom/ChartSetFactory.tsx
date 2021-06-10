@@ -1,5 +1,5 @@
 import { ChartContinousData } from "practice-tool-types";
-import { ActiveChartSet, ChartSet, ChartSetType } from "./ChartSet";
+import { ActiveChartSet, ChartSet, ChartSetType, INDICATOR_METADATA } from "./ChartSet";
 
 export class ChartSetFactory {
 
@@ -20,10 +20,10 @@ export class ChartSetFactory {
      */
     public getNonActiveChartSet(chartType:ChartSetType):ChartSet {
         if(chartType==='COMPLETE') {
-            return new ChartSet(chartType,this.compCandles);
+            return new ChartSet(chartType,this.compCandles,[]);
         }
         else if(chartType==='REALTIME') {
-            return this.realCandles?new ChartSet(chartType,this.realCandles):null;
+            return this.realCandles?new ChartSet(chartType,this.realCandles,[]):null;
         }
         else {
             throw new Error(`ChartSetType: ${chartType} is invalid.`)
@@ -39,7 +39,9 @@ export class ChartSetFactory {
         const realSet = this.getNonActiveChartSet('REALTIME');
         const compIndex = compSet.getClosestDateIndex(0,this.date)-1; //1 candles before just incase
         const realIndex = realSet?realSet.getClosestDateIndex(0,this.date):-1;
-        let active = new ActiveChartSet('ACTIVE',compIndex,realIndex,compSet,realSet);
+        let active = new ActiveChartSet('ACTIVE',[INDICATOR_METADATA.VWAP]
+                                        ,compIndex,realIndex
+                                        ,compSet,realSet);
         active.animateForward(this.date);
         return active;
     }

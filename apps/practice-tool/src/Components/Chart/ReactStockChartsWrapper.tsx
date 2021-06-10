@@ -6,7 +6,7 @@ import { scaleTime } from "d3-scale";
 import { format } from "d3-format";
 import { timeFormat } from "d3-time-format";
 import { ChartCanvas, Chart } from "react-stockcharts";
-import { CandlestickSeries, BarSeries } from "react-stockcharts/lib/series";
+import { CandlestickSeries, BarSeries, LineSeries } from "react-stockcharts/lib/series";
 import { XAxis, YAxis } from "react-stockcharts/lib/axes";
 import { last, timeIntervalBarWidth } from "react-stockcharts/lib/utils";
 import { lastVisibleItemBasedZoomAnchor } from "react-stockcharts/lib/utils/zoomBehavior"
@@ -15,7 +15,7 @@ import { EdgeIndicator, MouseCoordinateY, MouseCoordinateX, CrossHairCursor } fr
 import { discontinuousTimeScaleProvider } from "react-stockcharts/lib/scale";
 import { COLOR } from "../../Common/ColorConst";
 import { min as d3Min, max as d3Max } from 'd3-array';
-import { ChartSet } from "./Commom/ChartSet";
+import { ChartIndicatorMetadadata } from "./Commom/ChartSet";
 import { fitWidth } from "react-stockcharts/lib/helper";
 import { start } from "node:repl";
 import { ChartContinousData } from "practice-tool-types";
@@ -25,6 +25,7 @@ interface ReactStockChartsWrapperProps {
     height:number;
     selection:ChartSelection;
     data:ChartContinousData[];
+    indicators:ChartIndicatorMetadadata[];
     buyPrices:number[],
     sellPrices:number[],
     type?:string;
@@ -90,6 +91,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 	render() {
         const { panEvent } = this.state;
         const { width, height, data:initialData, selection, type, buyPrices, sellPrices, fontSize} = this.props;
+       
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
         const xDateAccessor = d=>d.date;
         const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(xDateAccessor);
@@ -209,6 +211,9 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 						at="right"
 						orient="right"
 						displayFormat={format(".2f")} 
+                        dx={-10}
+                        fill={COLOR.WHITE}
+                        textFill={COLOR.BLACK}
                     />
                     <CandlestickSeries 
                         //width={timeIntervalBarWidth(intervalFunction)}
@@ -227,6 +232,8 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         opacity={1}
                     />
                     
+                    <LineSeries yAccessor={d=>d.vwap}/>
+
                     {Array.from(new Set(buyPrices)).map((price)=> {
                         return <EdgeIndicator
                             key = {`edge-indicator-${price}`}
