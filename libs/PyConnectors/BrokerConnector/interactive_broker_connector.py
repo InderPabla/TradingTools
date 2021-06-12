@@ -72,10 +72,10 @@ class InteractiveBrokerConnector(BrokerConnector):
     '''
     Static Historic Data (NOT STREAMING)
     '''  
-    def historicdata(self,ticker:str,time_duration:TimeDuration,candlestick_duration:CandleStickDuration,end_date:datetime.datetime=None,include_non_trading_hours=True,is_unix_timestamp=True):
+    def historicdata(self,ticker:str,time_duration:TimeDuration,candlestick_duration:CandleStickDuration,end_date:datetime.datetime=None,include_non_trading_hours=True,is_unix_timestamp=True,primary_exchange=None):
         reqId = _IBKR_RequestType.HISTORICAL.value
         data = []
-        contract = self.__ibkr_api.stockcontract(ticker)
+        contract = self.__ibkr_api.stockcontract(ticker,primary_exchange)
 
         #yyyymmdd HH:mm:ss ttt (Example: "20210331 23:59:59 GMT" )
         #Always generating for eastern standard time: 20210331 23:59:59 EST 
@@ -146,12 +146,14 @@ class _InteractiveBrokerAPI(EWrapper, EClient):
          if(reqId in self.__requestData):
              del self.__requestData[reqId]
          
-     def stockcontract(self,ticker):
+     def stockcontract(self,ticker,primary_exchange=None):
         contract = Contract()
         contract.symbol = ticker
         contract.secType = 'STK'
         contract.exchange = 'SMART'
         contract.currency = 'USD'
+        if(primary_exchange is not None):
+            contract.primaryExchange = primary_exchange;
         return contract      
          
     ######### Data Called Functions ##########

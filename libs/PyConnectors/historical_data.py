@@ -21,26 +21,32 @@ def savedata(_path,_data,_header,_filename):
 #https://interactivebrokers.github.io/tws-api/historical_limitations.html
 
 #Port:7497 for TWS, 4002 fpr IB Gateway
-ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1234})
+ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1236})
 
 header = ['date','open','high','low','close','average','volume','count']
 path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
 
 today_year = 2021
-today_month = 2
-today_day = 8
+today_month = 6
+today_day = 11
 
-tickers = ['NIO','LIZI','TIGR','BB','OCGN','MARA','RIOT','CCIV','SPY','QQQ']
+tickers = ['CLOV']
+primary_exchange = [None,None]
+
 end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
 
 #Get and save 5 seconds, 1 min and 5 mins
-time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_4,TimeDuration.DAY_2,TimeDuration.DAY_1]
-candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1,CandleStickDuration.SEC_5]
+time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_4,TimeDuration.DAY_2
+                  ,TimeDuration.DAY_1,TimeDuration.MIN_30]
+candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1
+                         ,CandleStickDuration.SEC_5,CandleStickDuration.SEC_1]
 
 #time_durations = [TimeDuration.DAY_1]
 #candlestick_durations = [CandleStickDuration.SEC_1]
 
-for ticker in tickers:
+for i in range(0,len(tickers)):
+    ticker = tickers[i]
+    pe = primary_exchange[i]
     for i in range(0,len(candlestick_durations)):
         candle_dur = candlestick_durations[i]
         time_dur = time_durations[i]
@@ -56,14 +62,14 @@ for ticker in tickers:
             for _ed in _end_dates:
                 try:
                     filename = ticker+'-'+_ed.strftime("%Y-%m-%d-%H-%M-%S")+"-"+time_dur.name+'-'+candle_dur.name+'.csv'  
-                    data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=_ed,include_non_trading_hours=True)
+                    data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=_ed,include_non_trading_hours=True,primary_exchange=pe)
                     savedata(path,data,header,filename)
                 except:
                     print("Error fetching:"+filename)
         else:
           try:
               filename = ticker+'-'+end_date.strftime("%Y-%m-%d-%H-%M-%S")+"-"+time_dur.name+'-'+candle_dur.name+'.csv'  
-              data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=end_date,include_non_trading_hours=True)
+              data = ibkr.historicdata(ticker,time_dur,candle_dur,end_date=end_date,include_non_trading_hours=True,primary_exchange=pe)
               savedata(path,data,header,filename)
           except:
               print("Error fetching:"+filename)
