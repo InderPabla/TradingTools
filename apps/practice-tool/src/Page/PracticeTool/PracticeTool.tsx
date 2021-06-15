@@ -98,16 +98,19 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     private eventLog = (log:TradeLog)=> {
         const { tradeLogs } = this.state; 
         tradeLogs.push(log);
+        ChartOrchestrator.updateTradeLog(log);
         this.setState({});
     }
 
     private onChartDataLoad = async (chartKey:string):Promise<void> => {
         const { dataLoader } = this;
-        const { tradingClock } = this.state;
+        const { tradingClock, tradeLogs } = this.state;
         let chart = this.state.chartDataArr.find(v=>v.chartKey===chartKey) as ChartSelectionSuper;
         const activeSelection = {...chart.chartSelection, tradingDayTime: new Date(tradingClock.getClock())};
         const realtimeSelection = {...activeSelection,candlestickDuration:CANDLESTICK_DURATION.SEC_5}
-		const orch = await ChartOrchestrator.getInstance(activeSelection,realtimeSelection,{date:tradingClock.getClock(),dataLoader});
+		const orch = await ChartOrchestrator.getInstance(activeSelection,realtimeSelection
+                                                        ,{date:tradingClock.getClock(),dataLoader
+                                                          ,logs:tradeLogs.filter(v=>v.ticker===activeSelection.ticker)});
         if(orch) {
             this.notifySuccessChartLoadingData(activeSelection);
             chart.orch = orch;

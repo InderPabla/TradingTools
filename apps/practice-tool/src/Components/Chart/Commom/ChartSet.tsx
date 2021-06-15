@@ -1,4 +1,9 @@
 import { ChartContinousData } from "practice-tool-types";
+import { TradeLog } from "./ChartOrchestrator";
+
+export interface ChartContinousDataSuper extends ChartContinousData{
+    trades:TradeLog[];
+}
 
 export interface ChartIndicatorMetadadata {
 	name:IndicatorType;
@@ -32,7 +37,7 @@ export const INDICATOR_METADATA:ChartIndicatorMetadadataSet = {
 
 export class ChartSet {
     
-    private candles:ChartContinousData[];
+    private candles:ChartContinousDataSuper[];
     private chartType:ChartSetType;
     private indicatorMeta:ChartIndicatorMetadadata[];
 
@@ -42,15 +47,15 @@ export class ChartSet {
         this.indicatorMeta = indicatorMeta;
         
         if(this.indicatorMeta.length===0) {
-            this.candles = candles;
+            this.candles = candles.map((v)=>{return {...v,trades:[]}});
         }
         else {
             for(let can of candles)
-                this.addCandle(can);
+                this.addCandle({...can,trades:[]});
         }
     }
 
-    public getCandles():ChartContinousData[] {
+    public getCandles():ChartContinousDataSuper[] {
         return this.candles;
     }
 
@@ -58,12 +63,12 @@ export class ChartSet {
         return this.indicatorMeta;
     }
 
-    public addCandle(candle:ChartContinousData) {
+    public addCandle(candle:ChartContinousDataSuper) {
         this.candles.push(candle);
         this.updateIndicator(this.candles.length-1);
     }
 
-    public setCandleAtIndex(index:number,candle:ChartContinousData) {
+    public setCandleAtIndex(index:number,candle:ChartContinousDataSuper) {
         this.candles[index] = candle;
         this.updateIndicator(index);
     }
@@ -134,7 +139,7 @@ export class ChartSet {
      * @param realtime 
      * @returns 
      */
-    public static applyRealToBase(base:ChartContinousData,realtime:ChartContinousData):ChartContinousData {
+    public static applyRealToBase(base:ChartContinousDataSuper,realtime:ChartContinousDataSuper):ChartContinousDataSuper {
         return {
             date:base.date,
             low: Math.min(base.low,realtime.low),
@@ -144,6 +149,7 @@ export class ChartSet {
             volume: base.volume + realtime.volume,
             count: base.count + realtime.count,
             average: (base.average+realtime.average)/2.0,
+            trades: base.trades,
         };
     }
 }
@@ -215,7 +221,7 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
                     this.addCandle({...curCan});
                 }
 
-                this.setCandleAtIndex(i-1,{...preCan}); 
+                this.setCandleAtIndex(i-1,{...preCan,trades:this.getCandleAtIndex(i-1).trades}); 
             }
         }
         else if(useReal && rIdx>this.realIndex){

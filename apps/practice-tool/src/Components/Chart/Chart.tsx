@@ -7,7 +7,7 @@ import { Dropdown, DropdownButton, FormControl, InputGroup, Button } from "react
 import { ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
 import { ChartDataLoader } from "../../Common/DataLoader/ChartDataLoader";
 import {ReactStockChartsWrapper} from "./ReactStockChartsWrapper";
-import { genUniqueKey } from "../../Common/Utils";
+import { candlestickTimeToSeconds, genUniqueKey } from "../../Common/Utils";
 import { AggregatedTradeLog, ChartOrchestrator, TradeLog, TradingActionType } from './Commom/ChartOrchestrator';
 import { ChartSet } from "./Commom/ChartSet";
 import { CommonTradingClock } from "../../Common/TradingClock/CommonTradingClock";
@@ -286,16 +286,17 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		if(!shouldRenderChart) return null;
 
 		const activeSet = orch.getActiveSet();
+		const candles = activeSet.getCandles();
 
 		return (<React.Fragment>
 			<ReactStockChartsWrapper 
 				width={this.divChartMainContent.clientWidth} 
 				height={this.divChartMainContent.clientHeight}
-				data={activeSet.getCandles()}
+				data={candles}
 				indicators={activeSet.getIndicators()}
 				selection={selection}
-				buyPrices={logs.filter(v=>v.action==='BUY').map(v=>v.price)}
-				sellPrices={logs.filter(v=>v.action==='SELL').map(v=>v.price)}
+				buyPrices={[]}
+				sellPrices={[]}
 			/>
 		</React.Fragment>);
 	}

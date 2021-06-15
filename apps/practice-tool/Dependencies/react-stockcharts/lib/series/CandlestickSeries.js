@@ -56,7 +56,8 @@ var CandlestickSeries = function (_Component) {
 			var _props = this.props,
 			    className = _props.className,
 			    wickClassName = _props.wickClassName,
-			    candleClassName = _props.candleClassName;
+			    candleClassName = _props.candleClassName,
+				tradesClassName = _props.tradesClassName;
 			var xScale = moreProps.xScale,
 			    yScale = moreProps.chartConfig.yScale,
 			    plotData = moreProps.plotData,
@@ -77,6 +78,11 @@ var CandlestickSeries = function (_Component) {
 					"g",
 					{ className: candleClassName, key: "candles" },
 					getCandlesSVG(this.props, candleData)
+				),
+				_react2.default.createElement(
+					"g",
+					{ className: tradesClassName, key: "trades" },
+					getTradesSVG(candleData)
 				)
 			);
 		}
@@ -102,6 +108,7 @@ CandlestickSeries.propTypes = {
 	className: _propTypes2.default.string,
 	wickClassName: _propTypes2.default.string,
 	candleClassName: _propTypes2.default.string,
+	tradesClassName: _propTypes2.default.string,
 	widthRatio: _propTypes2.default.number,
 	width: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.func]),
 	classNames: _propTypes2.default.oneOfType([_propTypes2.default.func, _propTypes2.default.string]),
@@ -116,6 +123,7 @@ CandlestickSeries.defaultProps = {
 	className: "react-stockcharts-candlestick",
 	wickClassName: "react-stockcharts-candlestick-wick",
 	candleClassName: "react-stockcharts-candlestick-candle",
+	tradesClassName: "custom-stockcharts-trades",
 	yAccessor: function yAccessor(d) {
 		return { open: d.open, high: d.high, low: d.low, close: d.close };
 	},
@@ -148,6 +156,26 @@ function getWicksSVG(candleData) {
 	});
 
 	return wicks;
+}
+
+
+function getTradesSVG(candleData) {
+	let tradesSVG = [];
+	const strokeWidth = 2;
+	candleData.forEach(function (d, idx) {
+
+		if(d.trades) {
+			d.trades.forEach(function (t, tidx) {
+				const pad = t.width*0.1;
+				
+				tradesSVG.push(_react2.default.createElement("line", { className: d.className, key: `trades-${idx}-${tidx}-${t.action}`,
+					x1: t.x-pad, y1: t.y, x2: t.x+t.width+pad, y2: t.y, strokeWidth:strokeWidth,
+					stroke: t.action==='BUY'?'white':'cyan' }));
+			});
+		}
+	});
+
+	return tradesSVG;
 }
 
 function getCandlesSVG(props, candleData) {
@@ -357,7 +385,16 @@ function getCandleData(props, xAccessor, xScale, yScale, plotData) {
 				className: className(ohlc),
 				fill: fill(ohlc),
 				stroke: stroke(ohlc),
-				direction: ohlc.close - ohlc.open
+				direction: ohlc.close - ohlc.open,
+
+				trades: (d.trades || []).map((trade)=> {
+					return {
+						x: x - offset,
+						y: yScale(trade.price),
+						width: offset * 2,
+						action: trade.action,
+					}
+				})
 			});
 		}
 	}
