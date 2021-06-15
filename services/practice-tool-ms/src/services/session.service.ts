@@ -1,6 +1,5 @@
 import { Logger } from "winston";
 import { CommonServiceBase } from "../../../../libs/common/service/common-service-base";
-import fs from 'fs';
 import { SessionInfo } from 'practice-tool-types';
 import {v4 as uuidv4} from 'uuid';
 
