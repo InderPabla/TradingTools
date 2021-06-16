@@ -161,12 +161,12 @@ function getWicksSVG(candleData) {
 
 function getTradesSVG(candleData) {
 	let tradesSVG = [];
-	const strokeWidth = 2;
+	const strokeWidth = 3;
 	candleData.forEach(function (d, idx) {
 
 		if(d.trades) {
 			d.trades.forEach(function (t, tidx) {
-				const pad = t.width*0.1;
+				const pad = t.width*0.15;
 				
 				tradesSVG.push(_react2.default.createElement("line", { className: d.className, key: `trades-${idx}-${tidx}-${t.action}`,
 					x1: t.x-pad, y1: t.y, x2: t.x+t.width+pad, y2: t.y, strokeWidth:strokeWidth,

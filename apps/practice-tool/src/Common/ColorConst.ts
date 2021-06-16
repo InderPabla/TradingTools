@@ -3,6 +3,10 @@ export const COLOR = {
     LIMEGREEN:'#32CD32',
     GREENISH:'#6BA583',
 
+    GREEN:'green',
+
+    GREEN_HEX:'#00FF00',
+
     RED:'red',
     RED_HEX:'#FF0000',
 

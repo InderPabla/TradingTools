@@ -93,7 +93,7 @@ export function toDayTradingTime(date:Date,applyTzOffset:boolean) {
     if(applyTzOffset)
         _date.setTime(date.getTime()+date.getTimezoneOffset()*60*1000);
     _date.setHours(9);
-    _date.setMinutes(29);
+    _date.setMinutes(9);
     _date.setSeconds(0);
     _date.setMilliseconds(0);
     return _date;

@@ -216,17 +216,19 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                     />
                     <CandlestickSeries 
                         //width={timeIntervalBarWidth(intervalFunction)}
+
+                        candleStrokeWidth={1}
                         widthRatio={0.8}
                         wickStroke={COLOR.WHITE}
                         stroke={(d)=> {
                             let diff = Math.abs(d.close-d.open);
                             if(diff<=0.01) return COLOR.YELLOW;
-                            return d.close > d.open ? COLOR.LIMEGREEN : COLOR.RED
+                            return d.close > d.open ? COLOR.GREEN_HEX : COLOR.RED
                         }}
                         fill={function fill(d) {
                             let diff = Math.abs(d.close-d.open);
                             if(diff<=0.01) return COLOR.YELLOW;
-                            return d.close > d.open ? COLOR.LIMEGREEN : COLOR.RED;
+                            return d.close > d.open ? COLOR.GREEN_HEX : COLOR.RED;
                         }}
                         opacity={1}
                     />
@@ -288,7 +290,8 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 						displayFormat={timeFormat("%Y-%m-%d %H:%M")} 
                     />
                     <BarSeries yAccessor={d => d.volume} 
-                        fill={(d) => d.close > d.open ? COLOR.LIMEGREEN : COLOR.RED} 
+                    opacity={1}
+                        fill={(d) => d.close > d.open ? COLOR.GREEN_HEX : COLOR.RED} 
                         //width={timeIntervalBarWidth(intervalFunction)}
                     />
                 </Chart>
