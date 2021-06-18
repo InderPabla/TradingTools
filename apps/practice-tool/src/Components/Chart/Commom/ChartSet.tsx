@@ -5,33 +5,60 @@ export interface ChartContinousDataSuper extends ChartContinousData{
     trades:TradeLog[];
 }
 
-export interface ChartIndicatorMetadadata {
-	name:IndicatorType;
-    renderKeys:string[];
-}
-
-interface ChartIndicatorMetadadataSet {
-    VWAP:ChartIndicatorMetadadata;
-}
-
-interface VWAPData {
-    _totalPriceVolume:number;
-    _totalVolume:number;
-    vwap:number
-}
-
 interface IChartAnimate {
     animateForward(date:Date):void;
     useRealtime():boolean;
 }
 
 export type ChartSetType = 'ACTIVE'|'REALTIME'|'COMPLETE';
-export type IndicatorType = 'VWAP';
 
-export const INDICATOR_METADATA:ChartIndicatorMetadadataSet = {
-    VWAP: {
-        name:'VWAP',
-        renderKeys:['vwap']
+
+export abstract class ChartIndicator {
+    private renderKeys:string[] = [];
+    public addRenderKey(key:string) {
+        this.renderKeys.push(key)
+    }
+    public getRenderKeys(){
+        return this.renderKeys;
+    }
+    public abstract update(candles:ChartContinousDataSuper[],index:number);
+}
+
+export class VWAPIndicator extends ChartIndicator{
+   
+    private period:number;
+    private static VWAP_RENDER_KEY_NAME:string = 'vwap';
+
+    constructor(period:number) {
+        super();
+        this.period = period;
+        this.addRenderKey(this.VWAP_RENDER_KEY);
+    }
+
+    get VWAP_RENDER_KEY () {
+        return `${VWAPIndicator.VWAP_RENDER_KEY_NAME}${this.period}`;
+    }
+
+    public update(candles:ChartContinousDataSuper[],index:number) {
+        const candle = candles[index];
+        const price = (candle.high + candle.low + candle.close)/3;
+
+        let vwapCandle = candle as any;
+        vwapCandle._totalPriceVolume = candle.volume*price;
+        vwapCandle._totalVolume = candle.volume;
+
+        if(index>0){
+            const previousCandle = candles[index-1];
+            const previousVwapCandle = previousCandle as any;
+            const isLessThan3Hours = (candle.date.getTime()-previousCandle.date.getTime())/1000 < 3*3600;
+            if(isLessThan3Hours) {
+                vwapCandle._totalPriceVolume += previousVwapCandle._totalPriceVolume;
+                vwapCandle._totalVolume += previousVwapCandle._totalVolume;
+            }
+        }
+        
+        vwapCandle[this.VWAP_RENDER_KEY]  = vwapCandle._totalPriceVolume/vwapCandle._totalVolume;
+        
     }
 }
 
@@ -39,14 +66,14 @@ export class ChartSet {
     
     private candles:ChartContinousDataSuper[];
     private chartType:ChartSetType;
-    private indicatorMeta:ChartIndicatorMetadadata[];
+    private indicators:ChartIndicator[];
 
-    constructor(chartType:ChartSetType, candles:ChartContinousData[], indicatorMeta:ChartIndicatorMetadadata[]) {
+    constructor(chartType:ChartSetType, candles:ChartContinousData[], indicators:ChartIndicator[]) {
         this.candles = [];
         this.chartType = chartType;
-        this.indicatorMeta = indicatorMeta;
+        this.indicators = indicators;
         
-        if(this.indicatorMeta.length===0) {
+        if(this.indicators.length===0) {
             this.candles = candles.map((v)=>{return {...v,trades:[]}});
         }
         else {
@@ -59,8 +86,8 @@ export class ChartSet {
         return this.candles;
     }
 
-    public getIndicators():ChartIndicatorMetadadata[] {
-        return this.indicatorMeta;
+    public getIndicators():ChartIndicator[] {
+        return this.indicators;
     }
 
     public addCandle(candle:ChartContinousDataSuper) {
@@ -74,28 +101,9 @@ export class ChartSet {
     }
 
     private updateIndicator(index:number) {
-        for(let ind of this.indicatorMeta) {
-            if(ind.name==='VWAP') {
-                const candle = this.candles[index];
-                const price = (candle.high + candle.low + candle.close)/3;
+        for(let ind of this.indicators) {
 
-                let vwapCandle:VWAPData = candle as any;
-                vwapCandle._totalPriceVolume = candle.volume*price;
-                vwapCandle._totalVolume = candle.volume;
-
-                if(index>0){
-                    const previousCandle = this.candles[index-1];
-                    const previousVwapCandle:VWAPData = previousCandle as any;
-                    const isLessThan3Hours = (candle.date.getTime()-previousCandle.date.getTime())/1000 < 3*3600;
-
-                    if(isLessThan3Hours) {
-                        vwapCandle._totalPriceVolume += previousVwapCandle._totalPriceVolume;
-                        vwapCandle._totalVolume += previousVwapCandle._totalVolume;
-                    }
-                }
-                
-                vwapCandle.vwap  = vwapCandle._totalPriceVolume/vwapCandle._totalVolume;
-            }
+            ind.update(this.candles,index);
         }
     }
     
@@ -160,11 +168,11 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
     private compIndex:number;
     private realIndex:number;
 
-    constructor(chartType:ChartSetType,indicatorMeta:ChartIndicatorMetadadata[]
+    constructor(chartType:ChartSetType,indicators:ChartIndicator[]
         ,compIndex:number,realIndex:number
         ,compSet:ChartSet,realSet:ChartSet
     ) {
-        super(chartType,compSet.getCandlesBetweenRange(0,compIndex),indicatorMeta);
+        super(chartType,compSet.getCandlesBetweenRange(0,compIndex),indicators);
         this.compSet = compSet;
         this.realSet = realSet;
         this.compIndex = compIndex;

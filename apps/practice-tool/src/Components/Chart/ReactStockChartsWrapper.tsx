@@ -15,7 +15,7 @@ import { EdgeIndicator, MouseCoordinateY, MouseCoordinateX, CrossHairCursor } fr
 import { discontinuousTimeScaleProvider } from "react-stockcharts/lib/scale";
 import { COLOR } from "../../Common/ColorConst";
 import { min as d3Min, max as d3Max } from 'd3-array';
-import { ChartContinousDataSuper, ChartIndicatorMetadadata } from "./Commom/ChartSet";
+import { ChartContinousDataSuper, ChartIndicator } from "./Commom/ChartSet";
 import { fitWidth } from "react-stockcharts/lib/helper";
 import { start } from "node:repl";
 
@@ -24,7 +24,7 @@ interface ReactStockChartsWrapperProps {
     height:number;
     selection:ChartSelection;
     data:ChartContinousDataSuper[];
-    indicators:ChartIndicatorMetadadata[];
+    indicators:ChartIndicator[];
     buyPrices:number[],
     sellPrices:number[],
     type?:string;
@@ -89,7 +89,8 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
 	render() {
         const { panEvent } = this.state;
-        const { width, height, data:initialData, selection, type, buyPrices, sellPrices, fontSize} = this.props;
+        const { width, height, data:initialData, selection, type, buyPrices, sellPrices, fontSize
+        ,indicators} = this.props;
 
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
         const xDateAccessor = d=>d.date;
@@ -233,7 +234,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         opacity={1}
                     />
                     
-                    <LineSeries yAccessor={d=>d.vwap}/>
+                    {indicators.map(v=>v.getRenderKeys().map(r=><LineSeries yAccessor={d=>d[r]}/>))}
 
                     {Array.from(new Set(buyPrices)).map((price)=> {
                         return <EdgeIndicator

@@ -1,5 +1,5 @@
 import { ChartContinousData } from "practice-tool-types";
-import { ActiveChartSet, ChartSet, ChartSetType, INDICATOR_METADATA } from "./ChartSet";
+import { ActiveChartSet, ChartSet, ChartSetType, VWAPIndicator } from "./ChartSet";
 
 export class ChartSetFactory {
 
@@ -39,7 +39,7 @@ export class ChartSetFactory {
         const realSet = this.getNonActiveChartSet('REALTIME');
         const compIndex = compSet.getClosestDateIndex(0,this.date)-1; //1 candles before just incase
         const realIndex = realSet?realSet.getClosestDateIndex(0,this.date):-1;
-        let active = new ActiveChartSet('ACTIVE',[INDICATOR_METADATA.VWAP]
+        let active = new ActiveChartSet('ACTIVE',[new VWAPIndicator(1)]
                                         ,compIndex,realIndex
                                         ,compSet,realSet);
         active.animateForward(this.date);

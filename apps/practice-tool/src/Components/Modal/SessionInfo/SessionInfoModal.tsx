@@ -27,7 +27,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         // let todayDate = new Date();
         // todayDate.setDate(2); //TESTING REMOVE!!!
         // todayDate.setTime(todayDate.getTime()+todayDate.getTimezoneOffset()*60*1000);
-        let clock = toDayTradingTime(new Date("2021-06-17"),true);
+        let clock = toDayTradingTime(new Date("2021-06-18"),true);
         this.state = {
             sessionInfo:{
                 isRunning:false,
