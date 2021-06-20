@@ -22,7 +22,7 @@ export interface SessionInfoModalModalState {
 
 export class SessionInfoModal extends React.Component<SessionInfoModalModalProps,SessionInfoModalModalState> {
 
-    constructor(props) {
+    constructor(props:SessionInfoModalModalProps) {
         super(props);
         // let todayDate = new Date();
         // todayDate.setDate(2); //TESTING REMOVE!!!

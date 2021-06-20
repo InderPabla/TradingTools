@@ -21,44 +21,55 @@ export abstract class ChartIndicator {
     public getRenderKeys(){
         return this.renderKeys;
     }
+
+    public abstract get UNIQUE_KEY():string;
     public abstract update(candles:ChartContinousDataSuper[],index:number);
 }
 
 export class VWAPIndicator extends ChartIndicator{
-   
     private period:number;
-    private static VWAP_RENDER_KEY_NAME:string = 'vwap';
 
     constructor(period:number) {
         super();
         this.period = period;
-        this.addRenderKey(this.VWAP_RENDER_KEY);
+        this.addRenderKey(this.VWAP_KEY);
     }
 
-    get VWAP_RENDER_KEY () {
-        return `${VWAPIndicator.VWAP_RENDER_KEY_NAME}${this.period}`;
+    private get VWAP_KEY () {
+        return `vwap${this.period}`;
     }
+
+    private get VWAP_TOTAL_PRICE_VOLUME () {
+        return `_totalPriceVolume${this.period}`;
+    }
+
+    private get VWAP_TOTAL_VOLUME () {
+        return `_totalVolume${this.period}`;
+    }
+
+    public get UNIQUE_KEY () {
+        return this.VWAP_KEY;
+    } 
 
     public update(candles:ChartContinousDataSuper[],index:number) {
         const candle = candles[index];
         const price = (candle.high + candle.low + candle.close)/3;
 
         let vwapCandle = candle as any;
-        vwapCandle._totalPriceVolume = candle.volume*price;
-        vwapCandle._totalVolume = candle.volume;
+        vwapCandle[this.VWAP_TOTAL_PRICE_VOLUME] = candle.volume*price;
+        vwapCandle[this.VWAP_TOTAL_VOLUME] = candle.volume;
 
-        if(index>0){
-            const previousCandle = candles[index-1];
+        if(index>=this.period){
+            const previousCandle = candles[index-this.period];
             const previousVwapCandle = previousCandle as any;
             const isLessThan3Hours = (candle.date.getTime()-previousCandle.date.getTime())/1000 < 3*3600;
             if(isLessThan3Hours) {
-                vwapCandle._totalPriceVolume += previousVwapCandle._totalPriceVolume;
-                vwapCandle._totalVolume += previousVwapCandle._totalVolume;
+                vwapCandle[this.VWAP_TOTAL_PRICE_VOLUME] += previousVwapCandle[this.VWAP_TOTAL_PRICE_VOLUME];
+                vwapCandle[this.VWAP_TOTAL_VOLUME] += previousVwapCandle[this.VWAP_TOTAL_VOLUME];
             }
         }
         
-        vwapCandle[this.VWAP_RENDER_KEY]  = vwapCandle._totalPriceVolume/vwapCandle._totalVolume;
-        
+        vwapCandle[this.VWAP_KEY]  = vwapCandle[this.VWAP_TOTAL_PRICE_VOLUME]/vwapCandle[this.VWAP_TOTAL_VOLUME];
     }
 }
 
@@ -73,12 +84,17 @@ export class ChartSet {
         this.chartType = chartType;
         this.indicators = indicators;
         
-        if(this.indicators.length===0) {
-            this.candles = candles.map((v)=>{return {...v,trades:[]}});
-        }
-        else {
-            for(let can of candles)
-                this.addCandle({...can,trades:[]});
+        for(let can of candles)
+            this.addCandle({...can,trades:[]});
+    }
+
+    public addIndicator(ind:ChartIndicator) {
+        const existInd = this.indicators.find(v=>v.UNIQUE_KEY===ind.UNIQUE_KEY);
+        if(existInd==null) {
+            this.indicators.push(ind);
+            this.candles.forEach((can,idx)=>{
+                ind.update(this.candles,idx);
+            });
         }
     }
 
