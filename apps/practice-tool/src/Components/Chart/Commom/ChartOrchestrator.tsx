@@ -1,7 +1,7 @@
 import { ChartContinousData } from "practice-tool-types";
 import { ChartDataLoader } from "../../../Common/DataLoader/ChartDataLoader";
 import { candlestickTimeToSeconds } from "../../../Common/Utils";
-import { ActiveChartSet, ChartSet } from "./ChartSet";
+import { ActiveChartSet, ChartIndicator, ChartSet } from "./ChartSet";
 import { ChartSetFactory } from "./ChartSetFactory";
 import { ChartSelection } from "./ChartUtils";
 
@@ -27,9 +27,9 @@ export class ChartOrchestrator {
     private activeSet:ActiveChartSet;
     private static orchMap:Map<string,ChartOrchestrator>;
 
-    private constructor(activeSelection:ChartSelection,date:Date,completeSetData:ChartContinousData[],realtimeSetData?:ChartContinousData[]) {
+    private constructor(activeSelection:ChartSelection,date:Date,indicators:ChartIndicator[],completeSetData:ChartContinousData[],realtimeSetData?:ChartContinousData[]) {
         this.activeSelection = activeSelection;
-        this.activeSet = new ChartSetFactory(date,completeSetData,realtimeSetData).getActiveChartSet();
+        this.activeSet = new ChartSetFactory(date,indicators,completeSetData,realtimeSetData).getActiveChartSet();
     }
 
     public getActiveSelection() {
@@ -84,7 +84,7 @@ export class ChartOrchestrator {
     }
 
     public static async getInstance(activeSelection:ChartSelection,realtimeSelection:ChartSelection
-        ,args?:{date:Date,dataLoader:ChartDataLoader, logs:TradeLog[]}):Promise<ChartOrchestrator> {
+        ,args?:{date:Date,dataLoader:ChartDataLoader, logs:TradeLog[], indicators:ChartIndicator[]}):Promise<ChartOrchestrator> {
         let id = ChartOrchestrator.getId(activeSelection,realtimeSelection); 
 
         if(!ChartOrchestrator.orchMap) {
@@ -96,7 +96,7 @@ export class ChartOrchestrator {
             const completeSetData = await args.dataLoader.getData(activeSelection); 
             const realtimeSetData = await args.dataLoader.getData(realtimeSelection);
             if(!completeSetData) return null;    
-            let newOrch = new ChartOrchestrator(activeSelection,args.date,completeSetData,realtimeSetData);
+            let newOrch = new ChartOrchestrator(activeSelection,args.date,args.indicators,completeSetData,realtimeSetData);
             for(let log of args.logs) {
                 newOrch.updateTradeLog(log);
             }

@@ -27,7 +27,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         // let todayDate = new Date();
         // todayDate.setDate(2); //TESTING REMOVE!!!
         // todayDate.setTime(todayDate.getTime()+todayDate.getTimezoneOffset()*60*1000);
-        let clock = toDayTradingTime(new Date("2021-06-18"),true);
+        let clock = toDayTradingTime(new Date("2021-06-21"),true);
         this.state = {
             sessionInfo:{
                 isRunning:false,
@@ -35,7 +35,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                 tradingDay:yyyymmdd(clock),
                 clock,
             },
-            sessionLocation:'CLIENT',
+            sessionLocation:'SERVER',
         };
     }
     
@@ -149,7 +149,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                                     onKeyPress={(event)=>{}}
                                     defaultValue={sessionInfo.sessionId} 
                                 />
-                            </InputGroup>        
+                            </InputGroup>       
                         </div>}
                     </Modal.Body>
                     <Modal.Footer>

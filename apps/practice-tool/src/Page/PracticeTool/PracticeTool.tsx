@@ -22,6 +22,7 @@ import {  ChartOrchestrator, TradeLog } from '../../Components/Chart/Commom/Char
 import { SessionInfoWrapper } from '../../Common/TradingClock/SessionInfoWrapper';
 import { SessionTradingClock } from '../../Common/TradingClock/SessionTradingClock';
 import { CommonTradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/CommonTradingClock';
+import { ChartIndicator, VWAPIndicator } from '../../Components/Chart/Commom/ChartSet';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6,10];
@@ -41,7 +42,9 @@ export interface PracticeToolState {
     
     sessionInfoWrapper:SessionInfoWrapper;
 
-    tradeLogs:TradeLog[]
+    tradeLogs:TradeLog[],
+
+    indicators:ChartIndicator[],
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -70,7 +73,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
 
-        this.state = { chartDataArr, tradingDayTime, tradingClock, showSessionInfoModal: true, tradeLogs:[], sessionInfoWrapper:null}; 
+        const indicators:ChartIndicator[] = [ new VWAPIndicator(1)];
+        this.state = { chartDataArr, tradingDayTime, tradingClock, showSessionInfoModal: true, tradeLogs:[], sessionInfoWrapper:null, indicators}; 
     }
 
     componentDidMount() {
@@ -104,13 +108,15 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
     private onChartDataLoad = async (chartKey:string):Promise<void> => {
         const { dataLoader } = this;
-        const { tradingClock, tradeLogs } = this.state;
+        const { tradingClock, tradeLogs,indicators } = this.state;
         let chart = this.state.chartDataArr.find(v=>v.chartKey===chartKey) as ChartSelectionSuper;
         const activeSelection = {...chart.chartSelection, tradingDayTime: new Date(tradingClock.getClock())};
         const realtimeSelection = {...activeSelection,candlestickDuration:CANDLESTICK_DURATION.SEC_5}
 		const orch = await ChartOrchestrator.getInstance(activeSelection,realtimeSelection
                                                         ,{date:tradingClock.getClock(),dataLoader
-                                                          ,logs:tradeLogs.filter(v=>v.ticker===activeSelection.ticker)});
+                                                            ,logs:tradeLogs.filter(v=>v.ticker===activeSelection.ticker)
+                                                            ,indicators
+                                                        });
         if(orch) {
             this.notifySuccessChartLoadingData(activeSelection);
             chart.orch = orch;
@@ -266,6 +272,10 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         });
     }
 
+    private openIndicatorModal = () => {
+
+    }
+
     public render() {
         const { tradingClock, showSessionInfoModal, tradeLogs, sessionInfoWrapper } = this.state;
         const isClockRunning = tradingClock.isClockRunning();
@@ -310,13 +320,18 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                                     eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
                                     })}
                                 </DropdownButton>
-
+                                <Button 
+                                    className="indicator-button" 
+                                    variant="primary" 
+                                    size="sm"
+                                    onClick={()=>{this.openIndicatorModal()}}
+                                    disabled={false}><i className="fa fa-flask"/></Button>	
                                 <Button 
                                     className="download-trade-log-button" 
                                     variant="primary" 
                                     size="sm"
                                     onClick={()=>{downloadDataToFile(`TradeLog-${new Date().toLocaleString()}.csv`,convertJsonToCsvString(tradeLogs))}}
-                                    disabled={!tradeLogs || tradeLogs.length===0}>Download Trade Log</Button>	
+                                    disabled={!tradeLogs || tradeLogs.length===0}><i className="fa fa-dollar"/><i className="fa fa-dollar"/><i className="fa fa-dollar"/></Button>	
                             </div>
                             <p className="session-id">{!!sessionInfoWrapper.sessionId?`SERVER: ${sessionInfoWrapper.sessionId}`:'CLIENT'}</p>
                         </React.Fragment>

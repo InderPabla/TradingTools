@@ -110,6 +110,13 @@
 .practice-tool-chart-dropdown-container .download-trade-log-button {
     position: relative;
     display: inline-block;
+    margin-left: 10px;
+    bottom: 6px;
+}
+
+.practice-tool-chart-dropdown-container .indicator-button {
+    position: relative;
+    display: inline-block;
     margin-left: 20px;
     bottom: 6px;
 }
