@@ -28,10 +28,11 @@ path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-t
 
 today_year = 2021
 today_month = 6
-today_day = 21
+today_day = 22
 
 
-tickers = ['AVXL','NVDA']
+#'QQQ','SPY','NIO','AMC','MVIS','TRCH','MARA','WISH','ATOS','MUDS','PLUG','ALF'
+tickers = ['FOCS','ADIL','AEI','RIOT']
 primary_exchange = {'ALF':'NASDAQ'}
 
 end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
