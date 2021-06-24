@@ -21,7 +21,7 @@ def savedata(_path,_data,_header,_filename):
 #https://interactivebrokers.github.io/tws-api/historical_limitations.html
 
 #Port:7497 for TWS, 4002 fpr IB Gateway
-ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1235})
+ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1234})
 
 header = ['date','open','high','low','close','average','volume','count']
 path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
@@ -31,8 +31,8 @@ today_month = 6
 today_day = 22
 
 
-#'QQQ','SPY','NIO','AMC','MVIS','TRCH','MARA','WISH','ATOS','MUDS','PLUG','ALF'
-tickers = ['FOCS','ADIL','AEI','RIOT']
+#'QQQ','SPY','NIO','AMC','MVIS','TRCH','MARA','WISH','ATOS','MUDS','PLUG','ALF','FOCS','ADIL','AEI','RIOT'
+tickers = ['PLUG','ALF','FOCS','ADIL','AEI','RIOT']
 primary_exchange = {'ALF':'NASDAQ'}
 
 end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)

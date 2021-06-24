@@ -34,6 +34,24 @@
     height: 30px;
 }
 
+#selection-info-modal .rdt {
+    display: inline-block;
+    margin-left: 20px;
+    color:black;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#selection-info-modal .rdt input{
+    font-weight: bold;
+    position: relative;
+    padding: 3px;
+    top: 2px;
+    height: 30px;
+    width: 170px;
+    border: solid 1px black;
+}
+
 #session-location-button  {
     margin-left: 15px;
     width: 150px;

@@ -1,12 +1,15 @@
 
 import * as React from 'react';
-import './SessionInfoModal.css';
+
 import { Modal, Button, DropdownButton, Dropdown, InputGroup, FormControl } from 'react-bootstrap';
 import { SessionInfo } from 'practice-tool-types';
 import { toDayTradingTime, yyyymmdd } from '../../../Common/Utils';
 import { SessionAPI } from '../../../Common/Api/SessionAPI';
 import { SessionInfoWrapper } from '../../../Common/TradingClock/SessionInfoWrapper';
-
+import Datetime from "react-datetime";
+import "react-datetime/css/react-datetime.css";
+import moment from 'moment';
+import './SessionInfoModal.css';
 type SessionLocation = 'SERVER'|'CLIENT';
 
 export interface SessionInfoModalModalProps {
@@ -27,7 +30,8 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         // let todayDate = new Date();
         // todayDate.setDate(2); //TESTING REMOVE!!!
         // todayDate.setTime(todayDate.getTime()+todayDate.getTimezoneOffset()*60*1000);
-        let clock = toDayTradingTime(new Date("2021-06-21"),true);
+        //"2021-06-22"
+        let clock = toDayTradingTime(new Date(),false);
         this.state = {
             sessionInfo:{
                 isRunning:false,
@@ -104,6 +108,15 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         return true;
     }
 
+    private onTradingDayTimeChanged (newTradingDayTime:Date) {
+        const {sessionInfo} = this.state;
+        if(sessionInfo.clock.getTime() !== newTradingDayTime.getTime()) {
+            sessionInfo.clock = newTradingDayTime;
+            sessionInfo.tradingDay = yyyymmdd(newTradingDayTime);
+            this.setState({});
+        }
+    }
+
     public render() {
         const { show } = this.props;
         const { sessionInfo,sessionLocation } = this.state;
@@ -133,6 +146,11 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                                 })}
                             </DropdownButton>
                         </div>
+                        <Datetime 
+                                    inputProps={{disabled:false}}
+                                    initialValue={this.state.sessionInfo.clock}
+                                    onChange={(value)=>{this.onTradingDayTimeChanged(moment(value).toDate())}}  
+                                />
                         {this.isServerSession() && <div className="session-server-location-container">
                             <p>Existing Session Id: </p>
                             <InputGroup>
