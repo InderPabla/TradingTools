@@ -5,6 +5,10 @@ export interface ChartContinousDataSuper extends ChartContinousData{
     trades:TradeLog[];
 }
 
+export const DUMMY_CHART_CANDLE:ChartContinousDataSuper = {
+    open:0,high:0,low:0,close:0,count:0,trades:[],date:null,volume:0,average:0
+}
+
 interface IChartAnimate {
     animateForward(date:Date):void;
     useRealtime():boolean;
@@ -12,26 +16,92 @@ interface IChartAnimate {
 
 export type ChartSetType = 'ACTIVE'|'REALTIME'|'COMPLETE';
 
+export class ChartIndicatorMetadata {
+    private indicatorName:string;
+    private classType:IndicatorClassType;
+    private keyMeta:ChartIndicatorKeyMetadata[];
+
+    constructor(indicatorName:string, classType:IndicatorClassType, keyMeta:ChartIndicatorKeyMetadata[]) {
+        this.indicatorName = indicatorName;
+        this.classType = classType;
+        this.keyMeta = keyMeta;
+    }
+
+    public getKeysMeta() {
+        return this.keyMeta;
+    }
+
+    public getIndicatorName() {
+        return this.indicatorName;
+    }
+
+    public getClassType() {
+        return this.classType;
+    }
+}
+
+export class ChartIndicatorKeyMetadata {
+    private friendlyName:string;
+    private key:string;
+    private defaultValue:number;
+    private value:number;
+
+    constructor(friendlyName:string, key:string, defaultValue:number) {
+        this.friendlyName = friendlyName;
+        this.key = key;
+        this.defaultValue = defaultValue;
+        this.value = defaultValue;
+    }
+
+    public getKey() {
+        return this.key;
+    }
+
+    public getDefaultValue() {
+        return this.defaultValue;
+    }
+
+    public getValue() {
+        return this.value
+    }
+} 
 
 export abstract class ChartIndicator {
     private renderKeys:string[] = [];
+    private meta:ChartIndicatorMetadata;
+
+    constructor(meta:ChartIndicatorMetadata) {
+        this.meta = meta;
+    }
+
     public addRenderKey(key:string) {
         this.renderKeys.push(key)
     }
+
     public getRenderKeys(){
         return this.renderKeys;
     }
 
+    public getMetadata() {
+        return this.meta;
+    }
+
     public abstract get UNIQUE_KEY():string;
     public abstract update(candles:ChartContinousDataSuper[],index:number);
+    public static getDefaultMetadata():ChartIndicatorMetadata {
+        throw new Error(`getDefaultMetadata function must be implemented by the child Indicator`);
+    }
+
+    public static applyMetadata(chart:ChartIndicator) {
+        chart.meta.getKeysMeta().forEach(v=>chart[v.getKey()]=v.getValue());
+    }
 }
 
 export class VWAPIndicator extends ChartIndicator{
     private period:number;
-
-    constructor(period:number) {
-        super();
-        this.period = period;
+    constructor(meta?:ChartIndicatorMetadata) {
+        super(meta || VWAPIndicator.getDefaultMetadata());
+        ChartIndicator.applyMetadata(this);
         this.addRenderKey(this.VWAP_KEY);
     }
 
@@ -54,7 +124,7 @@ export class VWAPIndicator extends ChartIndicator{
     public update(candles:ChartContinousDataSuper[],index:number) {
         const candle = candles[index];
         const price = (candle.high + candle.low + candle.close)/3;
-
+        
         let vwapCandle = candle as any;
         vwapCandle[this.VWAP_TOTAL_PRICE_VOLUME] = candle.volume*price;
         vwapCandle[this.VWAP_TOTAL_VOLUME] = candle.volume;
@@ -70,6 +140,107 @@ export class VWAPIndicator extends ChartIndicator{
         }
         
         vwapCandle[this.VWAP_KEY]  = vwapCandle[this.VWAP_TOTAL_PRICE_VOLUME]/vwapCandle[this.VWAP_TOTAL_VOLUME];
+    }
+
+    public static getDefaultMetadata():ChartIndicatorMetadata {
+        return new ChartIndicatorMetadata("VWAP",VWAPIndicator,[new ChartIndicatorKeyMetadata("VWAP Period","period",1)]);
+    }
+}
+
+export class MovingAverageIndicator extends ChartIndicator{
+    private period:number;
+    constructor(meta?:ChartIndicatorMetadata) {
+        super(meta || MovingAverageIndicator.getDefaultMetadata());
+        ChartIndicator.applyMetadata(this);
+        this.addRenderKey(this.SMA_KEY);
+    }
+
+    private get SMA_KEY () {
+        return `sma${this.period}`;
+    }
+
+    public get UNIQUE_KEY () {
+        return this.SMA_KEY;
+    } 
+
+    public update(candles:ChartContinousDataSuper[],index:number) {
+        const candle = candles[index];
+        let anyCandle = candle as any;
+        let sma = candle.close;
+ 
+        if(index>=this.period-1){
+            sma = 0;
+            for(let i=index-(this.period-1);i<=index;i++) {
+                sma += candles[i].close;
+            }
+            sma /= this.period;
+        }
+
+        anyCandle[this.SMA_KEY] = sma;
+    }
+
+    public static getDefaultMetadata():ChartIndicatorMetadata {
+        return new ChartIndicatorMetadata("SMA",MovingAverageIndicator,[new ChartIndicatorKeyMetadata("SMA Period","period",12)]);
+    }
+}
+
+export class ExpMovingAverageIndicator extends ChartIndicator{
+    private period:number;
+    private multiplier:number;
+
+    constructor(meta?:ChartIndicatorMetadata) {
+        super(meta || ExpMovingAverageIndicator.getDefaultMetadata());
+        ChartIndicator.applyMetadata(this);
+        this.addRenderKey(this.EMA_KEY);
+
+        this.multiplier = 2.0/(this.period+1);
+    }
+
+    private get EMA_KEY () {
+        return `ema${this.period}`;
+    }
+
+    public get UNIQUE_KEY () {
+        return this.EMA_KEY;
+    } 
+
+    public update(candles:ChartContinousDataSuper[],index:number) {
+        const currentCandle = candles[index];
+        let anyCurrentCandle = currentCandle as any;
+        let currentEma = currentCandle.close;
+ 
+        if(index>=this.period-1){
+            let anyCandlePrevious = candles[index-1];
+            currentEma = (currentCandle.close*this.multiplier) + (anyCandlePrevious[this.EMA_KEY]*(1.0-this.multiplier));
+        }
+
+        anyCurrentCandle[this.EMA_KEY] = currentEma;
+    }
+
+    public static getDefaultMetadata():ChartIndicatorMetadata {
+        return new ChartIndicatorMetadata("EMA",ExpMovingAverageIndicator,[new ChartIndicatorKeyMetadata("EMA Period","period",12)]);
+    }
+}
+
+
+
+export type IndicatorClassType = typeof VWAPIndicator | typeof MovingAverageIndicator | typeof ExpMovingAverageIndicator;
+export const INDICATOR_CLASSES:IndicatorClassType[] = [VWAPIndicator,MovingAverageIndicator,ExpMovingAverageIndicator];
+
+export class ChartIndicatorFactory {
+
+    public static toIndicatorFromClassType(classType:IndicatorClassType,meta?:ChartIndicatorMetadata):ChartIndicator {
+        if(classType === VWAPIndicator) {
+            return new VWAPIndicator(meta);
+        }
+        else if(classType === MovingAverageIndicator) {
+            return new MovingAverageIndicator(meta);
+        }
+        else if(classType === ExpMovingAverageIndicator) {
+            return new ExpMovingAverageIndicator(meta);
+        }
+
+        throw new Error(`Invalid Indicator Class Type ${classType}`);
     }
 }
 
@@ -88,14 +259,28 @@ export class ChartSet {
             this.addCandle({...can,trades:[]});
     }
 
-    public addIndicator(ind:ChartIndicator) {
-        const existInd = this.indicators.find(v=>v.UNIQUE_KEY===ind.UNIQUE_KEY);
+    public addIndicator(_ind:ChartIndicator) {
+        const existInd = this.indicators.find(v=>v.UNIQUE_KEY===_ind.UNIQUE_KEY);
         if(existInd==null) {
-            this.indicators.push(ind);
+            this.indicators.push(_ind);
             this.candles.forEach((can,idx)=>{
-                ind.update(this.candles,idx);
+                _ind.update(this.candles,idx);
             });
         }
+    }
+
+    public resetIndicators(_ind:ChartIndicator[]) {
+        this.indicators = [];
+        const validChartKeys = Object.keys(DUMMY_CHART_CANDLE);
+        this.candles.forEach((can)=>{
+            const allCandleKeys = Object.keys(can);
+            allCandleKeys.forEach((k)=> {
+                if(validChartKeys.indexOf(k)===-1) {
+                    delete can[k];
+                }
+            });
+        });
+        _ind.forEach(v=>this.addIndicator(v));
     }
 
     public getCandles():ChartContinousDataSuper[] {

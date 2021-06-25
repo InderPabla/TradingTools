@@ -35,6 +35,8 @@ interface ReactStockChartsWrapperState {
     panEvent:boolean;
 }
 
+const LINE_COLORS = ["#4682B4",COLOR.RED,COLOR.GREEN,COLOR.YELLOW]
+
 export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperProps,ReactStockChartsWrapperState> {
 
 	public static defaultProps = {
@@ -149,6 +151,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
         if(showExtra) endIndex++; //show 1 more candle area
 
         let xExtents=[startIndex,endIndex];
+        let lineIndex = 0;
 
 		return (
         <React.Fragment>
@@ -234,7 +237,10 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         opacity={1}
                     />
                     
-                    {indicators.map(v=>v.getRenderKeys().map(r=><LineSeries yAccessor={d=>d[r]}/>))}
+                    {indicators.map(v=>v.getRenderKeys().map((r)=> {
+                        lineIndex++;
+                        return <LineSeries yAccessor={d=>d[r]} stroke={LINE_COLORS[(lineIndex-1)%LINE_COLORS.length]}/>
+                    }))}
 
                     {Array.from(new Set(buyPrices)).map((price)=> {
                         return <EdgeIndicator

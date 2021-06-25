@@ -18,6 +18,7 @@ import { ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader'
 import { TradingClock } from '../../Common/TradingClock/TradingClock';
 import { SessionInfo } from 'practice-tool-types';
 import { SessionInfoModal } from '../../Components/Modal/SessionInfo/SessionInfoModal';
+import { IndicatorInfoModal } from '../../Components/Modal/IndicatorInfo/IndicatorInfoModal';
 import {  ChartOrchestrator, TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
 import { SessionInfoWrapper } from '../../Common/TradingClock/SessionInfoWrapper';
 import { SessionTradingClock } from '../../Common/TradingClock/SessionTradingClock';
@@ -39,6 +40,7 @@ export interface PracticeToolState {
     tradingClock:CommonTradingClock;
 
     showSessionInfoModal:boolean;
+    showIndiactorInfoModal:boolean;
     
     sessionInfoWrapper:SessionInfoWrapper;
 
@@ -73,8 +75,10 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
 
-        const indicators:ChartIndicator[] = [ new VWAPIndicator(1)];
-        this.state = { chartDataArr, tradingDayTime, tradingClock, showSessionInfoModal: true, tradeLogs:[], sessionInfoWrapper:null, indicators}; 
+        const indicators:ChartIndicator[] = [new VWAPIndicator()];
+        this.state = { chartDataArr, tradingDayTime, tradingClock
+            ,showSessionInfoModal: true, showIndiactorInfoModal: false
+            ,tradeLogs:[], sessionInfoWrapper:null, indicators}; 
     }
 
     componentDidMount() {
@@ -272,8 +276,14 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         });
     }
 
-    private openIndicatorModal = () => {
+    private onSaveIndicatorInfo = (indicators:ChartIndicator[]) => {
+        ChartOrchestrator.updateIndicators(indicators);
+        this.resetAllChart();
+        this.setState({indicators,showIndiactorInfoModal:false});
+    }
 
+    private openIndicatorModal = () => {
+        this.setState({showIndiactorInfoModal:true});
     }
 
     public render() {
@@ -384,7 +394,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
 
     private renderNonPageEmbedded() {
-        const { showSessionInfoModal } = this.state;
+        const { showSessionInfoModal, showIndiactorInfoModal, indicators } = this.state;
 
         return (
             <React.Fragment>
@@ -395,11 +405,17 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                     closeOnClick
                 />
                 
-                <SessionInfoModal 
+                {showSessionInfoModal && <SessionInfoModal 
                     show={showSessionInfoModal} 
                     save={this.onSaveSelectionInfo}
                     onError={this.notifyErrorSessionInfo}
-                />
+                />}
+
+                {showIndiactorInfoModal && <IndicatorInfoModal 
+                    show={showIndiactorInfoModal} 
+                    save={this.onSaveIndicatorInfo}
+                    initialIndicator={indicators}
+                />}
             </React.Fragment>
         );
     } 

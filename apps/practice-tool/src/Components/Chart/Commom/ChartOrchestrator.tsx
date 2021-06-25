@@ -48,6 +48,14 @@ export class ChartOrchestrator {
         return this.activeSet.getLastRealtimeCandle();
     }
 
+    public resetIndicators(indicators:ChartIndicator[]):void {
+        this.activeSet.resetIndicators(indicators);
+    }
+
+    public setIndicators(indicators:ChartIndicator[]):void {
+        indicators.forEach(v=>this.activeSet.addIndicator(v));
+    }
+
     /**
      * Update chart given new date
      * @param newDate 
@@ -79,10 +87,18 @@ export class ChartOrchestrator {
             ChartOrchestrator.orchMap.forEach((v,k)=> {
                 if(v.activeSelection.ticker===log.ticker)
                     v.updateTradeLog(log)
-            })
+            });
         }
     }
 
+    public static updateIndicators(indicators:ChartIndicator[]) {
+        if(ChartOrchestrator.orchMap) {
+            ChartOrchestrator.orchMap.forEach((v,k)=> {
+                v.resetIndicators(indicators);
+            });
+        }
+    }
+    
     public static async getInstance(activeSelection:ChartSelection,realtimeSelection:ChartSelection
         ,args?:{date:Date,dataLoader:ChartDataLoader, logs:TradeLog[], indicators:ChartIndicator[]}):Promise<ChartOrchestrator> {
         let id = ChartOrchestrator.getId(activeSelection,realtimeSelection); 
