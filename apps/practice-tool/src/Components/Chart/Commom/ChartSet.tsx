@@ -64,6 +64,10 @@ export class ChartIndicatorKeyMetadata {
     public getValue() {
         return this.value
     }
+
+    public getFirendlyName():string {
+        return this.friendlyName;
+    }
 } 
 
 export abstract class ChartIndicator {

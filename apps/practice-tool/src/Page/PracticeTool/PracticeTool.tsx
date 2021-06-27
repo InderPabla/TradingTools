@@ -23,7 +23,7 @@ import {  ChartOrchestrator, TradeLog } from '../../Components/Chart/Commom/Char
 import { SessionInfoWrapper } from '../../Common/TradingClock/SessionInfoWrapper';
 import { SessionTradingClock } from '../../Common/TradingClock/SessionTradingClock';
 import { CommonTradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/CommonTradingClock';
-import { ChartIndicator, VWAPIndicator } from '../../Components/Chart/Commom/ChartSet';
+import { ChartIndicator, ChartIndicatorKeyMetadata, ChartIndicatorMetadata, ExpMovingAverageIndicator, MovingAverageIndicator, VWAPIndicator } from '../../Components/Chart/Commom/ChartSet';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6,10];
@@ -75,7 +75,15 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         for(let i = 0; i <DEFAULT_NUM_OF_CHARTS;i++) 
             chartDataArr.push(this.getNewChart(DEFAULT_CANDLESTICK_DURATION,tradingDayTime));
 
-        const indicators:ChartIndicator[] = [new VWAPIndicator()];
+        const indicators:ChartIndicator[] = [
+                                                new VWAPIndicator(), 
+                                                new ExpMovingAverageIndicator(new ChartIndicatorMetadata("",ExpMovingAverageIndicator,
+                                                    [new ChartIndicatorKeyMetadata("","period",9)])),
+                                                new ExpMovingAverageIndicator(new ChartIndicatorMetadata("",ExpMovingAverageIndicator,
+                                                    [new ChartIndicatorKeyMetadata("","period",12)])),
+                                                    new MovingAverageIndicator(new ChartIndicatorMetadata("",MovingAverageIndicator,
+                                                    [new ChartIndicatorKeyMetadata("","period",2)])),
+                                            ];
         this.state = { chartDataArr, tradingDayTime, tradingClock
             ,showSessionInfoModal: true, showIndiactorInfoModal: false
             ,tradeLogs:[], sessionInfoWrapper:null, indicators}; 

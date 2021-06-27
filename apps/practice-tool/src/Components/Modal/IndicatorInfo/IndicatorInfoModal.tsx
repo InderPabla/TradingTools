@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Modal, Button, Row, Col } from 'react-bootstrap';
 import './IndicatorInfoModal.css';
-import { ChartIndicator, ChartIndicatorFactory, ChartIndicatorMetadata, IndicatorClassType, INDICATOR_CLASSES } from '../../Chart/Commom/ChartSet';
+import { ChartIndicator, ChartIndicatorFactory, ChartIndicatorKeyMetadata, ChartIndicatorMetadata, IndicatorClassType, INDICATOR_CLASSES } from '../../Chart/Commom/ChartSet';
 
 export interface IndicatorInfoModalProps {
     show:boolean;
@@ -11,6 +11,7 @@ export interface IndicatorInfoModalProps {
 
 export interface IndicatorInfoModalState {
     metas:ChartIndicatorMetadata[];
+    editMetaIndex:number;
 }
 
 export class IndicatorInfoModal extends React.Component<IndicatorInfoModalProps,IndicatorInfoModalState> {
@@ -19,6 +20,7 @@ export class IndicatorInfoModal extends React.Component<IndicatorInfoModalProps,
         super(props);
         this.state = {
             metas: props.initialIndicator.map(v=>v.getMetadata()),
+            editMetaIndex: -1,
         };
     }
     
@@ -71,13 +73,17 @@ export class IndicatorInfoModal extends React.Component<IndicatorInfoModalProps,
             </React.Fragment>
         );
     }
+    
+    private editMetaAtIndex(index:number) {
+        this.setState({editMetaIndex:index})
+    }
 
     private renderSelectedIndicatorMeta(meta:ChartIndicatorMetadata,index:number, key:string) {
         let extraName = meta.getKeysMeta().map(v=>v.getValue()).join(',');
         if(extraName.length>0) extraName = `(${extraName})`;
         return (<React.Fragment key={key}>
             <div className={"indicator-class-container indicator-active"}>
-                <p> <span className="fa fa-edit"/> 
+                <p> <span className="fa fa-edit" onClick={()=>{this.editMetaAtIndex(index)}}/> 
                     <span className="fa fa-trash" onClick={()=>{this.removeMetaAtIndex(index)}}/> 
                     <span className="indicator-name">{meta.getIndicatorName()}{extraName}</span>
                 </p>
@@ -85,9 +91,27 @@ export class IndicatorInfoModal extends React.Component<IndicatorInfoModalProps,
         </React.Fragment>);
     }
 
+    private renderEditIndicator() {
+        const { editMetaIndex, metas } = this.state;
+        const meta = metas[editMetaIndex];
+        return (
+            <React.Fragment>
+                {meta.getKeysMeta().map((metaKey,index)=> {
+                    return this.renderEditMetaIndicatorKey(metaKey,index,`meta-key-${index}-${metaKey.getKey()}`);
+                })}
+            </React.Fragment>
+        );
+    }
+
+    private renderEditMetaIndicatorKey(metaKey:ChartIndicatorKeyMetadata,index:number,key:string) {
+        return (<React.Fragment key={key}>
+            {metaKey.getFirendlyName()}
+        </React.Fragment>);
+    }
+
     public render() {
         const { show } = this.props;
-        const { } = this.state;
+        const { editMetaIndex } = this.state;
         return (
             <React.Fragment>
                 <Modal 
@@ -105,7 +129,8 @@ export class IndicatorInfoModal extends React.Component<IndicatorInfoModalProps,
                                 {this.renderAvailableIndicators()}
                             </Col>
                             <Col className="indicator-panel indicator-right" xl={8}>
-                                {this.renderSelectedIndicators()}
+                                {editMetaIndex===-1 && this.renderSelectedIndicators()}
+                                {editMetaIndex!==-1 && this.renderEditIndicator()}
                             </Col>
                         </Row>
                     </Modal.Body>

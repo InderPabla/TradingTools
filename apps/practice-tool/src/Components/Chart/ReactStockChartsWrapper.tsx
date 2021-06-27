@@ -35,7 +35,8 @@ interface ReactStockChartsWrapperState {
     panEvent:boolean;
 }
 
-const LINE_COLORS = ["#4682B4",COLOR.RED,COLOR.GREEN,COLOR.YELLOW]
+//"#4682B4"
+const LINE_COLORS = ["white",COLOR.RED,COLOR.GREEN,COLOR.YELLOW]
 
 export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWrapperProps,ReactStockChartsWrapperState> {
 
