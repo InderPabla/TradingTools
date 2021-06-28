@@ -24,7 +24,7 @@ export abstract class CommonTradingClock {
         return this.clockSpeedMultiplier;
     }
     
-    public setClockSpeedMultiplier(clockSpeedMultiplier:number) {
+    public async setClockSpeedMultiplier(clockSpeedMultiplier:number) {
         this.clockSpeedMultiplier = clockSpeedMultiplier;
         if(this.isClockRunning()) {
             this.toggleClock();

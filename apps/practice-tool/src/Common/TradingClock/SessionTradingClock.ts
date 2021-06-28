@@ -14,22 +14,34 @@ export class SessionTradingClock extends CommonTradingClock
         this.sessionInfo = sessionInfo;
     }
 
-    public getClockSpeedMultipler() { return 1; }
-    public setClockSpeedMultiplier(clockSpeedMultiplier:number) {}
+    public getClockSpeedMultipler() { return super.getClockSpeedMultipler(); }
+
+    public async setClockSpeedMultiplier(clockSpeedMultiplier:number) {
+        try {
+            let sessionInfo = await SessionAPI.patchChangeClockSpeedSession(this.sessionInfo.sessionId,clockSpeedMultiplier);
+            this.setSessionInfo(sessionInfo);
+            await super.setClockSpeedMultiplier(clockSpeedMultiplier);
+        }
+        catch(err) {
+            console.log(err);
+        }
+    }
+
     public getSessionInfoWrapper() { return this.sessionInfo; }
+
+    private setSessionInfo(sessionInfo:SessionInfo):void {
+        this.sessionInfo.setSessionInfo(sessionInfo);
+        this.setClock(this.sessionInfo.clock);
+        console.log(this.sessionInfo);
+    }
 
     public async onClockUpdate() {
         if(this.lock) return;
         this.lock = true;
 
-
-
         try {
             let sessionInfo = await SessionAPI.getSession(this.sessionInfo.sessionId);
-            this.sessionInfo.setSessionInfo(sessionInfo);
-            this.setClock(this.sessionInfo.clock);
-            
-            console.log(this.sessionInfo);
+            this.setSessionInfo(sessionInfo);
         }
         catch(err) {
             console.log(err);
@@ -41,7 +53,7 @@ export class SessionTradingClock extends CommonTradingClock
     public async shouldPauseClock(): Promise<boolean> {
         try {
             let sessionInfo = await SessionAPI.putStopSession(this.sessionInfo.sessionId);
-            this.sessionInfo.setSessionInfo(sessionInfo);
+            this.setSessionInfo(sessionInfo);
         }
         catch(err) {
             console.log(err);
@@ -52,7 +64,7 @@ export class SessionTradingClock extends CommonTradingClock
     public async shouldUnpauseClock(): Promise<boolean> {
         try {
             let sessionInfo = await SessionAPI.putStartSession(this.sessionInfo.sessionId);
-            this.sessionInfo.setSessionInfo(sessionInfo);
+            this.setSessionInfo(sessionInfo);
         }
         catch(err) {
             console.log(err);

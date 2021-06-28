@@ -57,6 +57,24 @@ export class SessionAPI extends CommonAPI {
 
     /**
      * TODO DO PROPER ERROR HANDLING
+     * @param sessionId
+     * @param clockSpeed
+     * @returns 
+     */
+     public static async patchChangeClockSpeedSession(sessionId:string, clockSpeed:number):Promise<SessionInfo> {
+        let fetched = await fetch(`${PATH_API}/${sessionId}/clockSpeed`,
+        {  
+            method:'put', 
+            headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ clockSpeed })
+        });
+        if(fetched.status>=400) throw fetched;
+        let body = await fetched.json();
+        return body.result;
+    }
+
+    /**
+     * TODO DO PROPER ERROR HANDLING
      * @param sessionId 
      * @returns 
      */

@@ -29,6 +29,12 @@ export class SessionRoute extends CommonRouter {
             ,this.controller.unexpectedControllerErrorHandler(this.controller.stopSession)
         );
 
+        router.put(
+            `/:sessionId/clockSpeed`
+            ,ValidatorMiddleware.validator(SessionValidation.validateClockSpeed)
+            ,this.controller.unexpectedControllerErrorHandler(this.controller.updateClockSpeed)
+        );
+
         router.get(
             `/:sessionId`
             ,ValidatorMiddleware.validator(SessionValidation.validateGetSession)

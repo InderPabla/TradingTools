@@ -37,4 +37,11 @@ export class SessionController extends CommonController{
         let info = SessionService.stopSessionClock(sessionId);
         res.status(200).json(CommonController.successResp(info));
     }
+
+    async updateClockSpeed(req:Request,res:Response) {
+        let sessionId = req.params.sessionId;
+        let clockSpeed = req.body.clockSpeed;
+        let info = SessionService.updateClockSpeed(sessionId,clockSpeed);
+        res.status(200).json(CommonController.successResp(info));
+    }
 }

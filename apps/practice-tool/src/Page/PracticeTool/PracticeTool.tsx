@@ -178,12 +178,12 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         };
     }
 
-    private onClockSpeedSelected = (speed:any) => {
+    private onClockSpeedSelected = async (speed:any) => {
         const { tradingClock } = this.state;
         const newSpeed:number = parseInt(speed);
         const curSpeed:number = tradingClock.getClockSpeedMultipler();
         if(newSpeed!==curSpeed) {
-            tradingClock.setClockSpeedMultiplier(newSpeed);
+            await tradingClock.setClockSpeedMultiplier(newSpeed);
             this.setState({},()=>{
                 this.notifyClockSpeedChanged(newSpeed);
             });
@@ -299,7 +299,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         const isClockRunning = tradingClock.isClockRunning();
         const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
         const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
-        const disabled = sessionInfoWrapper!=null && sessionInfoWrapper.isServerSideSession();
+        const disabled = false;//sessionInfoWrapper!=null;// && sessionInfoWrapper.isServerSideSession();
 
         return (
             <React.Fragment>

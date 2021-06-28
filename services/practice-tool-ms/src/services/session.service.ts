@@ -8,14 +8,17 @@ export class SessionInfoData {
     private clockUpdateInterval:NodeJS.Timeout|null;
     private systemTimeAtUnpause:Date|null;
     private clockDuringUnpause:Date|null;
+    private clockSpeed:number = 1;
     private static CLOCK_SPEED:number = 1;
     private static CLOCK_RESET_TIME:number = 1000;
+
     constructor(sessionInfo:SessionInfo) {
         this.sessionInfo = sessionInfo;
         this.clockUpdateInterval = null;
         this.sessionInfo.isRunning = false;
         this.clockDuringUnpause = null;
         this.systemTimeAtUnpause = null;
+        this.clockSpeed = SessionInfoData.CLOCK_SPEED;
         this.updateClock = this.updateClock.bind(this);
     }
 
@@ -50,7 +53,11 @@ export class SessionInfoData {
         }
         const newDate = new Date();
         const msDiff = newDate.getTime() - this.systemTimeAtUnpause.getTime();
-        this.sessionInfo.clock = new Date(this.clockDuringUnpause.getTime() + msDiff*SessionInfoData.CLOCK_SPEED);
+        this.sessionInfo.clock = new Date(this.clockDuringUnpause.getTime() + msDiff*this.clockSpeed);
+    }
+
+    public updateClockSpeed(clockSpeed:number) {
+        this.clockSpeed = clockSpeed;
     }
 }
 
@@ -80,6 +87,14 @@ export class SessionService extends CommonServiceBase {
             }
         }
 
+        return SessionService.getSession(sessionId);
+    }
+
+    public static updateClockSpeed(sessionId:string,clockSpeed:number) {
+        let data = SessionService.sessionMap.get(sessionId);
+        if(data) {
+            data.updateClockSpeed(clockSpeed);
+        }
         return SessionService.getSession(sessionId);
     }
 
