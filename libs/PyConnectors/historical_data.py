@@ -22,21 +22,20 @@ if __name__ == '__main__':
     #https://interactivebrokers.github.io/tws-api/historical_limitations.html
     
     #Port:7497 for TWS, 4002 fpr IB Gateway
-    ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1234})
+    ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1235})
     
     header = ['date','open','high','low','close','average','volume','count']
     path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
     
     today_year = 2021
-    today_month = 6
-    today_day = 30
+    today_month = 7
+    today_day = 1
     
  
-    
-    #BNGO
-    #'QQQ','SPY','NIO','SPCE','ASTS','BBBY','MU','CLOV','XPEV','PLUG','ALT','CERE','WISH'
-    tickers = ['WISH']
-    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE'}
+
+    #'QQQ','SPY','NIO','BBBY','X','AMD','MU','OXY','SPCE','XPEV','ABNB','CCIV','MRIN','MEDS'
+    tickers = ['ABNB','CCIV','MRIN','MEDS']
+    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
     
