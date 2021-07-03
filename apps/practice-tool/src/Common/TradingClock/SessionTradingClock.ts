@@ -8,7 +8,7 @@ export class SessionTradingClock extends CommonTradingClock
 
     private sessionInfo:SessionInfoWrapper;
     private lock:boolean = false;
-
+    
     constructor(clock:Date,update:Function,sessionInfo:SessionInfoWrapper) {
         super(clock,update);
         this.sessionInfo = sessionInfo;
@@ -19,7 +19,7 @@ export class SessionTradingClock extends CommonTradingClock
     public async setClockSpeedMultiplier(clockSpeedMultiplier:number) {
         try {
             let sessionInfo = await SessionAPI.patchChangeClockSpeedSession(this.sessionInfo.sessionId,clockSpeedMultiplier);
-            this.setSessionInfo(sessionInfo);
+            this.setSessionInfo(sessionInfo,true);
             await super.setClockSpeedMultiplier(clockSpeedMultiplier);
         }
         catch(err) {
@@ -29,9 +29,9 @@ export class SessionTradingClock extends CommonTradingClock
 
     public getSessionInfoWrapper() { return this.sessionInfo; }
 
-    private setSessionInfo(sessionInfo:SessionInfo):void {
-        this.sessionInfo.setSessionInfo(sessionInfo);
-        this.setClock(this.sessionInfo.clock);
+    private setSessionInfo(sessionInfo:SessionInfo,isCrossPlatformChange:boolean):void {
+        this.sessionInfo.setSessionInfo(sessionInfo,isCrossPlatformChange);
+        if(isCrossPlatformChange) this.setClock(this.sessionInfo.clock);
         console.log(this.sessionInfo);
     }
 
@@ -41,7 +41,7 @@ export class SessionTradingClock extends CommonTradingClock
 
         try {
             let sessionInfo = await SessionAPI.getSession(this.sessionInfo.sessionId);
-            this.setSessionInfo(sessionInfo);
+            this.setSessionInfo(sessionInfo,true);
         }
         catch(err) {
             console.log(err);
@@ -53,7 +53,7 @@ export class SessionTradingClock extends CommonTradingClock
     public async shouldPauseClock(): Promise<boolean> {
         try {
             let sessionInfo = await SessionAPI.putStopSession(this.sessionInfo.sessionId);
-            this.setSessionInfo(sessionInfo);
+            this.setSessionInfo(sessionInfo,true);
         }
         catch(err) {
             console.log(err);
@@ -64,7 +64,7 @@ export class SessionTradingClock extends CommonTradingClock
     public async shouldUnpauseClock(): Promise<boolean> {
         try {
             let sessionInfo = await SessionAPI.putStartSession(this.sessionInfo.sessionId);
-            this.setSessionInfo(sessionInfo);
+            this.setSessionInfo(sessionInfo,true);
         }
         catch(err) {
             console.log(err);

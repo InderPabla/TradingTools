@@ -82,6 +82,19 @@ export class ChartOrchestrator {
 		}
     }
 
+    public static getCurrentPrice(ticker:string) {
+        if(ChartOrchestrator.orchMap) {
+            let keys = Array.from(ChartOrchestrator.orchMap.keys());
+            for(let key of keys) {
+                let orch = ChartOrchestrator.orchMap.get(key);
+                if(ChartOrchestrator.orchMap.get(key).activeSelection.ticker===ticker) {
+                    return orch.getCurrentPrice();
+                }
+            }
+        }
+        return null;
+    }
+
     public static updateTradeLog(log:TradeLog) {
         if(ChartOrchestrator.orchMap) {
             ChartOrchestrator.orchMap.forEach((v,k)=> {

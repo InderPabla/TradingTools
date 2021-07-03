@@ -2,6 +2,7 @@ import { Logger } from "winston";
 import { CommonServiceBase } from "../../../../libs/common/service/common-service-base";
 import { SessionInfo } from 'practice-tool-types';
 import {v4 as uuidv4} from 'uuid';
+import { HueColorService } from "./hue-color.service";
 
 export class SessionInfoData {
     private sessionInfo:SessionInfo;
@@ -64,9 +65,11 @@ export class SessionInfoData {
 export class SessionService extends CommonServiceBase {
     
     private static sessionMap:Map<string,SessionInfoData> = new Map();
+    private hueService:HueColorService;
 
-    constructor(logger:Logger) {
+    constructor(logger:Logger,hueService:HueColorService) {
         super(logger);
+        this.hueService = hueService;
     }
 
     public static findSessionIdExists(sessionId:string):boolean {
@@ -114,9 +117,20 @@ export class SessionService extends CommonServiceBase {
             tradingDay:tradingDay,
             isRunning:false,
             clock:new Date(initialClock),
+            pnl:0,
         }
         SessionService.addSession(info.sessionId,info);
         return SessionService.getSession(info.sessionId);
+    }
+
+    public async updatePnl(sessionId:string, pnl:number) {
+        let data = SessionService.sessionMap.get(sessionId);
+        if(data) {
+            let sessionInfo = data.getSessionInfo();
+            sessionInfo.pnl = pnl;
+            //await this.hueService.changeAllLights(HueColorService.LerpColor(pnl,-300,300,HueColorService.Red,HueColorService.Green));
+        }
+        return SessionService.getSession(sessionId);
     }
 
     private static addSession (sessionId:string,info:SessionInfo) {

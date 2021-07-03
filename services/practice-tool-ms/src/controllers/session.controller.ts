@@ -2,6 +2,7 @@ import { Logger } from "winston";
 import { CommonController } from "../../../../libs/common/service/common-controller";
 import { Request, Response } from 'express';
 import { SessionService } from "../services/session.service";
+import { HueColorService } from "../services/hue-color.service";
 
 export class SessionController extends CommonController{
 
@@ -9,8 +10,9 @@ export class SessionController extends CommonController{
 
     constructor(logger:Logger) {
         super(logger);
-        this.service = new SessionService(logger);
+        this.service = new SessionService(logger, new HueColorService(logger));
         this.getSession = this.getSession.bind(this);
+        this.updatePnl = this.updatePnl.bind(this);
     }
 
     async getSession(req:Request,res:Response) {
@@ -42,6 +44,13 @@ export class SessionController extends CommonController{
         let sessionId = req.params.sessionId;
         let clockSpeed = req.body.clockSpeed;
         let info = SessionService.updateClockSpeed(sessionId,clockSpeed);
+        res.status(200).json(CommonController.successResp(info));
+    }
+
+    async updatePnl(req:Request,res:Response) {
+        let sessionId = req.params.sessionId;
+        let pnl = req.body.pnl;
+        let info = await this.service.updatePnl(sessionId,pnl);
         res.status(200).json(CommonController.successResp(info));
     }
 }

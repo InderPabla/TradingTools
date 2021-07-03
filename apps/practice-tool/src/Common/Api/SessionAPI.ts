@@ -73,6 +73,18 @@ export class SessionAPI extends CommonAPI {
         return body.result;
     }
 
+    public static async patchChangePnLSession(sessionId:string, pnl:number):Promise<SessionInfo> {
+        let fetched = await fetch(`${PATH_API}/${sessionId}/pnl`,
+        {  
+            method:'put', 
+            headers : { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ pnl })
+        });
+        if(fetched.status>=400) throw fetched;
+        let body = await fetched.json();
+        return body.result;
+    }
+
     /**
      * TODO DO PROPER ERROR HANDLING
      * @param sessionId 
@@ -89,4 +101,5 @@ export class SessionAPI extends CommonAPI {
         let body = await fetched.json();
         return body.result;
     }
+
 }

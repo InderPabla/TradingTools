@@ -38,6 +38,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                 sessionId:null,
                 tradingDay:yyyymmdd(clock),
                 clock,
+                pnl:0,
             },
             sessionLocation:'SERVER',
         };

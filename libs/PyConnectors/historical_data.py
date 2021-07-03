@@ -29,12 +29,12 @@ if __name__ == '__main__':
     
     today_year = 2021
     today_month = 7
-    today_day = 1
+    today_day = 2
     
  
 
     #'QQQ','SPY','NIO','BBBY','X','AMD','MU','OXY','SPCE','XPEV','ABNB','CCIV','MRIN','MEDS'
-    tickers = ['ABNB','CCIV','MRIN','MEDS']
+    tickers = ['QQQ','SPY','NIO','SPCE','LI','AMD','PLTR','XPEV','DIDI','ALEC','TATT','MRIN']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)

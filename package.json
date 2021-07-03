@@ -2,6 +2,7 @@
   "name": "tradingtools",
   "version": "1.0.0",
   "description": "Trading Tools",
+  
   "scripts": {
     "test": "test"
   },

@@ -5,6 +5,22 @@ import { CommonValidation } from '../../../../libs/common/service/common-validat
 
 export class SessionValidation extends CommonValidation{
 
+    public static async validatePnl(req:Request):Promise<Result<ValidationError>> {
+        await SessionValidation.validateSessionIdChain(param,true)
+            .run(req);
+
+        await body('pnl')
+            .notEmpty()
+                .withMessage('Cannot be empty')
+                .bail()
+            .isNumeric()
+                .withMessage('Must be a number')
+                .bail()
+            .run(req);   
+
+        return validationResult(req);
+    }
+
     public static async validateClockSpeed(req:Request):Promise<Result<ValidationError>> {
         await SessionValidation.validateSessionIdChain(param,true)
             .run(req);

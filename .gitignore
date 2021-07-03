@@ -39,6 +39,7 @@ build/Release
 
 # Dependency directories
 node_modules/
+dev_tools/hue_test/
 jspm_packages/
 
 # TypeScript v1 declaration files
