@@ -73,6 +73,10 @@ div.chart-container {
     background-color:crimson;
 }
 
+.chart-topbar .chart-show-trades-button  {
+    background-color:purple;
+}
+
 
 .chart-topbar p.chart-id-name {
     margin: 0;

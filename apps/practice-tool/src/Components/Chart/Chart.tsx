@@ -29,7 +29,7 @@ export interface ChartProps {
 }
 
 export interface ChartState {
-	//aggLog:AggregatedTradeLog;
+	showTradeMarkers:boolean;
 }
 
 export class Chart extends React.Component<ChartProps,ChartState> {
@@ -42,7 +42,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	constructor(props:ChartProps) {
 		super(props);
 		this.divChartMainContent = null;
-		this.state = { aggLog:null };
+		this.state = { showTradeMarkers:true };
 	}
 
 	async componentDidMount() { }
@@ -107,6 +107,10 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 			quantity,
 			price:candle.close,
 			date:candle.date});
+	}
+
+	private toggleShowTradeMarkers() {
+		this.setState({showTradeMarkers:!this.state.showTradeMarkers});
 	}
 	
 	// public aggregatedTradeLog() {
@@ -261,6 +265,12 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						size="sm"
 						onClick={()=>{this.sell(100)}}
 						disabled={!_isChartActive}>-100</Button>	
+					<Button 
+						className="chart-trade-button chart-show-trades-button" 
+						variant="primary" 
+						size="sm"
+						onClick={()=>{this.toggleShowTradeMarkers()}}
+						disabled={!_isChartActive}><span className="fa fa-eye"/> T</Button>	
 
 					{aggLog && <p className="chart-id-name">{this.displayProfit(aggLog.currentProfits)}, {this.displayOpen(aggLog.currentOpen)}</p>}
 					{/* <p className="chart-id-name">{selection.chartId}</p> */}
@@ -301,6 +311,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 				data={candles}
 				indicators={activeSet.getIndicators()}
 				selection={selection}
+				showTradeMarkers={this.state.showTradeMarkers}
 				buyPrices={[]}
 				sellPrices={[]}
 			/>

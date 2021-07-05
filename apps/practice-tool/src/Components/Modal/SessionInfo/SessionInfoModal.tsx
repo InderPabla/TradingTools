@@ -59,7 +59,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
             else 
                 newSessionInfo = sessionInfo;
                 
-            save(new SessionInfoWrapper(newSessionInfo),this.state.lights.split(','));
+            save(new SessionInfoWrapper(newSessionInfo),this.state.lights.split(',').filter(v=>v.length>0));
         }
         catch(err) {
             onError('Unable to create or join session')

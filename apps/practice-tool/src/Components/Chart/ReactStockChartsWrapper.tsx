@@ -29,6 +29,7 @@ interface ReactStockChartsWrapperProps {
     sellPrices:number[],
     type?:string;
     fontSize?:number;
+    showTradeMarkers:boolean;
 }
 
 interface ReactStockChartsWrapperState {
@@ -93,7 +94,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 	render() {
         const { panEvent } = this.state;
         const { width, height, data:initialData, selection, type, buyPrices, sellPrices, fontSize
-        ,indicators} = this.props;
+        ,indicators, showTradeMarkers} = this.props;
 
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
         const xDateAccessor = d=>d.date;
@@ -221,7 +222,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                     />
                     <CandlestickSeries 
                         //width={timeIntervalBarWidth(intervalFunction)}
-
+                        showTradeMarkers={showTradeMarkers}
                         candleStrokeWidth={1}
                         widthRatio={0.8}
                         wickStroke={COLOR.WHITE}

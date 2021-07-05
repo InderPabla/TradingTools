@@ -58,6 +58,7 @@ var CandlestickSeries = function (_Component) {
 			    wickClassName = _props.wickClassName,
 			    candleClassName = _props.candleClassName,
 				tradesClassName = _props.tradesClassName;
+
 			var xScale = moreProps.xScale,
 			    yScale = moreProps.chartConfig.yScale,
 			    plotData = moreProps.plotData,
@@ -82,7 +83,7 @@ var CandlestickSeries = function (_Component) {
 				_react2.default.createElement(
 					"g",
 					{ className: tradesClassName, key: "trades" },
-					getTradesSVG(candleData)
+					getTradesSVG(this.props,candleData)
 				)
 			);
 		}
@@ -116,7 +117,8 @@ CandlestickSeries.propTypes = {
 	stroke: _propTypes2.default.oneOfType([_propTypes2.default.func, _propTypes2.default.string]),
 	wickStroke: _propTypes2.default.oneOfType([_propTypes2.default.func, _propTypes2.default.string]),
 	yAccessor: _propTypes2.default.func,
-	clip: _propTypes2.default.bool
+	clip: _propTypes2.default.bool,
+	showTradeMarkers: _propTypes2.default.bool,
 };
 
 CandlestickSeries.defaultProps = {
@@ -142,7 +144,8 @@ CandlestickSeries.defaultProps = {
 	// stroke: "none",
 	widthRatio: 0.8,
 	opacity: 0.5,
-	clip: true
+	clip: true,
+	showTradeMarkers:true,
 };
 
 function getWicksSVG(candleData) {
@@ -159,21 +162,26 @@ function getWicksSVG(candleData) {
 }
 
 
-function getTradesSVG(candleData) {
+function getTradesSVG(props,candleData) {
 	let tradesSVG = [];
-	const strokeWidth = 3;
-	candleData.forEach(function (d, idx) {
 
-		if(d.trades) {
-			d.trades.forEach(function (t, tidx) {
-				const pad = t.width*0.15;
-				
-				tradesSVG.push(_react2.default.createElement("line", { className: d.className, key: `trades-${idx}-${tidx}-${t.action}`,
-					x1: t.x-pad, y1: t.y, x2: t.x+t.width+pad, y2: t.y, strokeWidth:strokeWidth,
-					stroke: t.action==='BUY'?'white':'cyan' }));
-			});
-		}
-	});
+	if(props.showTradeMarkers) {
+		const strokeWidth = 2;
+		candleData.forEach(function (d, idx) {
+
+			if(d.trades) {
+				d.trades.forEach(function (t, tidx) {
+					const pad = t.width*0.15;
+					
+					tradesSVG.push(_react2.default.createElement("line", { className: d.className, key: `trades-${idx}-${tidx}-${t.action}`,
+						x1: t.x-pad, y1: t.y, x2: t.x+t.width+pad, y2: t.y, strokeWidth:strokeWidth,
+						stroke: t.action==='BUY'?'white':'cyan' }));
+				});
+			}
+		});
+	}
+
+	
 
 	return tradesSVG;
 }
