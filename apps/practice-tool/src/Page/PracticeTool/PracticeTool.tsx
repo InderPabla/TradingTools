@@ -122,7 +122,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         tradeLogs.push(log);
         ChartOrchestrator.updateTradeLog(log);
 
-        aggLogsMap.set(log.ticker,aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs));
+        aggLogsMap.set(log.ticker
+                    ,aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs.filter(v=>v.ticker===log.ticker)));
 
         this.setState({});
     }
@@ -163,7 +164,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
         const tickers = Array.from(aggLogsMap.keys());
         for(let ticker of tickers) {
-            const aggLog = aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(ticker),tradeLogs);
+            const aggLog = aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(ticker),tradeLogs.filter(v=>v.ticker===ticker));
             aggLogsMap.set(ticker,aggLog);
             pnl += aggLog.currentProfits;
         }
