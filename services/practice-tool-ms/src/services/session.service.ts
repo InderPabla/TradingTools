@@ -128,7 +128,6 @@ export class SessionService extends CommonServiceBase {
         if(data) {
             let sessionInfo = data.getSessionInfo();
             sessionInfo.pnl = pnl;
-            //await this.hueService.changeAllLights(HueColorService.LerpColor(pnl,-300,300,HueColorService.Red,HueColorService.Green));
         }
         return SessionService.getSession(sessionId);
     }

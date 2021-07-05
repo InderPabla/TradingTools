@@ -4,7 +4,7 @@ import React from "react";
 import { CANDLESTICK_DURATION } from '../../Common/Constant';
 import './Chart.css';
 import { Dropdown, DropdownButton, FormControl, InputGroup, Button } from "react-bootstrap";
-import { ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
+import { aggregatedTradeLogs, ChartSelection, isChartSelectionValid } from "./Commom/ChartUtils";
 import { ChartDataLoader } from "../../Common/DataLoader/ChartDataLoader";
 import {ReactStockChartsWrapper} from "./ReactStockChartsWrapper";
 import { candlestickTimeToSeconds, genUniqueKey } from "../../Common/Utils";
@@ -18,6 +18,7 @@ export interface ChartProps {
 	orch:ChartOrchestrator;
 	tradingClock:CommonTradingClock;
 	logs:TradeLog[];
+	aggLog:AggregatedTradeLog;
 
 	onTickerChanged:(chartKey:string,ticker:string)=>void;
 	onTickerSelected:(chartKey:string)=>void;
@@ -28,7 +29,7 @@ export interface ChartProps {
 }
 
 export interface ChartState {
-	aggLogs:AggregatedTradeLog;
+	//aggLog:AggregatedTradeLog;
 }
 
 export class Chart extends React.Component<ChartProps,ChartState> {
@@ -41,7 +42,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	constructor(props:ChartProps) {
 		super(props);
 		this.divChartMainContent = null;
-		this.state = { aggLogs:null };
+		this.state = { aggLog:null };
 	}
 
 	async componentDidMount() { }
@@ -70,9 +71,13 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		await this.props.onChartDataLoad(this.props.chartKey);	
 	}
 
-	public onClockUpdate() {
+	public onClockUpdate(aggLog:AggregatedTradeLog) {
 		if(!this.isChartActive()) return;
-		this.aggregatedTradeLog();
+		const {orch,logs} = this.props; 
+
+		//this.aggregatedTradeLog();
+		// let aggLog = orch?aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(orch.getActiveSelection().ticker),logs):null;
+
 		this.setState({},()=>{
 			this.forceUpdate();
 		});
@@ -103,85 +108,86 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 			price:candle.close,
 			date:candle.date});
 	}
-	public aggregatedTradeLog() {
-		let { logs, orch } = this.props;
-		if(!orch) return;
+	
+	// public aggregatedTradeLog() {
+	// 	let { logs, orch } = this.props;
+	// 	if(!orch) return;
 		
-		let actionQuantity = (log:TradeLog)=>(log.action==='SELL'?-1:1)*log.quantity;
-		let basePrice = (oldPrice:number,newPrice:number,oldOpen:number,newOpen:number) => (Math.abs(oldOpen)*oldPrice + Math.abs(newOpen)*newPrice)/(Math.abs(newOpen)+Math.abs(oldOpen));
-		let calcProfit = (closeOnType:TradingActionType,closeQuantity:number,oldPrice:number,newPrice:number)=>(closeOnType==='SELL'?-1:1)*Math.abs(closeQuantity)*(newPrice-oldPrice);
+	// 	let actionQuantity = (log:TradeLog)=>(log.action==='SELL'?-1:1)*log.quantity;
+	// 	let basePrice = (oldPrice:number,newPrice:number,oldOpen:number,newOpen:number) => (Math.abs(oldOpen)*oldPrice + Math.abs(newOpen)*newPrice)/(Math.abs(newOpen)+Math.abs(oldOpen));
+	// 	let calcProfit = (closeOnType:TradingActionType,closeQuantity:number,oldPrice:number,newPrice:number)=>(closeOnType==='SELL'?-1:1)*Math.abs(closeQuantity)*(newPrice-oldPrice);
 
-		let currentPrice = orch.getCurrentPrice() 
-		let currentProfits = 0;
-		let currentOpen = 0;
-		currentOpen = logs.reduce((pr,cr)=>pr+actionQuantity(cr),0);
+	// 	let currentPrice = orch.getCurrentPrice() 
+	// 	let currentProfits = 0;
+	// 	let currentOpen = 0;
+	// 	currentOpen = logs.reduce((pr,cr)=>pr+actionQuantity(cr),0);
 
-		let activeOpen:number;
-		let baseTradePrice:number;
+	// 	let activeOpen:number;
+	// 	let baseTradePrice:number;
 
-		for(let i = 0; i < logs.length; i++) {
-			let log = logs[i];
+	// 	for(let i = 0; i < logs.length; i++) {
+	// 		let log = logs[i];
 
-			let newOpen = actionQuantity(log);
-			let newPrice = log.price;
+	// 		let newOpen = actionQuantity(log);
+	// 		let newPrice = log.price;
 			
-			if(i===0 || activeOpen === 0) {
-				activeOpen = actionQuantity(log);
-				baseTradePrice = newPrice;
-			}
-			else if(activeOpen!=0){
-				let updatedOpen = newOpen + activeOpen;
+	// 		if(i===0 || activeOpen === 0) {
+	// 			activeOpen = actionQuantity(log);
+	// 			baseTradePrice = newPrice;
+	// 		}
+	// 		else if(activeOpen!=0){
+	// 			let updatedOpen = newOpen + activeOpen;
 				
-				//In long, adding to long
-				if(activeOpen > 0 && updatedOpen > activeOpen) {
-					baseTradePrice = basePrice(baseTradePrice,newPrice,activeOpen,newOpen);
-				}
-				//In long, closing position by adding short
-				else if(activeOpen > 0 && updatedOpen < activeOpen) {
-					//Overall position still long
-					if(updatedOpen>=0) {
-						currentProfits += calcProfit('BUY',newOpen,baseTradePrice,newPrice);
-					}
-					//Overall position switched to short
-					else {
-						currentProfits += calcProfit('BUY',activeOpen,baseTradePrice,newPrice);
-						baseTradePrice = newPrice;
-					}
-				}
-				//In short, adding to short
-				else if(activeOpen < 0 && updatedOpen < activeOpen) {
-					baseTradePrice = basePrice(baseTradePrice,newPrice,activeOpen,newOpen);
-				}
-				//In short, closing position by adding long
-				else if(activeOpen < 0 && updatedOpen > activeOpen) {
-					//Overall position still short
-					if(updatedOpen<=0) {
-						currentProfits += calcProfit('SELL',newOpen,baseTradePrice,newPrice);
-					}
-					//Overall position switched to long
-					else {
-						currentProfits += calcProfit('SELL',activeOpen,baseTradePrice,newPrice);
-						baseTradePrice = newPrice;
-					}
-				}
+	// 			//In long, adding to long
+	// 			if(activeOpen > 0 && updatedOpen > activeOpen) {
+	// 				baseTradePrice = basePrice(baseTradePrice,newPrice,activeOpen,newOpen);
+	// 			}
+	// 			//In long, closing position by adding short
+	// 			else if(activeOpen > 0 && updatedOpen < activeOpen) {
+	// 				//Overall position still long
+	// 				if(updatedOpen>=0) {
+	// 					currentProfits += calcProfit('BUY',newOpen,baseTradePrice,newPrice);
+	// 				}
+	// 				//Overall position switched to short
+	// 				else {
+	// 					currentProfits += calcProfit('BUY',activeOpen,baseTradePrice,newPrice);
+	// 					baseTradePrice = newPrice;
+	// 				}
+	// 			}
+	// 			//In short, adding to short
+	// 			else if(activeOpen < 0 && updatedOpen < activeOpen) {
+	// 				baseTradePrice = basePrice(baseTradePrice,newPrice,activeOpen,newOpen);
+	// 			}
+	// 			//In short, closing position by adding long
+	// 			else if(activeOpen < 0 && updatedOpen > activeOpen) {
+	// 				//Overall position still short
+	// 				if(updatedOpen<=0) {
+	// 					currentProfits += calcProfit('SELL',newOpen,baseTradePrice,newPrice);
+	// 				}
+	// 				//Overall position switched to long
+	// 				else {
+	// 					currentProfits += calcProfit('SELL',activeOpen,baseTradePrice,newPrice);
+	// 					baseTradePrice = newPrice;
+	// 				}
+	// 			}
 
-				activeOpen = updatedOpen;
-			}
+	// 			activeOpen = updatedOpen;
+	// 		}
 
-			//Last bit is still in a trade currently
-			if(i===logs.length-1 && activeOpen!=0) {
-				currentProfits += activeOpen*(currentPrice-baseTradePrice);
-			}
-		}
-
-		
+	// 		//Last bit is still in a trade currently
+	// 		if(i===logs.length-1 && activeOpen!=0) {
+	// 			currentProfits += activeOpen*(currentPrice-baseTradePrice);
+	// 		}
+	// 	}
 
 		
-		this.setState({aggLogs:{currentProfits:parseFloat(currentProfits.toFixed(2)),currentOpen,currentPrice}});
-	}
+
+		
+	// 	this.setState({aggLog:{currentProfits:parseFloat(currentProfits.toFixed(2)),currentOpen,currentPrice}});
+	// }
 
 	render() {
-        const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected } = this.props;
+        const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected, aggLog } = this.props;
 		const _isChartActive = this.isChartActive();
         let candlestickDurationTitle = selection.candlestickDuration || 'Duration';
 		const chartDivId = `${chartKey}-duration-dropdown`;
@@ -256,7 +262,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						onClick={()=>{this.sell(100)}}
 						disabled={!_isChartActive}>-100</Button>	
 
-					{this.state.aggLogs && <p className="chart-id-name">{this.displayProfit(this.state.aggLogs.currentProfits)}, {this.displayOpen(this.state.aggLogs.currentOpen)}</p>}
+					{aggLog && <p className="chart-id-name">{this.displayProfit(aggLog.currentProfits)}, {this.displayOpen(aggLog.currentOpen)}</p>}
 					{/* <p className="chart-id-name">{selection.chartId}</p> */}
                 </div>
 

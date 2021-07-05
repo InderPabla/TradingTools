@@ -93,7 +93,7 @@ export abstract class CommonTradingClock {
     }
 
     public async updateClock() {
-        this.onClockUpdate();
+        await this.onClockUpdate();
         this.notifyUpdate();
     }
 

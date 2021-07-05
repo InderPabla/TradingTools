@@ -28,13 +28,13 @@ if __name__ == '__main__':
     path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
     
     today_year = 2021
-    today_month = 7
-    today_day = 2
+    today_month = 2
+    today_day = 3
     
  
-
+    #'QQQ','SPY','ZM','FB',
     #'QQQ','SPY','NIO','BBBY','X','AMD','MU','OXY','SPCE','XPEV','ABNB','CCIV','MRIN','MEDS'
-    tickers = ['QQQ','SPY','NIO','SPCE','LI','AMD','PLTR','XPEV','DIDI','ALEC','TATT','MRIN']
+    tickers = ['QQQ','SPY','ZM','FB']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)

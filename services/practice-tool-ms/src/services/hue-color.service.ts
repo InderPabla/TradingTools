@@ -60,7 +60,12 @@ export class HueColorService extends CommonServiceBase {
 
     public async changeAllLights(color:Color) {
         for(let i = 0; i < this.lightsId.length;i++)
-            await this.changeLightColor(color,i);
+            await this.changeLightColor(color,this.lightsId[i]);
+    }
+
+    public async changeLightColors(color:Color,lights:string[]) {
+        for(let i = 0; i < lights.length;i++)
+        await this.changeLightColor(color,lights[i]);
     }
 
     /**
@@ -70,32 +75,21 @@ export class HueColorService extends CommonServiceBase {
      * @param color 
      * @param lightId
      */
-    public async changeLightColor(color:Color,lightIndex:number) {
+    public async changeLightColor(color:Color,lightId:string) {
         const hsv = color.hsv().unitArray();
-        const url = `${this.hue_env_url}api/${this.username_secret_key}/lights/${this.lightsId[lightIndex]}/state`;
+        const url = `${this.hue_env_url}api/${this.username_secret_key}/lights/${lightId}/state`;
         const payload = {
             "on":true, 
             "sat":parseInt((255-hsv[1]*255)+""), 
             "bri":parseInt((255-hsv[2]*255)+""), 
             "hue":parseInt((hsv[0]*65535)+""), 
-         
-            // "sat":254, 
-            // "bri":254,
-            // "hue":0,
         }
-        console.log("===============================")
-        console.log("===============================")
-        console.log("===============================")
-        console.log("===============================",lightIndex,JSON.stringify(payload))
 
         try {
             let resp = await axios.put(url,payload);
-
-            console.log("=====",resp.data)
-            this.logger.info(`Light Index: ${lightIndex} Color Changed. Resp=${JSON.stringify(resp.data)}`);
+            this.logger.info(`Light Id: ${lightId} Color Changed. Resp=${JSON.stringify(resp.data)}`);
         }
         catch(err) {
-            console.log(err)
             this.logger.error(`ErrorLightChange: color=${color.rgb()}, stack=${err}`);
         }
 

@@ -14,13 +14,14 @@ type SessionLocation = 'SERVER'|'CLIENT';
 
 export interface SessionInfoModalModalProps {
     show:boolean;
-    save:(sessionInfo:SessionInfoWrapper)=>void;
+    save:(sessionInfo:SessionInfoWrapper,lights:string[])=>void;
     onError:(errMessage:string)=>void;
 }
 
 export interface SessionInfoModalModalState {
     sessionInfo:SessionInfo;
     sessionLocation:SessionLocation;
+    lights:string,
 }
 
 export class SessionInfoModal extends React.Component<SessionInfoModalModalProps,SessionInfoModalModalState> {
@@ -41,6 +42,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                 pnl:0,
             },
             sessionLocation:'SERVER',
+            lights:''
         };
     }
     
@@ -57,7 +59,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
             else 
                 newSessionInfo = sessionInfo;
                 
-            save(new SessionInfoWrapper(newSessionInfo));
+            save(new SessionInfoWrapper(newSessionInfo),this.state.lights.split(','));
         }
         catch(err) {
             onError('Unable to create or join session')
@@ -102,6 +104,10 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
         const { sessionInfo } = this.state;
         sessionInfo.sessionId = sessionId;
         this.setState({});
+    }
+
+    private onChangeLightIds = (lights:string) => {
+        this.setState({lights});
     }
 
     private isSaveable () {
@@ -164,6 +170,24 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                                     }}
                                     onChange={(event)=>{
                                         this.onChangeSessionId(event.target.value)
+                                    }}
+                                    onKeyPress={(event)=>{}}
+                                    defaultValue={sessionInfo.sessionId} 
+                                />
+                            </InputGroup>       
+                        </div>}
+                        {<div className="session-server-location-container">
+                            <p>Light Ids: </p>
+                            <InputGroup>
+                                <FormControl
+                                    className="session-id-capture"
+                                    placeholder="9,10" 
+                                    onKeyUp={(event)=> {
+                                        event.stopPropagation();
+                                        event.nativeEvent.stopImmediatePropagation();
+                                    }}
+                                    onChange={(event)=>{
+                                        this.onChangeLightIds(event.target.value)
                                     }}
                                     onKeyPress={(event)=>{}}
                                     defaultValue={sessionInfo.sessionId} 

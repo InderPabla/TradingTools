@@ -13,17 +13,18 @@ import { ChartSelectionSuper, toChartRenderRowMeta } from './Common/PracticeTool
 import Datetime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
 import moment from 'moment';
-import { ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
+import { aggregatedTradeLogs, ChartSelection } from '../../Components/Chart/Commom/ChartUtils';
 import { ServiceChartDataLoader } from '../../Common/DataLoader/ChartDataLoader';
 import { TradingClock } from '../../Common/TradingClock/TradingClock';
 import { SessionInfo } from 'practice-tool-types';
 import { SessionInfoModal } from '../../Components/Modal/SessionInfo/SessionInfoModal';
 import { IndicatorInfoModal } from '../../Components/Modal/IndicatorInfo/IndicatorInfoModal';
-import {  ChartOrchestrator, TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
+import {  AggregatedTradeLog, ChartOrchestrator, TradeLog } from '../../Components/Chart/Commom/ChartOrchestrator';
 import { SessionInfoWrapper } from '../../Common/TradingClock/SessionInfoWrapper';
 import { SessionTradingClock } from '../../Common/TradingClock/SessionTradingClock';
 import { CommonTradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/CommonTradingClock';
 import { ChartIndicator, ChartIndicatorKeyMetadata, ChartIndicatorMetadata, ExpMovingAverageIndicator, MovingAverageIndicator, VWAPIndicator } from '../../Components/Chart/Commom/ChartSet';
+import { HueAPI } from '../../Common/Api/HueAPI';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6,10];
@@ -47,6 +48,10 @@ export interface PracticeToolState {
     tradeLogs:TradeLog[],
 
     indicators:ChartIndicator[],
+
+    aggLogsMap:Map<string,AggregatedTradeLog>,
+
+    lights:string[],
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -86,7 +91,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                             ];
         this.state = { chartDataArr, tradingDayTime, tradingClock
             ,showSessionInfoModal: true, showIndiactorInfoModal: false
-            ,tradeLogs:[], sessionInfoWrapper:null, indicators}; 
+            ,tradeLogs:[], sessionInfoWrapper:null, indicators
+            ,aggLogsMap:new Map(), lights:[]}; 
     }
 
     componentDidMount() {
@@ -112,9 +118,12 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 	}
  
     private eventLog = (log:TradeLog)=> {
-        const { tradeLogs } = this.state; 
+        const { tradeLogs, aggLogsMap } = this.state; 
         tradeLogs.push(log);
         ChartOrchestrator.updateTradeLog(log);
+
+        aggLogsMap.set(log.ticker,aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs));
+
         this.setState({});
     }
 
@@ -140,19 +149,52 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         }
     }
 
-    private clockUpdate = () => {
+    private clockUpdate = async () => {
+        const { aggLogsMap, tradeLogs } = this.state;
+        let pnl:number = 0;
+
         if(this.state.tradingClock.wasClockPaused()) {
             this.notifyClockState(false);
         }
+
         if(this.state.tradingClock.wasClockUnpaused()) {
             this.notifyClockState(true);
         }
 
-        ChartOrchestrator.update(this.state.tradingClock.getClock());
+        const tickers = Array.from(aggLogsMap.keys());
+        for(let ticker of tickers) {
+            const aggLog = aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(ticker),tradeLogs);
+            aggLogsMap.set(ticker,aggLog);
+            pnl += aggLog.currentProfits;
+        }
 
-        for(let chart of this.state.chartDataArr)
-            chart.chart.onClockUpdate();
-        this.setState({});
+        this.setState({},async ()=>{
+            ChartOrchestrator.update(this.state.tradingClock.getClock());
+
+            if(this.state.lights.length>0) {
+                try{   
+                    const maxLoss = -300;
+                    const maxProfit = 300;
+                    const pnlNorm = Math.max(Math.min((pnl-maxLoss)/(maxProfit-maxLoss),1),0)
+    
+                    const color = { r: (255.0*(1.0-pnlNorm))
+                                    ,g:(255.0*pnlNorm)
+                                    ,b:(255.0*(1.0-Math.abs((0.5-pnlNorm)/0.5)))
+                                };
+    
+                    await HueAPI.postChangeHueRgbColor(color,this.state.lights);
+                }
+                catch(err) {
+                    console.log(err);
+                }
+            }
+            
+            for(let chart of this.state.chartDataArr)
+                chart.chart.onClockUpdate(null);
+    
+            this.setState({});
+        });
+       
     }
 
     private getChartWithChartKey(chartKey:string):ChartSelectionSuper {
@@ -270,7 +312,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         }
     }
 
-    private onSaveSelectionInfo = (sessionInfoWrapper:SessionInfoWrapper) => {
+    private onSaveSelectionInfo = (sessionInfoWrapper:SessionInfoWrapper,lights:string[]) => {
         let { tradingDayTime, tradingClock } = this.state;
         //tradingDayTime = toDayTradingTime(new Date(sessionInfo.tradingDay),true);
         tradingDayTime = sessionInfoWrapper.clock;
@@ -278,7 +320,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                                     ?new SessionTradingClock(tradingDayTime,this.clockUpdate,sessionInfoWrapper)
                                                     :tradingClock;
         newTradingClock.setClock(tradingDayTime);
-        this.setState({showSessionInfoModal:false,tradingDayTime,sessionInfoWrapper,tradingClock:newTradingClock},()=>{
+        this.setState({showSessionInfoModal:false,tradingDayTime,sessionInfoWrapper,tradingClock:newTradingClock,lights},()=>{
             this.notifySessionInfo(sessionInfoWrapper);
             this.onTradingDayTimeChanged(tradingDayTime);
         });
@@ -368,7 +410,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
     
     public renderCharts() {
-        const {chartDataArr, tradingClock, tradeLogs} = this.state;
+        const {chartDataArr, tradingClock, tradeLogs, aggLogsMap} = this.state;
         const renderMeta = toChartRenderRowMeta(chartDataArr.length);
         
         return (<React.Fragment>
@@ -392,6 +434,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     buy={this.eventLog}
                                     sell={this.eventLog}
                                     logs={tradeLogs.filter(v=>v.ticker===chartData.chartSelection.ticker)}
+
+                                    aggLog={aggLogsMap.get(chartData.chartSelection.ticker)}
                                 /> 
                             </div>
                         </Col>);
