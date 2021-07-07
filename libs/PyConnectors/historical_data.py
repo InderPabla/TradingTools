@@ -22,24 +22,25 @@ if __name__ == '__main__':
     #https://interactivebrokers.github.io/tws-api/historical_limitations.html
     
     #Port:7497 for TWS, 4002 fpr IB Gateway
-    ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1235})
+    ibkr = InteractiveBrokerConnector({'ip_address':'127.0.0.1','port':4002,'client_id':1236})
     
     header = ['date','open','high','low','close','average','volume','count']
     path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
     
     today_year = 2021
-    today_month = 2
-    today_day = 3
+    today_month = 7
+    today_day = 6
     
  
     #'QQQ','SPY','ZM','FB',
     #'QQQ','SPY','NIO','BBBY','X','AMD','MU','OXY','SPCE','XPEV','ABNB','CCIV','MRIN','MEDS'
-    tickers = ['QQQ','SPY','ZM','FB']
+    #'QQQ','SPY','NIO','OCGN','AMC',TIGR
+    tickers = ['DIDI','AMD','RIOT','WISH','XPEV','SPCE']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
     
-    #Get and save 5 seconds, 1 min and 5 mins
+    #Get and save 5 i0seconds, 1 min and 5 mins
     time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_4,TimeDuration.DAY_2
                       ,TimeDuration.DAY_1,TimeDuration.MIN_30]
     candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1

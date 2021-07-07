@@ -5,12 +5,9 @@ import { ActiveChartSet, ChartIndicator, ChartSet } from "./ChartSet";
 import { ChartSetFactory } from "./ChartSetFactory";
 import { ChartSelection } from "./ChartUtils";
 
-export type TradingActionType = 'BUY'|'SELL';
-
 export interface TradeLog {
     ticker:string;
     price:number;
-    action:TradingActionType;
     quantity:number;
     date:Date;
 }

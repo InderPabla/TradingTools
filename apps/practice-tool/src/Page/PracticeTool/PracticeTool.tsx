@@ -52,6 +52,8 @@ export interface PracticeToolState {
     aggLogsMap:Map<string,AggregatedTradeLog>,
 
     lights:string[],
+
+    maxAccountEquity:number;
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -92,7 +94,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         this.state = { chartDataArr, tradingDayTime, tradingClock
             ,showSessionInfoModal: true, showIndiactorInfoModal: false
             ,tradeLogs:[], sessionInfoWrapper:null, indicators
-            ,aggLogsMap:new Map(), lights:[]}; 
+            ,aggLogsMap:new Map(), lights:[], maxAccountEquity:15000}; 
     }
 
     componentDidMount() {
@@ -122,6 +124,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         tradeLogs.push(log);
         ChartOrchestrator.updateTradeLog(log);
 
+        
         aggLogsMap.set(log.ticker
                     ,aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs.filter(v=>v.ticker===log.ticker)));
 
@@ -432,8 +435,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     orch={chartData.orch}
      
                                     tradingClock={tradingClock}
-                                    buy={this.eventLog}
-                                    sell={this.eventLog}
+                                    tradeEvent={this.eventLog}
                                     logs={tradeLogs.filter(v=>v.ticker===chartData.chartSelection.ticker)}
 
                                     aggLog={aggLogsMap.get(chartData.chartSelection.ticker)}

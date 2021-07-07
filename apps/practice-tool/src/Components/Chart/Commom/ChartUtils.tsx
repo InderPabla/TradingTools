@@ -1,4 +1,4 @@
-import { AggregatedTradeLog, ChartOrchestrator, TradeLog, TradingActionType } from "./ChartOrchestrator";
+import { AggregatedTradeLog, ChartOrchestrator, TradeLog } from "./ChartOrchestrator";
 
 type Data = {[key:string]:number};
 
@@ -33,13 +33,12 @@ export function isChartSelectionValid(selection:ChartSelection):boolean {
 
 export function aggregatedTradeLogs(currentPrice:number,logs:TradeLog[]):AggregatedTradeLog {
 
-	let actionQuantity = (log:TradeLog)=>(log.action==='SELL'?-1:1)*log.quantity;
 	let basePrice = (oldPrice:number,newPrice:number,oldOpen:number,newOpen:number) => (Math.abs(oldOpen)*oldPrice + Math.abs(newOpen)*newPrice)/(Math.abs(newOpen)+Math.abs(oldOpen));
-	let calcProfit = (closeOnType:TradingActionType,closeQuantity:number,oldPrice:number,newPrice:number)=>(closeOnType==='SELL'?-1:1)*Math.abs(closeQuantity)*(newPrice-oldPrice);
+	let calcProfit = (closeOnType:string,closeQuantity:number,oldPrice:number,newPrice:number)=>(closeOnType==='SELL'?-1:1)*Math.abs(closeQuantity)*(newPrice-oldPrice);
 	
 	let currentProfits = 0;
 	let currentOpen = 0;
-	currentOpen = logs.reduce((pr,cr)=>pr+actionQuantity(cr),0);
+	currentOpen = logs.reduce((pr,cr)=>pr+cr.quantity,0);
 
 	let activeOpen:number;
 	let baseTradePrice:number;
@@ -47,11 +46,11 @@ export function aggregatedTradeLogs(currentPrice:number,logs:TradeLog[]):Aggrega
 	for(let i = 0; i < logs.length; i++) {
 		let log = logs[i];
 
-		let newOpen = actionQuantity(log);
+		let newOpen = log.quantity;
 		let newPrice = log.price;
 		
 		if(i===0 || activeOpen === 0) {
-			activeOpen = actionQuantity(log);
+			activeOpen = log.quantity;
 			baseTradePrice = newPrice;
 		}
 		else if(activeOpen!=0){

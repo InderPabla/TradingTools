@@ -168,14 +168,13 @@ function getTradesSVG(props,candleData) {
 	if(props.showTradeMarkers) {
 		const strokeWidth = 2;
 		candleData.forEach(function (d, idx) {
-
 			if(d.trades) {
 				d.trades.forEach(function (t, tidx) {
 					const pad = t.width*0.15;
 					
 					tradesSVG.push(_react2.default.createElement("line", { className: d.className, key: `trades-${idx}-${tidx}-${t.action}`,
 						x1: t.x-pad, y1: t.y, x2: t.x+t.width+pad, y2: t.y, strokeWidth:strokeWidth,
-						stroke: t.action==='BUY'?'white':'cyan' }));
+						stroke: t.quantity>=0?'white':'cyan' }));
 				});
 			}
 		});
@@ -400,7 +399,7 @@ function getCandleData(props, xAccessor, xScale, yScale, plotData) {
 						x: x - offset,
 						y: yScale(trade.price),
 						width: offset * 2,
-						action: trade.action,
+						quantity: trade.quantity,
 					}
 				})
 			});

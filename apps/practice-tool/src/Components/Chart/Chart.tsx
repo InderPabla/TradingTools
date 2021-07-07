@@ -8,7 +8,7 @@ import { aggregatedTradeLogs, ChartSelection, isChartSelectionValid } from "./Co
 import { ChartDataLoader } from "../../Common/DataLoader/ChartDataLoader";
 import {ReactStockChartsWrapper} from "./ReactStockChartsWrapper";
 import { candlestickTimeToSeconds, genUniqueKey } from "../../Common/Utils";
-import { AggregatedTradeLog, ChartOrchestrator, TradeLog, TradingActionType } from './Commom/ChartOrchestrator';
+import { AggregatedTradeLog, ChartOrchestrator, TradeLog } from './Commom/ChartOrchestrator';
 import { ChartSet } from "./Commom/ChartSet";
 import { CommonTradingClock } from "../../Common/TradingClock/CommonTradingClock";
 
@@ -24,8 +24,7 @@ export interface ChartProps {
 	onTickerSelected:(chartKey:string)=>void;
 	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
 	onChartDataLoad:(chartKey:string)=>Promise<void>;
-	sell:(log:TradeLog)=>void;
-	buy:(log:TradeLog)=>void;
+	tradeEvent:(log:TradeLog)=>void;
 }
 
 export interface ChartState {
@@ -91,104 +90,18 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 			&& orch!=null;
 	}
 
-	private buy(quantity:number) {
+	private tradeEvent(quantity:number) {
 		let candle = this.props.orch.getCurrentCandle();
-		this.props.buy({ticker:this.props.selection.ticker,
-						action:'BUY',
+		this.props.tradeEvent({ticker:this.props.selection.ticker,
 						quantity,
 						price:candle.close,
 						date:candle.date});
 	}
 
-	private sell(quantity:number) {
-		let candle = this.props.orch.getCurrentCandle();
-		this.props.sell({ticker:this.props.selection.ticker,
-			action:'SELL',
-			quantity,
-			price:candle.close,
-			date:candle.date});
-	}
 
 	private toggleShowTradeMarkers() {
 		this.setState({showTradeMarkers:!this.state.showTradeMarkers});
 	}
-	
-	// public aggregatedTradeLog() {
-	// 	let { logs, orch } = this.props;
-	// 	if(!orch) return;
-		
-	// 	let actionQuantity = (log:TradeLog)=>(log.action==='SELL'?-1:1)*log.quantity;
-	// 	let basePrice = (oldPrice:number,newPrice:number,oldOpen:number,newOpen:number) => (Math.abs(oldOpen)*oldPrice + Math.abs(newOpen)*newPrice)/(Math.abs(newOpen)+Math.abs(oldOpen));
-	// 	let calcProfit = (closeOnType:TradingActionType,closeQuantity:number,oldPrice:number,newPrice:number)=>(closeOnType==='SELL'?-1:1)*Math.abs(closeQuantity)*(newPrice-oldPrice);
-
-	// 	let currentPrice = orch.getCurrentPrice() 
-	// 	let currentProfits = 0;
-	// 	let currentOpen = 0;
-	// 	currentOpen = logs.reduce((pr,cr)=>pr+actionQuantity(cr),0);
-
-	// 	let activeOpen:number;
-	// 	let baseTradePrice:number;
-
-	// 	for(let i = 0; i < logs.length; i++) {
-	// 		let log = logs[i];
-
-	// 		let newOpen = actionQuantity(log);
-	// 		let newPrice = log.price;
-			
-	// 		if(i===0 || activeOpen === 0) {
-	// 			activeOpen = actionQuantity(log);
-	// 			baseTradePrice = newPrice;
-	// 		}
-	// 		else if(activeOpen!=0){
-	// 			let updatedOpen = newOpen + activeOpen;
-				
-	// 			//In long, adding to long
-	// 			if(activeOpen > 0 && updatedOpen > activeOpen) {
-	// 				baseTradePrice = basePrice(baseTradePrice,newPrice,activeOpen,newOpen);
-	// 			}
-	// 			//In long, closing position by adding short
-	// 			else if(activeOpen > 0 && updatedOpen < activeOpen) {
-	// 				//Overall position still long
-	// 				if(updatedOpen>=0) {
-	// 					currentProfits += calcProfit('BUY',newOpen,baseTradePrice,newPrice);
-	// 				}
-	// 				//Overall position switched to short
-	// 				else {
-	// 					currentProfits += calcProfit('BUY',activeOpen,baseTradePrice,newPrice);
-	// 					baseTradePrice = newPrice;
-	// 				}
-	// 			}
-	// 			//In short, adding to short
-	// 			else if(activeOpen < 0 && updatedOpen < activeOpen) {
-	// 				baseTradePrice = basePrice(baseTradePrice,newPrice,activeOpen,newOpen);
-	// 			}
-	// 			//In short, closing position by adding long
-	// 			else if(activeOpen < 0 && updatedOpen > activeOpen) {
-	// 				//Overall position still short
-	// 				if(updatedOpen<=0) {
-	// 					currentProfits += calcProfit('SELL',newOpen,baseTradePrice,newPrice);
-	// 				}
-	// 				//Overall position switched to long
-	// 				else {
-	// 					currentProfits += calcProfit('SELL',activeOpen,baseTradePrice,newPrice);
-	// 					baseTradePrice = newPrice;
-	// 				}
-	// 			}
-
-	// 			activeOpen = updatedOpen;
-	// 		}
-
-	// 		//Last bit is still in a trade currently
-	// 		if(i===logs.length-1 && activeOpen!=0) {
-	// 			currentProfits += activeOpen*(currentPrice-baseTradePrice);
-	// 		}
-	// 	}
-
-		
-
-		
-	// 	this.setState({aggLog:{currentProfits:parseFloat(currentProfits.toFixed(2)),currentOpen,currentPrice}});
-	// }
 
 	render() {
         const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected, aggLog } = this.props;
@@ -231,39 +144,39 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						className="chart-trade-button chart-buy-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.buy(300)}}
+						onClick={()=>{this.tradeEvent(300)}}
 						disabled={!_isChartActive}>300</Button>
 					<Button 
 						className="chart-trade-button chart-sell-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.sell(300)}}
+						onClick={()=>{this.tradeEvent(-300)}}
 						disabled={!_isChartActive}>-300</Button>
 
 					<Button 
 						className="chart-trade-button chart-buy-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.buy(200)}}
+						onClick={()=>{this.tradeEvent(200)}}
 						disabled={!_isChartActive}>200</Button>
 					<Button 
 						className="chart-trade-button chart-sell-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.sell(200)}}
+						onClick={()=>{this.tradeEvent(-200)}}
 						disabled={!_isChartActive}>-200</Button>
 
 					<Button 
 						className="chart-trade-button chart-buy-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.buy(100)}}
+						onClick={()=>{this.tradeEvent(100)}}
 						disabled={!_isChartActive}>100</Button>
 					<Button 
 						className="chart-trade-button chart-sell-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.sell(100)}}
+						onClick={()=>{this.tradeEvent(-100)}}
 						disabled={!_isChartActive}>-100</Button>	
 					<Button 
 						className="chart-trade-button chart-show-trades-button" 
