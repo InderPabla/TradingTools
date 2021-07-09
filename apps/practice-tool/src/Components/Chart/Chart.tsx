@@ -12,6 +12,8 @@ import { AggregatedTradeLog, ChartOrchestrator, TradeLog } from './Commom/ChartO
 import { ChartSet } from "./Commom/ChartSet";
 import { CommonTradingClock } from "../../Common/TradingClock/CommonTradingClock";
 
+const SHARE_SIZES = ["1","5","10","20","50","100","200","300","500","1000"];
+
 export interface ChartProps {
 	chartKey:string;
     selection:ChartSelection;
@@ -19,7 +21,7 @@ export interface ChartProps {
 	tradingClock:CommonTradingClock;
 	logs:TradeLog[];
 	aggLog:AggregatedTradeLog;
-
+	
 	onTickerChanged:(chartKey:string,ticker:string)=>void;
 	onTickerSelected:(chartKey:string)=>void;
 	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
@@ -29,6 +31,7 @@ export interface ChartProps {
 
 export interface ChartState {
 	showTradeMarkers:boolean;
+	shareSize:number;
 }
 
 export class Chart extends React.Component<ChartProps,ChartState> {
@@ -41,7 +44,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	constructor(props:ChartProps) {
 		super(props);
 		this.divChartMainContent = null;
-		this.state = { showTradeMarkers:true };
+		this.state = { showTradeMarkers:true,shareSize:300 };
 	}
 
 	async componentDidMount() { }
@@ -94,12 +97,26 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		this.props.tradeEvent(this.props.selection.ticker,quantity,this.props.orch);
 	}
 
+	private buyEvent() {
+		this.tradeEvent(this.state.shareSize);
+	}
+
+	private sellEvent() {
+		this.tradeEvent(this.state.shareSize*-1);
+	}
+
 	private toggleShowTradeMarkers() {
 		this.setState({showTradeMarkers:!this.state.showTradeMarkers});
 	}
 
+	private onShareSizeChanged(_shareSize:string) {
+		if(_shareSize)
+			this.setState({shareSize:parseInt(_shareSize)});
+	}
+
 	render() {
         const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected, aggLog } = this.props;
+		const { shareSize } = this.state;
 		const _isChartActive = this.isChartActive();
         let candlestickDurationTitle = selection.candlestickDuration || 'Duration';
 		const chartDivId = `${chartKey}-duration-dropdown`;
@@ -130,7 +147,8 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 								onTickerChanged(chartKey,event.target.value)
 							}}
 							onKeyPress={(event)=>{
-								if(event.code==='Enter') onTickerSelected(chartKey)
+								if(event.code==='Enter' || event.key==='Enter') 
+									onTickerSelected(chartKey)
 							}}
 							defaultValue={selection.ticker} 
 						/>
@@ -139,40 +157,25 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						className="chart-trade-button chart-buy-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.tradeEvent(300)}}
-						disabled={!_isChartActive}>300</Button>
+						onClick={()=>{this.buyEvent()}}
+						disabled={!_isChartActive}>Buy</Button>
 					<Button 
 						className="chart-trade-button chart-sell-button" 
 						variant="primary" 
 						size="sm"
-						onClick={()=>{this.tradeEvent(-300)}}
-						disabled={!_isChartActive}>-300</Button>
-
-					<Button 
-						className="chart-trade-button chart-buy-button" 
-						variant="primary" 
+						onClick={()=>{this.sellEvent()}}
+						disabled={!_isChartActive}>Sell</Button>
+					<DropdownButton 
+						id={chartDivId} 
+						title={shareSize.toString()} 
 						size="sm"
-						onClick={()=>{this.tradeEvent(200)}}
-						disabled={!_isChartActive}>200</Button>
-					<Button 
-						className="chart-trade-button chart-sell-button" 
-						variant="primary" 
-						size="sm"
-						onClick={()=>{this.tradeEvent(-200)}}
-						disabled={!_isChartActive}>-200</Button>
-
-					<Button 
-						className="chart-trade-button chart-buy-button" 
-						variant="primary" 
-						size="sm"
-						onClick={()=>{this.tradeEvent(100)}}
-						disabled={!_isChartActive}>100</Button>
-					<Button 
-						className="chart-trade-button chart-sell-button" 
-						variant="primary" 
-						size="sm"
-						onClick={()=>{this.tradeEvent(-100)}}
-						disabled={!_isChartActive}>-100</Button>	
+						onSelect={(_size)=>{this.onShareSizeChanged(_size)}}>
+						{SHARE_SIZES.map((_size)=> {
+							return <Dropdown.Item 
+										key={`${chartDivId}-${_size}`}
+										eventKey={_size}>{_size}</Dropdown.Item>;
+						})}
+					</DropdownButton>
 					<Button 
 						className="chart-trade-button chart-show-trades-button" 
 						variant="primary" 

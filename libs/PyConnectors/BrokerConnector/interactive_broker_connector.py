@@ -184,5 +184,9 @@ class _InteractiveBrokerAPI(EWrapper, EClient):
         #Historical market data Service error message.
         if(errorCode == 162):
             print("Historical market data Service error message. Stopping historical data collection.");
+            
+        
+        if((not (errorCode == -1)) and errorCode < 2000 ):
             self.__historialEnd = True
+            raise Exception("IBKR Error:"+str(errorCode)+", "+errorMessage)
  

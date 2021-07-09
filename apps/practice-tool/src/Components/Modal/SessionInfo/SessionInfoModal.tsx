@@ -12,6 +12,8 @@ import moment from 'moment';
 import './SessionInfoModal.css';
 type SessionLocation = 'SERVER'|'CLIENT';
 
+const SESSION_LOCATIONS:SessionLocation[] = ['SERVER','CLIENT'];
+
 export interface SessionInfoModalModalProps {
     show:boolean;
     save:(sessionInfo:SessionInfoWrapper,lights:string[])=>void;
@@ -126,7 +128,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
 
     public render() {
         const { show } = this.props;
-        const { sessionInfo,sessionLocation } = this.state;
+        const { sessionInfo,sessionLocation,lights } = this.state;
         return (
             <React.Fragment>
                 <Modal 
@@ -146,7 +148,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                                 title={sessionLocation} 
                                 size="sm"
                                 onSelect={this.onSessionLocationSelected}>
-                                {['SERVER','CLIENT'].map((location)=> {
+                                {SESSION_LOCATIONS.map((location)=> {
                                     return <Dropdown.Item 
                                                 key={`session-location-dropdown-button-${location}`} 
                                                 eventKey={location}>{location}</Dropdown.Item>;
@@ -190,7 +192,7 @@ export class SessionInfoModal extends React.Component<SessionInfoModalModalProps
                                         this.onChangeLightIds(event.target.value)
                                     }}
                                     onKeyPress={(event)=>{}}
-                                    defaultValue={sessionInfo.sessionId} 
+                                    defaultValue={lights} 
                                 />
                             </InputGroup>       
                         </div>}
