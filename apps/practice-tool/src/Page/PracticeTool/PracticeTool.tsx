@@ -119,16 +119,24 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 		}
 	}
  
-    private eventLog = (log:TradeLog)=> {
-        const { tradeLogs, aggLogsMap } = this.state; 
-        tradeLogs.push(log);
-        ChartOrchestrator.updateTradeLog(log);
-
-        
-        aggLogsMap.set(log.ticker
-                    ,aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs.filter(v=>v.ticker===log.ticker)));
-
-        this.setState({});
+    private eventLog = (ticker:string, quantity:number, orch:ChartOrchestrator)=> {
+        //Forced 1 second delay!
+        setTimeout(()=>{
+            const { tradeLogs, aggLogsMap } = this.state; 
+            const candle = orch.getCurrentCandle();
+            const log:TradeLog = {
+                quantity,ticker,
+                date:candle.date,
+                price:candle.close
+            }
+            tradeLogs.push(log);
+            ChartOrchestrator.updateTradeLog(log);
+            aggLogsMap.set(log.ticker
+                        ,aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs.filter(v=>v.ticker===log.ticker)));
+    
+            this.setState({});
+        },1000);
+       
     }
 
     private onChartDataLoad = async (chartKey:string):Promise<void> => {

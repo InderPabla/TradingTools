@@ -29,13 +29,11 @@ if __name__ == '__main__':
     
     today_year = 2021
     today_month = 7
-    today_day = 7
+    today_day = 8
     
  
-    #'QQQ','SPY','ZM','FB',
-    #'QQQ','SPY','NIO','BBBY','X','AMD','MU','OXY','SPCE','XPEV','ABNB','CCIV','MRIN','MEDS'
-    #'QQQ','SPY','NIO','OCGN','AMC',TIGR
-    tickers = ['QQQ','SPY','NIO','PLTR','CCL','SPCE','JKS','VXRT','CLOV','MRIN','DTST','DARE']
+    #'QQQ','SPY','NIO','AMC','AAPL','CCL','PLTR','AAL','QFIN','PLUG','TIGR','NVDA
+    tickers = ['NVDA']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)

@@ -24,7 +24,7 @@ export interface ChartProps {
 	onTickerSelected:(chartKey:string)=>void;
 	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
 	onChartDataLoad:(chartKey:string)=>Promise<void>;
-	tradeEvent:(log:TradeLog)=>void;
+	tradeEvent:(ticker:string,quantity:number,orch:ChartOrchestrator)=>void;
 }
 
 export interface ChartState {
@@ -91,13 +91,8 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
 	private tradeEvent(quantity:number) {
-		let candle = this.props.orch.getCurrentCandle();
-		this.props.tradeEvent({ticker:this.props.selection.ticker,
-						quantity,
-						price:candle.close,
-						date:candle.date});
+		this.props.tradeEvent(this.props.selection.ticker,quantity,this.props.orch);
 	}
-
 
 	private toggleShowTradeMarkers() {
 		this.setState({showTradeMarkers:!this.state.showTradeMarkers});
