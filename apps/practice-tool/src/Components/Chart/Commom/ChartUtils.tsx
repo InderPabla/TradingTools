@@ -31,7 +31,7 @@ export function isChartSelectionValid(selection:ChartSelection):boolean {
     return selection.candlestickDuration!=null && selection.ticker!=null && selection.tradingDayTime!=null;           
 }
 
-export function aggregatedTradeLogs(currentPrice:number,logs:TradeLog[]):AggregatedTradeLog {
+export function aggregatedTradeLogs(ticker:string, currentPrice:number,logs:TradeLog[]):AggregatedTradeLog {
 
 	let basePrice = (oldPrice:number,newPrice:number,oldOpen:number,newOpen:number) => (Math.abs(oldOpen)*oldPrice + Math.abs(newOpen)*newPrice)/(Math.abs(newOpen)+Math.abs(oldOpen));
 	let calcProfit = (closeOnType:string,closeQuantity:number,oldPrice:number,newPrice:number)=>(closeOnType==='SELL'?-1:1)*Math.abs(closeQuantity)*(newPrice-oldPrice);
@@ -42,7 +42,6 @@ export function aggregatedTradeLogs(currentPrice:number,logs:TradeLog[]):Aggrega
 
 	let activeOpen:number;
 	let baseTradePrice:number;
-
 	for(let i = 0; i < logs.length; i++) {
 		let log = logs[i];
 
@@ -98,7 +97,7 @@ export function aggregatedTradeLogs(currentPrice:number,logs:TradeLog[]):Aggrega
 		}
 	}
 
-	return {currentProfits:parseFloat(currentProfits.toFixed(2)),currentOpen,currentPrice};
+	return {currentProfits:parseFloat(currentProfits.toFixed(2)),currentOpen,currentPrice,baseTradePrice,ticker};
 }
 
 export function aggregatPnL(aggLogs:Map<string,AggregatedTradeLog>) {

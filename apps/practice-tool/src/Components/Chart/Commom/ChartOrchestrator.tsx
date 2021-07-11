@@ -13,9 +13,11 @@ export interface TradeLog {
 }
 
 export interface AggregatedTradeLog {
+    ticker:string;
     currentProfits:number;
     currentPrice:number;
     currentOpen:number;
+    baseTradePrice:number;
 }
 
 export class ChartOrchestrator {

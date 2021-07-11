@@ -6,7 +6,7 @@ import { scaleTime } from "d3-scale";
 import { format } from "d3-format";
 import { timeFormat } from "d3-time-format";
 import { ChartCanvas, Chart } from "react-stockcharts";
-import { CandlestickSeries, BarSeries, LineSeries, TriangleMarker } from "react-stockcharts/lib/series";
+import { CandlestickSeries, BarSeries, LineSeries, TriangleMarker, VolumeProfileSeries } from "react-stockcharts/lib/series";
 import { XAxis, YAxis } from "react-stockcharts/lib/axes";
 import { last, timeIntervalBarWidth } from "react-stockcharts/lib/utils";
 import { lastVisibleItemBasedZoomAnchor } from "react-stockcharts/lib/utils/zoomBehavior"
@@ -220,6 +220,9 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         fill={COLOR.WHITE}
                         textFill={COLOR.BLACK}
                     />
+
+                    {/* <VolumeProfileSeries bySession orient="left" showSessionBackground /> */}
+
                     <CandlestickSeries 
                         //width={timeIntervalBarWidth(intervalFunction)}
                         showTradeMarkers={showTradeMarkers}

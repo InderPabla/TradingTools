@@ -132,7 +132,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             tradeLogs.push(log);
             ChartOrchestrator.updateTradeLog(log);
             aggLogsMap.set(log.ticker
-                        ,aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs.filter(v=>v.ticker===log.ticker)));
+                        ,aggregatedTradeLogs(ticker,ChartOrchestrator.getCurrentPrice(log.ticker),tradeLogs.filter(v=>v.ticker===log.ticker)));
     
             this.setState({});
         },1000);
@@ -175,7 +175,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
         const tickers = Array.from(aggLogsMap.keys());
         for(let ticker of tickers) {
-            const aggLog = aggregatedTradeLogs(ChartOrchestrator.getCurrentPrice(ticker),tradeLogs.filter(v=>v.ticker===ticker));
+            const aggLog = aggregatedTradeLogs(ticker,ChartOrchestrator.getCurrentPrice(ticker),tradeLogs.filter(v=>v.ticker===ticker));
             aggLogsMap.set(ticker,aggLog);
             pnl += aggLog.currentProfits;
         }
@@ -348,6 +348,14 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         this.setState({showIndiactorInfoModal:true});
     }
 
+    private getActiveCaptialInTrade():number {
+        const {aggLogsMap} = this.state;
+        return Array.from(aggLogsMap.keys()).reduce((pv:number,ticker:string)=>{
+            const agg = aggLogsMap.get(ticker);
+            return pv+(Math.abs(agg.currentOpen)*agg.baseTradePrice);
+        },0)
+    }
+
     public render() {
         const { tradingClock, showSessionInfoModal, tradeLogs, sessionInfoWrapper } = this.state;
         const isClockRunning = tradingClock.isClockRunning();
@@ -404,6 +412,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     size="sm"
                                     onClick={()=>{downloadDataToFile(`TradeLog-${new Date().toLocaleString()}.csv`,convertJsonToCsvString(tradeLogs))}}
                                     disabled={!tradeLogs || tradeLogs.length===0}><i className="fa fa-dollar"/><i className="fa fa-dollar"/><i className="fa fa-dollar"/></Button>	
+                                <p className="active-capital-info">Active: ${this.getActiveCaptialInTrade().toFixed(2)}</p>
                             </div>
                             <p className="session-id">{!!sessionInfoWrapper.sessionId?`SERVER: ${sessionInfoWrapper.sessionId}`:'CLIENT'}</p>
                         </React.Fragment>

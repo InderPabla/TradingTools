@@ -99,6 +99,20 @@
     border: 1px solid black;
 }
 
+.practice-tool-chart-dropdown-container .active-capital-info {
+    display: inline-block;
+    margin: 0;
+    position: relative;
+    bottom: 3px;
+    font-size: 17px;
+    margin-left: 10px;
+    font-weight: bold;
+    background: #007bff;
+    padding: 3px 6px 3px 6px;
+    border-radius: 3px;
+    border: 1px solid white;
+}
+
 .practice-tool-chart-dropdown-container .clock-chart.playing {
     background-color: darkred;
 }
