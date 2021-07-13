@@ -19,6 +19,7 @@ export class HistorialService extends CommonServiceBase {
         if(sel.candlestickDuration==="MIN_5") return 'DAY_4';
         if(sel.candlestickDuration==="MIN_1") return 'DAY_2';
         if(sel.candlestickDuration==="DAY_1") return 'WEEK_26';
+        if(sel.candlestickDuration==="MIN_15") return 'WEEK_2';
         return 'DAY_1';
     }
 

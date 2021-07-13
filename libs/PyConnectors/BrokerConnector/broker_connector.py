@@ -17,7 +17,8 @@ class TimeDuration(Enum):
     DAY_5 = 9
     DAY_6 = 10
     WEEK_1 = 11
-    WEEK_26 = 12
+    WEEK_2 = 12
+    WEEK_26 = 13
 
 class CandleStickDuration(Enum):
     SEC_1 = 1
@@ -66,6 +67,7 @@ class BrokerConnector:
             TimeDuration.DAY_5.value: "5 D",
             TimeDuration.DAY_6.value: "6 D",
             TimeDuration.WEEK_1.value: "1 W",
+            TimeDuration.WEEK_2.value: "2 W",
             TimeDuration.WEEK_26.value: "26 W"
         }
 

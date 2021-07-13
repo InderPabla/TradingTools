@@ -18,6 +18,7 @@ export interface AggregatedTradeLog {
     currentPrice:number;
     currentOpen:number;
     baseTradePrice:number;
+    commissions:number;
 }
 
 export class ChartOrchestrator {

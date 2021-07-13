@@ -183,7 +183,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						onClick={()=>{this.toggleShowTradeMarkers()}}
 						disabled={!_isChartActive}><span className="fa fa-eye"/> T</Button>	
 
-					{aggLog && <p className="chart-id-name">{this.displayProfit(aggLog.currentProfits)}, {this.displayOpen(aggLog.currentOpen)}</p>}
+					{aggLog && <p className="chart-id-name">{this.displayProfit(aggLog.currentProfits,aggLog.commissions)}, {this.displayOpen(aggLog.currentOpen)}</p>}
 					{/* <p className="chart-id-name">{selection.chartId}</p> */}
                 </div>
 
@@ -194,9 +194,10 @@ export class Chart extends React.Component<ChartProps,ChartState> {
         </React.Fragment>);
 	}
 
-	private displayProfit(profit:number) {
-		let style = profit<0?{color:"red"}:{color:"limegreen"};
-		return <span style={style}>Profits: {profit.toFixed(2)}</span>
+	private displayProfit(profit:number,commission:number) {
+		const truePnL = profit-commission;
+		let style = truePnL<0?{color:"red"}:{color:"limegreen"};
+		return <span style={style}>P&L: {truePnL.toFixed(2)}, Com: {commission}</span>
 	}
 
 	private displayOpen(open:number) {

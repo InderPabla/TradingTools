@@ -38,6 +38,8 @@ export function aggregatedTradeLogs(ticker:string, currentPrice:number,logs:Trad
 	
 	let currentProfits = 0;
 	let currentOpen = 0;
+	let commissions = 0;
+
 	currentOpen = logs.reduce((pr,cr)=>pr+cr.quantity,0);
 
 	let activeOpen:number;
@@ -48,6 +50,13 @@ export function aggregatedTradeLogs(ticker:string, currentPrice:number,logs:Trad
 		let newOpen = log.quantity;
 		let newPrice = log.price;
 		
+
+		const PER_SHARE_COMMISSION = Math.abs(newOpen)*0.01;
+		const MIN_COMMISSION = 1.0;
+		const MAX_COMMISSION = Math.abs(newOpen)*newPrice*(0.5/100.0);
+
+		commissions += Math.min(Math.max(MIN_COMMISSION,PER_SHARE_COMMISSION),MAX_COMMISSION);
+
 		if(i===0 || activeOpen === 0) {
 			activeOpen = log.quantity;
 			baseTradePrice = newPrice;
@@ -97,7 +106,7 @@ export function aggregatedTradeLogs(ticker:string, currentPrice:number,logs:Trad
 		}
 	}
 
-	return {currentProfits:parseFloat(currentProfits.toFixed(2)),currentOpen,currentPrice,baseTradePrice,ticker};
+	return {currentProfits:parseFloat(currentProfits.toFixed(2)),currentOpen,currentPrice,baseTradePrice,ticker,commissions};
 }
 
 export function aggregatPnL(aggLogs:Map<string,AggregatedTradeLog>) {

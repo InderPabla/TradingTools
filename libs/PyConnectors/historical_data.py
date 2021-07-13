@@ -29,24 +29,27 @@ if __name__ == '__main__':
     
     today_year = 2021
     today_month = 7
-    today_day = 9
+    today_day = 12
     
  
     #'QQQ','SPY','NIO','AMC','AAPL','CCL','PLTR','AAL','QFIN','PLUG','TIGR','NVDA
     #'QQQ','SPY','NIO','SPCE','AAL','CCL','LEVI','HGEN','AAPL','AMD','AMC','TIGR','BA'
-    tickers = ['BA']
+    #'SGOC','QQQ','SPY','NIO','SPCE','DIDI','PLTR','F','BAC','UPST'
+    tickers = ['SGOC','QQQ','SPY','NIO','SPCE','DIDI','PLTR','F','BAC','UPST']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
     
     #Get and save 5 i0seconds, 1 min and 5 mins
-    time_durations = [TimeDuration.WEEK_26,TimeDuration.DAY_4,TimeDuration.DAY_2
+    time_durations = [TimeDuration.WEEK_26,TimeDuration.WEEK_2
+                      ,TimeDuration.DAY_4,TimeDuration.DAY_2
                       ,TimeDuration.DAY_1,TimeDuration.MIN_30]
-    candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1
+    candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_15
+                             ,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1
                              ,CandleStickDuration.SEC_5,CandleStickDuration.SEC_1]
     
-    #time_durations = [TimeDuration.DAY_1]
-    #candlestick_durations = [CandleStickDuration.SEC_1]
+    time_durations = [TimeDuration.WEEK_2]
+    candlestick_durations = [CandleStickDuration.MIN_15]
     
     for i in range(0,len(tickers)):
         ticker = tickers[i]
