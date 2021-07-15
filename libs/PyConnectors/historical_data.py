@@ -29,28 +29,25 @@ if __name__ == '__main__':
     
     today_year = 2021
     today_month = 7
-    today_day = 12
+    today_day = 13
     
  
     #'QQQ','SPY','NIO','AMC','AAPL','CCL','PLTR','AAL','QFIN','PLUG','TIGR','NVDA
     #'QQQ','SPY','NIO','SPCE','AAL','CCL','LEVI','HGEN','AAPL','AMD','AMC','TIGR','BA'
     #'SGOC','QQQ','SPY','NIO','SPCE','DIDI','PLTR','F','BAC','UPST'
-    tickers = ['SGOC','QQQ','SPY','NIO','SPCE','DIDI','PLTR','F','BAC','UPST']
-    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ'}
+    #'QQQ','SPY','NIO','SPCE','DIDI','DTSS','ATOS','OXY','PLUG','JZXN','XELA','AAPL'
+    tickers = ['JZXN']
+    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
-    
-    #Get and save 5 i0seconds, 1 min and 5 mins
+
     time_durations = [TimeDuration.WEEK_26,TimeDuration.WEEK_2
                       ,TimeDuration.DAY_4,TimeDuration.DAY_2
                       ,TimeDuration.DAY_1,TimeDuration.MIN_30]
     candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_15
                              ,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1
                              ,CandleStickDuration.SEC_5,CandleStickDuration.SEC_1]
-    
-    time_durations = [TimeDuration.WEEK_2]
-    candlestick_durations = [CandleStickDuration.MIN_15]
-    
+
     for i in range(0,len(tickers)):
         ticker = tickers[i]
         pe = None if ticker not in primary_exchange else primary_exchange[ticker]
@@ -59,7 +56,6 @@ if __name__ == '__main__':
             time_dur = time_durations[i]
             
             if(candle_dur.name==CandleStickDuration.SEC_1.name):
-                time_dur = TimeDuration.MIN_30
                 _end_dates = [datetime.datetime(today_year, today_month, today_day, 9, 30, 00)
                               ,datetime.datetime(today_year, today_month, today_day, 10, 00, 00)
                               ,datetime.datetime(today_year, today_month, today_day, 10, 30, 00)
