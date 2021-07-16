@@ -29,14 +29,17 @@ if __name__ == '__main__':
     
     today_year = 2021
     today_month = 7
-    today_day = 14
+    today_day = 16
     
  
     #'QQQ','SPY','NIO','AMC','AAPL','CCL','PLTR','AAL','QFIN','PLUG','TIGR','NVDA
     #'QQQ','SPY','NIO','SPCE','AAL','CCL','LEVI','HGEN','AAPL','AMD','AMC','TIGR','BA'
     #'SGOC','QQQ','SPY','NIO','SPCE','DIDI','PLTR','F','BAC','UPST'
     #'QQQ','SPY','NIO','SPCE','DIDI','DTSS','ATOS','OXY','PLUG','JZXN','XELA','AAPL'
-    tickers = ['QQQ','SPY','NIO','SPCE','DIDI','DTSS','ATOS','OXY','PLUG','JZXN','XELA','AAPL']
+    #'QQQ','SPY','NIO','SPCE','DIDI','AAPL','CCL','TLRY','BABA','NFLX','CHPT','XPEV'
+    
+    
+    tickers = ['QQQ','SPY','NIO','SPCE','FUBO','CCIV','FGEN','ERIC','XELA','MRIN','LIZI']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
@@ -47,6 +50,8 @@ if __name__ == '__main__':
     candlestick_durations = [CandleStickDuration.DAY_1,CandleStickDuration.MIN_15
                              ,CandleStickDuration.MIN_5,CandleStickDuration.MIN_1
                              ,CandleStickDuration.SEC_5,CandleStickDuration.SEC_1]
+    
+    
 
     for i in range(0,len(tickers)):
         ticker = tickers[i]
