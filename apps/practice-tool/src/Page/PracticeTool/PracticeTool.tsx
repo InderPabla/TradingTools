@@ -54,6 +54,7 @@ export interface PracticeToolState {
     lights:string[],
 
     maxAccountEquity:number;
+    priceMarkerMap:Map<string,number[]>,
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -94,7 +95,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         this.state = { chartDataArr, tradingDayTime, tradingClock
             ,showSessionInfoModal: true, showIndiactorInfoModal: false
             ,tradeLogs:[], sessionInfoWrapper:null, indicators
-            ,aggLogsMap:new Map(), lights:[], maxAccountEquity:15000}; 
+            ,aggLogsMap:new Map(), lights:[], maxAccountEquity:15000,priceMarkerMap:new Map()}; 
     }
 
     componentDidMount() {
@@ -119,6 +120,14 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 		}
 	}
  
+
+    private onPriceClicked = (ticker:string,price:number,callback:Function) => {
+        const {priceMarkerMap} = this.state;
+        if(!priceMarkerMap.has(ticker)) priceMarkerMap.set(ticker,[]);
+        priceMarkerMap.get(ticker).push(price);
+        this.setState({},()=>{callback();});
+    }
+
     private eventLog = (ticker:string, quantity:number, orch:ChartOrchestrator)=> {
         //Forced 1 second delay!
         setTimeout(()=>{
@@ -431,7 +440,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
     
     public renderCharts() {
-        const {chartDataArr, tradingClock, tradeLogs, aggLogsMap} = this.state;
+        const {chartDataArr, tradingClock, tradeLogs, aggLogsMap, priceMarkerMap} = this.state;
         const renderMeta = toChartRenderRowMeta(chartDataArr.length);
         
         return (<React.Fragment>
@@ -454,8 +463,10 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     tradingClock={tradingClock}
                                     tradeEvent={this.eventLog}
                                     logs={tradeLogs.filter(v=>v.ticker===chartData.chartSelection.ticker)}
-
+                                    markedPrices={priceMarkerMap.get(chartData.chartSelection.ticker) || []}
                                     aggLog={aggLogsMap.get(chartData.chartSelection.ticker)}
+
+                                    onPriceClicked={this.onPriceClicked}
                                 /> 
                             </div>
                         </Col>);

@@ -21,12 +21,15 @@ export interface ChartProps {
 	tradingClock:CommonTradingClock;
 	logs:TradeLog[];
 	aggLog:AggregatedTradeLog;
+	markedPrices:number[];
 	
 	onTickerChanged:(chartKey:string,ticker:string)=>void;
 	onTickerSelected:(chartKey:string)=>void;
 	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
 	onChartDataLoad:(chartKey:string)=>Promise<void>;
 	tradeEvent:(ticker:string,quantity:number,orch:ChartOrchestrator)=>void;
+
+	onPriceClicked:(ticker:string,price:number,callback:Function)=>void;
 }
 
 export interface ChartState {
@@ -194,6 +197,15 @@ export class Chart extends React.Component<ChartProps,ChartState> {
         </React.Fragment>);
 	}
 
+	private onPriceClicked = (price:number) => {
+		const roundedPrice = parseFloat(price.toFixed(2));
+		this.props.onPriceClicked(this.props.selection.ticker,roundedPrice,()=>{
+			this.setState({},()=>{
+				this.forceUpdate();
+			});
+		});
+	}
+
 	private displayProfit(profit:number,commission:number) {
 		const truePnL = profit-commission;
 		let style = truePnL<0?{color:"red"}:{color:"limegreen"};
@@ -206,7 +218,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	}
 
  	private renderMainChartContent() {
-		const { chartKey, logs, orch, selection } = this.props;
+		const { chartKey, logs, orch, selection, markedPrices } = this.props;
 
 		const shouldRenderChart = isChartSelectionValid(selection) 
 								&& this.divChartMainContent != null && orch!=null;
@@ -224,8 +236,8 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 				indicators={activeSet.getIndicators()}
 				selection={selection}
 				showTradeMarkers={this.state.showTradeMarkers}
-				buyPrices={[]}
-				sellPrices={[]}
+				markedPrices={markedPrices}
+				onPriceClicked={this.onPriceClicked}
 			/>
 		</React.Fragment>);
 	}

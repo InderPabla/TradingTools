@@ -12,6 +12,7 @@ import { last, timeIntervalBarWidth } from "react-stockcharts/lib/utils";
 import { lastVisibleItemBasedZoomAnchor } from "react-stockcharts/lib/utils/zoomBehavior"
 import { candlestickTimeToD3Time } from "../../Common/Utils";
 import { EdgeIndicator, MouseCoordinateY, MouseCoordinateX, CrossHairCursor } from "react-stockcharts/lib/coordinates";
+import { ClickCallback } from "react-stockcharts/lib/interactive";
 import { discontinuousTimeScaleProvider } from "react-stockcharts/lib/scale";
 import { COLOR } from "../../Common/ColorConst";
 import { min as d3Min, max as d3Max } from 'd3-array';
@@ -25,15 +26,17 @@ interface ReactStockChartsWrapperProps {
     selection:ChartSelection;
     data:ChartContinousDataSuper[];
     indicators:ChartIndicator[];
-    buyPrices:number[],
-    sellPrices:number[],
+    markedPrices:number[],
     type?:string;
     fontSize?:number;
     showTradeMarkers:boolean;
+    
+    onPriceClicked:(price:number)=>void;
 }
 
 interface ReactStockChartsWrapperState {
     panEvent:boolean;
+    drawPriceLine:boolean;
 }
 
 //"#4682B4"
@@ -50,7 +53,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
     constructor(props:ReactStockChartsWrapperProps) {
         super(props);
-        this.state = { panEvent:true }
+        this.state = { panEvent:true,drawPriceLine:false }
     }
 
 	componentDidMount() {
@@ -67,12 +70,20 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 		if(event.code==='KeyX') {
             if(!this.state.panEvent) this.setState({panEvent:true});
 		}
+
+        if(event.code === 'KeyP') {
+            if(!this.state.drawPriceLine) this.setState({drawPriceLine:true});
+        }
 	}
 
 	keyUpEvent = (event) => {
 		if(event.code==='KeyX') {
             if(this.state.panEvent) this.setState({panEvent:false});
 		}
+
+        if(event.code === 'KeyP') {
+            if(this.state.drawPriceLine) this.setState({drawPriceLine:false});
+        }
 	}
 
     private dateD3MaxPlusPadding = (values:Date[], valueof:Function):Date => {
@@ -93,7 +104,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
 	render() {
         const { panEvent } = this.state;
-        const { width, height, data:initialData, selection, type, buyPrices, sellPrices, fontSize
+        const { width, height, data:initialData, selection, type, markedPrices, fontSize
         ,indicators, showTradeMarkers} = this.props;
 
 		const intervalFunction = candlestickTimeToD3Time(selection.candlestickDuration);
@@ -217,7 +228,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 						orient="right"
 						displayFormat={format(".2f")} 
                         dx={-10}
-                        fill={COLOR.WHITE}
+                        fill={this.state.drawPriceLine?COLOR.RED:COLOR.WHITE}
                         textFill={COLOR.BLACK}
                     />
 
@@ -247,14 +258,14 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                         return <LineSeries yAccessor={d=>d[r]} stroke={LINE_COLORS[(lineIndex-1)%LINE_COLORS.length]}/>
                     }))}
 
-                    {Array.from(new Set(buyPrices)).map((price)=> {
+                    {Array.from(new Set(markedPrices)).map((price)=> {
                         return <EdgeIndicator
                             key = {`edge-indicator-${price}`}
                             itemType="first"
                             orient="left"
                             edgeAt="left"
                             yAccessor={d=>price}
-                            lineStroke={COLOR.LIMEGREEN}
+                            lineStroke={COLOR.WHITE}
                             lineStrokeWidth={1}
                             lineOpacity={1}
                             lineWidth={34}
@@ -262,26 +273,25 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                             arrowWidth={0}
                             rectWidth={0}
                             fontSize={0}
+                            lineStrokeDasharray={"Solid"}
                         />
                     })}
 
-                    {Array.from(new Set(sellPrices)).map((price)=> {
-                        return <EdgeIndicator
-                            key = {`edge-indicator-${price}`}
-                            itemType="first"
-                            orient="left"
-                            edgeAt="left"
-                            yAccessor={d=>price}
-                            lineStroke={COLOR.RED}
-                            lineStrokeWidth={1}
-                            lineOpacity={1}
-                            lineWidth={34}
-                            rectHeight={0}
-                            arrowWidth={0}
-                            rectWidth={0}
-                            fontSize={0}
-                        />
-                    })}
+                    <ClickCallback
+						//onMouseMove={ (moreProps, e) => { console.log("onMouseMove", moreProps, e); } }
+						//onMouseDown={ (moreProps, e) => { console.log("onMouseDown", moreProps, e); } }
+						onClick={ (moreProps, e) => { 
+                            const mouseY = moreProps.mouseXY[1];
+                            const priceClicked = moreProps.chartConfig.yScale.invert(mouseY);
+
+                            if(this.state.drawPriceLine)
+                                this.props.onPriceClicked(priceClicked);
+                        }}
+						//onDoubleClick={ (moreProps, e) => { console.log("onDoubleClick", moreProps, e); } }
+						//onContextMenu={ (moreProps, e) => { console.log("onContextMenu", moreProps, e); } }
+						//onPan={ (moreProps, e) => { console.log("onPan", moreProps, e); } }
+						//onPanEnd={ (moreProps, e) => { console.log("onPanEnd", moreProps, e); } }
+					/>
 
                 </Chart>
                 
