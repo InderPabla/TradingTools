@@ -29,7 +29,7 @@ if __name__ == '__main__':
     
     today_year = 2021
     today_month = 7
-    today_day = 21
+    today_day = 23
     
  
     #'QQQ','SPY','NIO','AMC','AAPL','CCL','PLTR','AAL','QFIN','PLUG','TIGR','NVDA
@@ -40,8 +40,9 @@ if __name__ == '__main__':
     #'QQQ','SPY','NIO','SPCE','FUBO','CCIV','FGEN','ERIC','XELA','MRIN','LIZI','AAPL','NVDA','MRNA','X','SGOC','TSLA'
     #'QQQ','SPY','CCL','AAL', 'OXY', 'AMC', 'SPCE', 'CYTK', 'NIO', 'XELA', 'BB'
     #'QQQ','SPY','TAL','CCIV','CCL','SGOC','AHPI','MARA','AMC','SPCE','NIO'
-    
-    tickers = ['QQQ','SPY','MEDS','NURO','MARA','DKNG','CCL','KO','AMC','WISH','NIO']
+    #'QQQ','SPY','MEDS','NURO','MARA','DKNG','CCL','KO','AMC','WISH','NIO'
+    #'QQQ','SPY','NURO','DQ','MRIN','CLOV','MCRB','CLF','LUV','AAL','FFIE'
+    tickers = ['QQQ','SPY','ALZN','NRXP','NURO','TAL','IPA','API','BEKE','TME','TIGR']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
