@@ -53,7 +53,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
 
     constructor(props:ReactStockChartsWrapperProps) {
         super(props);
-        this.state = { panEvent:true,drawPriceLine:false }
+        this.state = { panEvent:false,drawPriceLine:false }
     }
 
 	componentDidMount() {

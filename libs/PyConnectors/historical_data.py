@@ -27,9 +27,10 @@ if __name__ == '__main__':
     header = ['date','open','high','low','close','average','volume','count']
     path = 'D:/Users/InderTheGreat/Documents/Github/TradingTools/services/practice-tool-ms/public/data/'
     
-    today_year = 2021
-    today_month = 7
-    today_day = 23
+    today = datetime.date.today();
+    today_year = today.year
+    today_month = today.month
+    today_day = today.day
     
  
     #'QQQ','SPY','NIO','AMC','AAPL','CCL','PLTR','AAL','QFIN','PLUG','TIGR','NVDA
@@ -42,8 +43,10 @@ if __name__ == '__main__':
     #'QQQ','SPY','TAL','CCIV','CCL','SGOC','AHPI','MARA','AMC','SPCE','NIO'
     #'QQQ','SPY','MEDS','NURO','MARA','DKNG','CCL','KO','AMC','WISH','NIO'
     #'QQQ','SPY','NURO','DQ','MRIN','CLOV','MCRB','CLF','LUV','AAL','FFIE'
-    #'QQQ','SPY','ALZN','NRXP','NURO','TAL','IPA','API','BEKE','TME','TIGR'
-    tickers = ['NIO','XPEV']
+    #'QQQ','SPY','ALZN','NRXP','NURO','TAL','IPA','API','BEKE','TME','TIGR','NIO','XPEV'
+    #'QQQ','SPY','MARA','RIOT','LAC','AMC','ATIP','BEKE'
+    
+    tickers = ['QQQ','SPY','MARA','INTC','NIO','AMC','CCL','XELA','AAL','BABA','AAPL']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)

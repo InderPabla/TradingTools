@@ -48,6 +48,15 @@ export class ChartOrchestrator {
         return this.activeSet.getLastRealtimeCandle();
     }
 
+    /**
+     * Get Price spread (not accurate)
+     * @param spreadRange Average price spread on eaither (Ex:2 spread would be spread -2 and +2 index of high-low)
+     * @returns 
+     */
+    public getSpread(spreadRange:number):number {
+        return this.activeSet.getSpread(spreadRange);
+    }
+
     public resetIndicators(indicators:ChartIndicator[]):void {
         this.activeSet.resetIndicators(indicators);
     }

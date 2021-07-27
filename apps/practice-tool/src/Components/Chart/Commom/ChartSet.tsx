@@ -396,6 +396,33 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
         return this.realSet != null ? this.realSet.getCandleAtIndex(this.realIndex) : this.getCandleAtIndex(this.compIndex);
     }
 
+    public getSpread(spreadRange:number):number {
+        let spread = 0;
+
+        if(this.realSet !=null ) {
+            let minRealIndex = this.realIndex-spreadRange;
+            let maxRealIndex = this.realIndex+spreadRange;
+           
+            if(minRealIndex<0) {
+                minRealIndex = 0;
+                maxRealIndex = spreadRange*2;
+            }
+            else if(maxRealIndex>=this.realSet.size()) {
+                maxRealIndex = this.realSet.size() - 1;
+                minRealIndex = maxRealIndex - spreadRange*2;
+            }
+
+            for(let i = minRealIndex; i<=maxRealIndex; i++) {
+                const can = this.realSet.getCandleAtIndex(i);
+                spread += (can.high - can.low);
+            }
+
+            spread = spread/(spreadRange*2.0 + 1.0);
+        }
+    
+        return spread;
+    }
+
     /**
      * Animate the candles forward based on the given date
      * If realtime candles have been provided then the candle will 

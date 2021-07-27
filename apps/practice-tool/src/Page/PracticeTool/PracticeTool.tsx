@@ -133,10 +133,12 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         setTimeout(()=>{
             const { tradeLogs, aggLogsMap } = this.state; 
             const candle = orch.getCurrentCandle();
+            const spread = orch.getSpread(2);
+            const spreadUpdate = quantity>0?spread:-spread;
             const log:TradeLog = {
                 quantity,ticker,
                 date:candle.date,
-                price:candle.close
+                price:candle.close + spreadUpdate
             }
             tradeLogs.push(log);
             ChartOrchestrator.updateTradeLog(log);
