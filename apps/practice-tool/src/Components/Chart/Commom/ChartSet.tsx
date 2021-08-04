@@ -398,26 +398,21 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
 
     public getSpread(spreadRange:number):number {
         let spread = 0;
+        let spreadCount = 0;
 
-        if(this.realSet !=null ) {
-            let minRealIndex = this.realIndex-spreadRange;
-            let maxRealIndex = this.realIndex+spreadRange;
-           
-            if(minRealIndex<0) {
-                minRealIndex = 0;
-                maxRealIndex = spreadRange*2;
-            }
-            else if(maxRealIndex>=this.realSet.size()) {
-                maxRealIndex = this.realSet.size() - 1;
-                minRealIndex = maxRealIndex - spreadRange*2;
-            }
+        if(this.realSet !=null && spreadRange>0) {
+            let maxRealIndex = this.realIndex;
+            let minRealIndex = this.realIndex-(spreadRange + 1);
+
+            if(minRealIndex<0) minRealIndex = 0;
 
             for(let i = minRealIndex; i<=maxRealIndex; i++) {
                 const can = this.realSet.getCandleAtIndex(i);
                 spread += (can.high - can.low);
+                spreadCount++;
             }
 
-            spread = spread/(spreadRange*2.0 + 1.0);
+            if(spreadCount>0) spread = spread/spreadCount;
         }
     
         return spread;
