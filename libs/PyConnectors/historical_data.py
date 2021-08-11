@@ -55,6 +55,7 @@ if __name__ == '__main__':
     #'QQQ','SPY','FSLY','UBER','AMC','SOFI','KPTI','MMAT'
     #'QQQ','SPY','PLUG','DKNG','OCGN','AMC','MVST','AMD','NIO'
     #'QQQ','SPY','MARA','DKNG','AMD','AMC','MVST','NIO'
+    #'QQQ','SPY','FSR','AMC','PLUG','FCEL','ZEV','NIO'
     tickers = ['QQQ','SPY','FSR','AMC','PLUG','FCEL','ZEV','NIO']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ'}
     
