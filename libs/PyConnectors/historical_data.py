@@ -60,9 +60,14 @@ if __name__ == '__main__':
     #'QQQ','SPY','OPEN','PLTR','BEKE','CLOV','SPCE','NIO'
     #'QQQ','SPY','WISH','SOFI','FUBO','SPCE','FSR','MARA','RKT','DKNG'
     #'QQQ','SPY','SONO','MARA','NIO','OXY','CCL','XPEV','AMD'
+    #'QQQ','SPY','RBLX','BILI','AMD','NIO','AMC','PLUG'
+    #'QQQ','SPY','TLRY','ALF','AMC','NIO','TIGR','ZIM'
+    #'QQQ','SPY','M','KSS','NIO','PFE','CSCO'
+    #'QQQ','SPY','FL','AMD','NIO','MARA','OXY','M'
+    #'QQQ','SPY','MARA','RIOT','PFE','UBER','AMD','NIO'
     
-    tickers = ['QQQ','SPY','SONO','MARA','NIO','OXY','CCL','XPEV','AMD']
-    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ'}
+    tickers = ['QQQ','SPY','MARA','RIOT','PFE','UBER','AMD','NIO']
+    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
 
