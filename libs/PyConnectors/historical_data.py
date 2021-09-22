@@ -76,9 +76,14 @@ if __name__ == '__main__':
     #'QQQ','SPY','SAVA','DIDI','NIO','AMC','BBIG','CLOV'
     #'QQQ','SPY','IRNT','AMC','BTBT','IQ','SAVA','NIO'
     #'QQQ','SPY','FUBO','NIO','DKNG','AMC','CLOV','BBIG','SPRT'
+    #'QQQ','SPY','NIO','AMC','BILI','BBIG','SPRT','HGEN'
+    #'QQQ','SPY','AMC','OCGN','BLU','SPCE','MDXG','CCJ','SNAP','PTON','SPRT'
+    #'QQQ','SPY','MARA','LCID','FCEL','SDC','RDHL','LIFE','ATER','NNVC'
+    #'QQQ','SPY','MARA','HUT','LVS','AMC','LIFE','OCGN','FCEL','RBLX'
+    #'QQQ','SPY','UBER','QS','AMC','LCID','PLTR','EDSA'
     
-    tickers = ['QQQ','SPY','NIO','AMC','BILI','BBIG','SPRT','HGEN']
-    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ'}
+    tickers = ['QQQ','SPY','UBER','QS','AMC','LCID','PLTR','EDSA']
+    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
 
