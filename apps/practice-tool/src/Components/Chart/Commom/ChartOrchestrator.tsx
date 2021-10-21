@@ -90,7 +90,7 @@ export class ChartOrchestrator {
 			}
 		}
     }
-
+    
     public static getCurrentPrice(ticker:string) {
         if(ChartOrchestrator.orchMap) {
             let keys = Array.from(ChartOrchestrator.orchMap.keys());

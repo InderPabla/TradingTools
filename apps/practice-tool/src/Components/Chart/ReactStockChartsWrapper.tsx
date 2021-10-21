@@ -298,7 +298,6 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                 <Chart id={2} origin={(w, h) => [0, h - chartVolumeHeight]} height={chartVolumeHeight} yExtents={d => [d.volume,0]}>
                     <YAxis 
                         fontSize={fontSize}
-                        
                         axisAt="right" 
                         orient="right" 
                         ticks={5} 
