@@ -275,7 +275,7 @@ export class ReactStockChartsWrapper extends React.Component<ReactStockChartsWra
                             fontSize={0}
                             lineStrokeDasharray={"Solid"}
                         />
-                    })}
+                    })};
 
                     <ClickCallback
 						//onMouseMove={ (moreProps, e) => { console.log("onMouseMove", moreProps, e); } }
