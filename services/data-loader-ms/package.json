@@ -1,0 +1,16 @@
+{
+  "name": "data-loader-ms",
+  "version": "1.0.0",
+  "description": "Data Loader Microservice",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node ./src/index.ts",
+    "test": "test"
+  },
+  "author": "Inderpreet Singh Pabla",
+  "license": "ISC",
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}

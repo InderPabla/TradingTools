@@ -3,8 +3,8 @@ import { Logger } from "winston";
 import { CommonRouter } from "../../../../../libs/common/service/common-router";
 import { HistorialValidation } from "../../validations/historical.validation";
 import { validationResult, param } from 'express-validator';
-import { ValidatorMiddleware } from "../../middlewares/validator";
 import { HistorialController } from "../../controllers/historical.controller";
+import { CommonValidatorMiddleware } from "../../../../../libs/common/service/common-middleware";
 
 export class HistorialRoute extends CommonRouter {
     private controller:HistorialController;
@@ -19,7 +19,7 @@ export class HistorialRoute extends CommonRouter {
 
         router.get(
             `/candles/:ticker/:candlestickDuration/:tradingDay`
-            ,ValidatorMiddleware.validator(HistorialValidation.validateHistoricalCandlesticks)
+            ,CommonValidatorMiddleware.validator(HistorialValidation.validateHistoricalCandlesticks)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.getHistoricalData)
         );
     }

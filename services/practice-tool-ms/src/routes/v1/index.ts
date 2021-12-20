@@ -4,6 +4,9 @@ import { Logger } from "winston";
 import { SessionRoute } from "./session.route";
 import { HueColorRoute } from "./hue-color.route";
 
+/**
+ * class RoutesV1 
+ */
 export class RoutesV1 extends CommonRouter{
 
     constructor(logger:Logger) {

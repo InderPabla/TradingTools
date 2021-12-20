@@ -12,6 +12,7 @@ import './App.css';
 
 import { Home } from '../Home/Home';
 import { PracticeTool } from '../PracticeTool/PracticeTool';
+import { DataLoader } from '../DataLoader/DataLoader';
 
 class App extends React.Component {
 
@@ -49,12 +50,21 @@ class App extends React.Component {
                                         Practice Tool
                                     </NavText>
                                 </NavItem>
+                                <NavItem eventKey="data-loader">
+                                    <NavIcon>
+                                        <i className="fa fa-download" style={{ fontSize: '1.75em', color:'white' }} />
+                                    </NavIcon>
+                                    <NavText>
+                                        Data Loader
+                                    </NavText>
+                                </NavItem>
                             </SideNav.Nav>
                         </SideNav>
                         <main className = "sidenav-content-container">
                             <Route path="/" exact component={props => <Home />} />
                             <Route path="/home" component={props => <Home />} />
                             <Route path="/practice-tool" component={props => <PracticeTool/>} />
+                            <Route path="/data-loader" component={props => <DataLoader/>} />
                         </main>
                     </React.Fragment>
                 )}

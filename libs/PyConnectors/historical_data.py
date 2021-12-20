@@ -103,8 +103,19 @@ if __name__ == '__main__':
     #'QQQ','SPY','LCID','NIO','OXY','CCL','TLRY','PLUG'
     #'QQQ','SPY','NIO','LCID','PLUG','MARA','LAC'
     #'QQQ','SPY','LCID','NIO','BBY','XPEV'
-    tickers = ['QQQ','SPY','LCID','NIO','BBY','XPEV']
-    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ','RFL':'NYSE','TIGR':'NASDAQ'}
+    #'QQQ','SPY','NIO','LCID','MU','PLAN','GPS','X'
+    #'QQQ','SPY','NIO','CCL','AAL','X','BBIG','XPEV','TLRY'
+    #'QQQ','SPY','NIO','CCL','AAL','X','OXY','XPEV','TLRY'
+    #'QQQ','SPY','NIO','AAL','LCID','INTC','TWTR','PTON','SOFI'
+    #'QQQ','SPY','NIO','AAL','LCID','INTC','X','PTON','SOFI'
+    #'QQQ','SPY','NIO','AAL','LCID','INTC','X','OXY','TLRY'
+    #'QQQ','SPY','NIO','AMC','LCID','XPEV','CCL','SPCE','NCLH'
+    #'QQQ','SPY','NIO','RBLX','BFRI','BLU','X'
+    #'QQQ','SPY','NIO','X','DAL','FCX','CCL','BCTX','AMC'
+    #'QQQ','SPY','PFE','NIO','AMC','LCID','MP','X','BLPH'
+    #'QQQ','SPY','AMC','CCL','PFE','NIO','MARA','LCID','X','RIOT'
+    tickers = ['QQQ','SPY','AMC','CCL','PFE','NIO','MARA','LCID','X','RIOT']
+    primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ','RFL':'NYSE','TIGR':'NASDAQ','PLAN':'NYSE'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
 

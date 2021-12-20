@@ -1,6 +1,6 @@
 import { Logger } from "winston";
 import { CommonRouter } from "../../../../../libs/common/service/common-router";
-import { ValidatorMiddleware } from "../../middlewares/validator";
+import { CommonValidatorMiddleware } from "../../../../../libs/common/service/common-middleware";
 import { HueColorValidation } from "../../validations/hue-color.validation";
 import { HueColorController } from "../../controllers/hue-color.controller";
 
@@ -17,7 +17,7 @@ export class HueColorRoute extends CommonRouter {
 
         router.post(
             `/changeRgbColor`
-            ,ValidatorMiddleware.validator(HueColorValidation.validatePostChangeHueRgbColor)
+            ,CommonValidatorMiddleware.validator(HueColorValidation.validatePostChangeHueRgbColor)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.postChangeHueRgbColor)
         );
     }

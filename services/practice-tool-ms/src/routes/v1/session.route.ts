@@ -3,7 +3,7 @@ import { Logger } from "winston";
 import { CommonRouter } from "../../../../../libs/common/service/common-router";
 import { SessionValidation } from "../../validations/session.validation";
 import { validationResult, param } from 'express-validator';
-import { ValidatorMiddleware } from "../../middlewares/validator";
+import { CommonValidatorMiddleware } from "../../../../../libs/common/service/common-middleware";
 import { SessionController } from "../../controllers/session.controller";
 
 export class SessionRoute extends CommonRouter {
@@ -19,37 +19,37 @@ export class SessionRoute extends CommonRouter {
 
         router.put(
             `/:sessionId/start`
-            ,ValidatorMiddleware.validator(SessionValidation.validateGetSession)
+            ,CommonValidatorMiddleware.validator(SessionValidation.validateGetSession)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.startSession)
         );
 
         router.put(
             `/:sessionId/stop`
-            ,ValidatorMiddleware.validator(SessionValidation.validateGetSession)
+            ,CommonValidatorMiddleware.validator(SessionValidation.validateGetSession)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.stopSession)
         );
 
         router.put(
             `/:sessionId/clockSpeed`
-            ,ValidatorMiddleware.validator(SessionValidation.validateClockSpeed)
+            ,CommonValidatorMiddleware.validator(SessionValidation.validateClockSpeed)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.updateClockSpeed)
         );
 
         router.put(
             `/:sessionId/pnl`
-            ,ValidatorMiddleware.validator(SessionValidation.validatePnl)
+            ,CommonValidatorMiddleware.validator(SessionValidation.validatePnl)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.updatePnl)
         );
 
         router.get(
             `/:sessionId`
-            ,ValidatorMiddleware.validator(SessionValidation.validateGetSession)
+            ,CommonValidatorMiddleware.validator(SessionValidation.validateGetSession)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.getSession)
         );
 
         router.post(
             `/`
-            ,ValidatorMiddleware.validator(SessionValidation.validateCreateSession)
+            ,CommonValidatorMiddleware.validator(SessionValidation.validateCreateSession)
             ,this.controller.unexpectedControllerErrorHandler(this.controller.createSession)
         );
     }
