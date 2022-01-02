@@ -31,8 +31,11 @@ if __name__ == '__main__':
     today_year = today.year
     today_month = today.month
     today_day = today.day
+    today_year = 2021
+    today_month = 12
+    today_day = 31
     
-    
+    print("Year:"+str(today_year)+", Month:"+str(today_month)+", Day:"+str(today_day))
  
     #'QQQ','SPY','NIO','AMC','AAPL','CCL','PLTR','AAL','QFIN','PLUG','TIGR','NVDA
     #'QQQ','SPY','NIO','SPCE','AAL','CCL','LEVI','HGEN','AAPL','AMD','AMC','TIGR','BA'
@@ -114,7 +117,13 @@ if __name__ == '__main__':
     #'QQQ','SPY','NIO','X','DAL','FCX','CCL','BCTX','AMC'
     #'QQQ','SPY','PFE','NIO','AMC','LCID','MP','X','BLPH'
     #'QQQ','SPY','AMC','CCL','PFE','NIO','MARA','LCID','X','RIOT'
-    tickers = ['QQQ','SPY','AMC','CCL','PFE','NIO','MARA','LCID','X','RIOT']
+    #'QQQ','SPY','AMC','CCL','PFE','NIO','MARA','LCID','X','SOPA'
+    #'QQQ','SPY','AMC','LCID','CCL','NCLH','ALLK','NIO','X'
+    #'QQQ','SPY','LCID','CCL','ALLK','NIO','JD','NKLA'
+    #'QQQ','SPY','FCEL','MARA','RIOT','NIO','CCL','ISIG','PLUG'
+    #'QQQ','SPY','NIO','VALE','ISIG','LCID','X'
+    #'QQQ','SPY','NIO','CCL','SOFI','LCID','ISIG'
+    tickers = ['QQQ','SPY','NIO','CCL','SOFI','LCID','ISIG']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ','RFL':'NYSE','TIGR':'NASDAQ','PLAN':'NYSE'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
