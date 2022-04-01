@@ -141,7 +141,8 @@ if __name__ == '__main__':
     #'QQQ','SPY','NIO','AAL','FUTU','AMD'
     #'QQQ','SPY','NIO','OXY','AAL','BBBY','X'
     #'QQQ','SPY','NIO','OXY','TLRY','HOOD','X'
-    tickers = ['QQQ','SPY','NIO','OXY','TLRY','HOOD','X']
+    #'QQQ','SPY','NIO','OXY','X','FUTU'
+    tickers = ['QQQ','SPY','NIO','OXY','X','FUTU']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ','RFL':'NYSE','TIGR':'NASDAQ','PLAN':'NYSE'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)

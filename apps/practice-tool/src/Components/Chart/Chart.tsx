@@ -47,7 +47,7 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 	constructor(props:ChartProps) {
 		super(props);
 		this.divChartMainContent = null;
-		this.state = { showTradeMarkers:true,shareSize:300 };
+		this.state = { showTradeMarkers:true,shareSize:50 };
 	}
 
 	async componentDidMount() { }
