@@ -33,7 +33,7 @@ if __name__ == '__main__':
     today_day = today.day
     #today_year = 2022
     #today_month = 6
-    #today_day = 17
+    #today_day = 28
     
     print("Year:"+str(today_year)+", Month:"+str(today_month)+", Day:"+str(today_day))
  
@@ -171,7 +171,11 @@ if __name__ == '__main__':
     #'QQQ','SPY','NIO','OXY','META','LI','COIN'
     #'QQQ','SPY','NIO','CCL','XPEV','LI','COIN'
     #'QQQ','SPY','NIO','LI','OXY','AMD','CSCO'
-    tickers = ['QQQ','SPY','NIO','LI','OXY','AMD','CSCO']
+    #'QQQ','SPY','NIO','LI','OXY','XPEV','NKE'
+    #'QQQ','SPY','NIO','LI','OXY','META','AMD'
+    #'QQQ','SPY','OXY','COIN','AMD','CCL','LI'
+    
+    tickers = ['QQQ','SPY','OXY','COIN','AMD','CCL','LI']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ','RFL':'NYSE','TIGR':'NASDAQ','PLAN':'NYSE','META':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
