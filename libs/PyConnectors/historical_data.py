@@ -32,8 +32,8 @@ if __name__ == '__main__':
     today_month = today.month
     today_day = today.day
     #today_year = 2022
-    #today_month = 6
-    #today_day = 28
+    #today_month = 7
+    #today_day = 5
     
     print("Year:"+str(today_year)+", Month:"+str(today_month)+", Day:"+str(today_day))
  
@@ -174,8 +174,12 @@ if __name__ == '__main__':
     #'QQQ','SPY','NIO','LI','OXY','XPEV','NKE'
     #'QQQ','SPY','NIO','LI','OXY','META','AMD'
     #'QQQ','SPY','OXY','COIN','AMD','CCL','LI'
+    #'QQQ','SPY','CCL','XPEV','MU','AMD','KSS'
+    #'QQQ','SPY','CCL','OXY','MU','COIN','KSS'
+    #'QQQ','SPY','DASH','UBER','TDOC','NIO','CCL'
     
-    tickers = ['QQQ','SPY','OXY','COIN','AMD','CCL','LI']
+    
+    tickers = ['QQQ','SPY','CCL','OXY','MU','COIN','KSS']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ','RFL':'NYSE','TIGR':'NASDAQ','PLAN':'NYSE','META':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)
