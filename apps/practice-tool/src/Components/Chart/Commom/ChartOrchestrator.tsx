@@ -25,7 +25,8 @@ export class ChartOrchestrator {
 
     private activeSelection:ChartSelection;
     private activeSet:ActiveChartSet;
-    private static orchMap:Map<string,ChartOrchestrator>;
+    private static orchMap:Map<string,ChartOrchestrator> = new Map();
+    private static orchForCurrentPrice:Map<string,ChartOrchestrator> = new Map();
 
     private constructor(activeSelection:ChartSelection,date:Date,indicators:ChartIndicator[],completeSetData:ChartContinousData[],realtimeSetData?:ChartContinousData[]) {
         this.activeSelection = activeSelection;
@@ -44,8 +45,12 @@ export class ChartOrchestrator {
         return this.getCurrentCandle().close;
     }
 
+    public getPreviousPrice():number {
+        return this.activeSet.getPreviousRealtimeCandle().close;
+    }
+
     public getCurrentCandle():ChartContinousData {
-        return this.activeSet.getLastRealtimeCandle();
+        return this.activeSet.getCurrentRealtimeCandle();
     }
 
     /**
@@ -92,42 +97,42 @@ export class ChartOrchestrator {
     }
     
     public static getCurrentPrice(ticker:string) {
-        if(ChartOrchestrator.orchMap) {
-            let keys = Array.from(ChartOrchestrator.orchMap.keys());
-            for(let key of keys) {
-                let orch = ChartOrchestrator.orchMap.get(key);
-                if(ChartOrchestrator.orchMap.get(key).activeSelection.ticker===ticker) {
-                    return orch.getCurrentPrice();
-                }
+        if(ChartOrchestrator.orchForCurrentPrice.has(ticker)) 
+            return ChartOrchestrator.orchForCurrentPrice.get(ticker).getCurrentPrice();
+            
+        let keys = Array.from(ChartOrchestrator.orchMap.keys());
+        for(let key of keys) {
+            let orch = ChartOrchestrator.orchMap.get(key);
+            if(ChartOrchestrator.orchMap.get(key).activeSelection.ticker===ticker) {
+                ChartOrchestrator.orchForCurrentPrice.set(ticker,orch);
+                return orch.getCurrentPrice();
             }
         }
         return null;
     }
 
+    public static getPreviousPrice(ticker:string) {
+        if(ChartOrchestrator.orchForCurrentPrice.has(ticker)) 
+            return ChartOrchestrator.orchForCurrentPrice.get(ticker).getPreviousPrice();
+        return null;
+    }
+
     public static updateTradeLog(log:TradeLog) {
-        if(ChartOrchestrator.orchMap) {
-            ChartOrchestrator.orchMap.forEach((v,k)=> {
-                if(v.activeSelection.ticker===log.ticker)
-                    v.updateTradeLog(log)
-            });
-        }
+        ChartOrchestrator.orchMap.forEach((v,k)=> {
+            if(v.activeSelection.ticker===log.ticker)
+                v.updateTradeLog(log)
+        });
     }
 
     public static updateIndicators(indicators:ChartIndicator[]) {
-        if(ChartOrchestrator.orchMap) {
-            ChartOrchestrator.orchMap.forEach((v,k)=> {
-                v.resetIndicators(indicators);
-            });
-        }
+        ChartOrchestrator.orchMap.forEach((v,k)=> {
+            v.resetIndicators(indicators);
+        });
     }
     
     public static async getInstance(activeSelection:ChartSelection,realtimeSelection:ChartSelection
         ,args?:{date:Date,dataLoader:ChartDataLoader, logs:TradeLog[], indicators:ChartIndicator[]}):Promise<ChartOrchestrator> {
         let id = ChartOrchestrator.getId(activeSelection,realtimeSelection); 
-
-        if(!ChartOrchestrator.orchMap) {
-            ChartOrchestrator.orchMap = new Map(); 
-        }
 
         if(!ChartOrchestrator.orchMap.has(id)) {
             if(!args) return null;
@@ -150,9 +155,7 @@ export class ChartOrchestrator {
     }
 
     public static update (newTime:Date) {
-        if(ChartOrchestrator.orchMap) {
-            ChartOrchestrator.orchMap.forEach((v,k)=> {v.update(newTime)})
-        }
+        ChartOrchestrator.orchMap.forEach((v,k)=> {v.update(newTime)})
     }
 
     private static getId(activeSelection:ChartSelection,realtimeSelection:ChartSelection) {

@@ -35,6 +35,12 @@ export interface PracticeToolProps {
 
 }
 
+export interface PriceType {
+ BUY:number[],
+ SELL:number[],
+ MARK:number[],
+}
+
 export interface PracticeToolState {
     chartDataArr:ChartSelectionSuper[];
     tradingDayTime:Date;
@@ -54,7 +60,7 @@ export interface PracticeToolState {
     lights:string[],
 
     maxAccountEquity:number;
-    priceMarkerMap:Map<string,number[]>,
+    priceMarkerMap:Map<string,PriceType>,
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -121,11 +127,12 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 	}
  
 
-    private onPriceClicked = (ticker:string,price:number,callback:Function) => {
+    private onPriceClicked = (ticker:string,price:number,clickType:"MARK"|"BUY"|"SELL",callback:Function) => {
         const {priceMarkerMap} = this.state;
-        if(!priceMarkerMap.has(ticker)) priceMarkerMap.set(ticker,[]);
-        priceMarkerMap.get(ticker).push(price);
-        this.setState({},()=>{callback();});
+        if(!priceMarkerMap.has(ticker)) priceMarkerMap.set(ticker,{BUY:[],SELL:[],MARK:[]});
+        priceMarkerMap.get(ticker)[clickType].push(price);
+        priceMarkerMap.get(ticker)[clickType].sort();
+        this.setState({priceMarkerMap},()=>{callback();});
     }
 
     private eventLog = (ticker:string, quantity:number, orch:ChartOrchestrator)=> {
@@ -186,9 +193,13 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
         const tickers = Array.from(aggLogsMap.keys());
         for(let ticker of tickers) {
-            const aggLog = aggregatedTradeLogs(ticker,ChartOrchestrator.getCurrentPrice(ticker),tradeLogs.filter(v=>v.ticker===ticker));
+            var currentPrice = ChartOrchestrator.getCurrentPrice(ticker);
+            var previousPrice = ChartOrchestrator.getPreviousPrice(ticker);
+            const aggLog = aggregatedTradeLogs(ticker,currentPrice,tradeLogs.filter(v=>v.ticker===ticker));
             aggLogsMap.set(ticker,aggLog);
             pnl += aggLog.currentProfits;
+
+            
         }
 
         this.setState({},async ()=>{
@@ -465,7 +476,9 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     tradingClock={tradingClock}
                                     tradeEvent={this.eventLog}
                                     logs={tradeLogs.filter(v=>v.ticker===chartData.chartSelection.ticker)}
-                                    markedPrices={priceMarkerMap.get(chartData.chartSelection.ticker) || []}
+                                    markedPrices={priceMarkerMap.get(chartData.chartSelection.ticker)?.MARK|| []}
+                                    sellPrices={priceMarkerMap.get(chartData.chartSelection.ticker)?.SELL|| []}
+                                    buyPrices={priceMarkerMap.get(chartData.chartSelection.ticker)?.BUY|| []}
                                     aggLog={aggLogsMap.get(chartData.chartSelection.ticker)}
 
                                     onPriceClicked={this.onPriceClicked}

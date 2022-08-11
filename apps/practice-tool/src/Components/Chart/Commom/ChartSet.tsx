@@ -392,8 +392,12 @@ export class ActiveChartSet extends ChartSet implements IChartAnimate {
         return this.realSet != null && this.realIndex>=0;
     }
 
-    public getLastRealtimeCandle():ChartContinousData {
+    public getCurrentRealtimeCandle():ChartContinousData {
         return this.realSet != null ? this.realSet.getCandleAtIndex(this.realIndex) : this.getCandleAtIndex(this.compIndex);
+    }
+
+    public getPreviousRealtimeCandle():ChartContinousData {
+        return this.realSet != null ? this.realSet.getCandleAtIndex(this.realIndex-1) : this.getCandleAtIndex(this.compIndex-1);
     }
 
     public getSpread(spreadRange:number):number {
