@@ -25,6 +25,7 @@ import { SessionTradingClock } from '../../Common/TradingClock/SessionTradingClo
 import { CommonTradingClock, VALID_CLOCK_SPEED_MULTIPLIERS } from '../../Common/TradingClock/CommonTradingClock';
 import { ChartIndicator, ChartIndicatorKeyMetadata, ChartIndicatorMetadata, ExpMovingAverageIndicator, MovingAverageIndicator, VWAPIndicator } from '../../Components/Chart/Commom/ChartSet';
 import { HueAPI } from '../../Common/Api/HueAPI';
+import { TradeOrderModal } from '../../Components/Modal/TradeOrder/TradeOrderModal';
 
 const DEFAULT_NUM_OF_CHARTS = 2;
 const VALID_CHART_SIZES = [1,2,4,5,6,10];
@@ -48,7 +49,9 @@ export interface PracticeToolState {
 
     showSessionInfoModal:boolean;
     showIndiactorInfoModal:boolean;
-    
+    showTradeOrderModal:boolean;
+    traderOrderTicker:string;
+
     sessionInfoWrapper:SessionInfoWrapper;
 
     tradeLogs:TradeLog[],
@@ -60,7 +63,9 @@ export interface PracticeToolState {
     lights:string[],
 
     maxAccountEquity:number;
-    priceMarkerMap:Map<string,PriceType>,
+    priceMarkerMap:Map<string,PriceType>;
+
+    
 }
 
 export class PracticeTool extends React.Component<PracticeToolProps,PracticeToolState> {
@@ -99,7 +104,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                                     [new ChartIndicatorKeyMetadata("","period",2)])),
                                             ];
         this.state = { chartDataArr, tradingDayTime, tradingClock
-            ,showSessionInfoModal: true, showIndiactorInfoModal: false
+            ,showSessionInfoModal: true, showIndiactorInfoModal: false,showTradeOrderModal:false, traderOrderTicker:null
             ,tradeLogs:[], sessionInfoWrapper:null, indicators
             ,aggLogsMap:new Map(), lights:[], maxAccountEquity:15000,priceMarkerMap:new Map()}; 
     }
@@ -159,7 +164,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
 
     private onChartDataLoad = async (chartKey:string):Promise<void> => {
         const { dataLoader } = this;
-        const { tradingClock, tradeLogs,indicators } = this.state;
+        const { tradingClock, tradeLogs,indicators, aggLogsMap } = this.state;
         let chart = this.state.chartDataArr.find(v=>v.chartKey===chartKey) as ChartSelectionSuper;
         const activeSelection = {...chart.chartSelection, tradingDayTime: new Date(tradingClock.getClock())};
         const realtimeSelection = {...activeSelection,candlestickDuration:CANDLESTICK_DURATION.SEC_5}
@@ -172,11 +177,33 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
             this.notifySuccessChartLoadingData(activeSelection);
             chart.orch = orch;
             chart.chartKey = genUniqueKey();
+            if(!aggLogsMap.has(activeSelection.ticker)) {
+                aggLogsMap.set(activeSelection.ticker,{currentProfits:0,currentOpen:0,currentPrice:0,baseTradePrice:0,ticker:activeSelection.ticker,commissions:0})
+            }
             this.setState({});
         }
         else {
             this.notifyErrorChartLoadingData(activeSelection);
         }
+    }
+
+    private shouldTriggerBuyOrSellEvent(currentPrice:number,previousPrice:number,actionPrice:number) {
+        return (currentPrice>=actionPrice && previousPrice<=actionPrice) || (currentPrice<=actionPrice && previousPrice>=actionPrice);
+    }
+
+    private checkAndTriggerBuyOrSellEvent(actionPriceArr:number[],ticker:string,currentPrice:number,previousPrice:number,quantity:number) {
+        let spliceIndex:number = -1;
+
+        for(let i = 0; i<actionPriceArr.length; i++) {
+            const actionPrice = actionPriceArr[i];
+            if(this.shouldTriggerBuyOrSellEvent(currentPrice,previousPrice,actionPrice)) {
+                spliceIndex = i;
+                this.eventLog(ticker,quantity,ChartOrchestrator.getAnyChartOrchestratorForTicker(ticker));
+                break;
+            }
+        }
+
+        if(spliceIndex>-1) actionPriceArr.splice(spliceIndex,1)
     }
 
     private clockUpdate = async () => {
@@ -192,14 +219,20 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         }
 
         const tickers = Array.from(aggLogsMap.keys());
+
         for(let ticker of tickers) {
             var currentPrice = ChartOrchestrator.getCurrentPrice(ticker);
             var previousPrice = ChartOrchestrator.getPreviousPrice(ticker);
+
+            if(this.state.priceMarkerMap.has(ticker)) {
+                let priceType = this.state.priceMarkerMap.get(ticker);
+                this.checkAndTriggerBuyOrSellEvent(priceType.BUY,ticker,currentPrice,previousPrice,50);
+                this.checkAndTriggerBuyOrSellEvent(priceType.SELL,ticker,currentPrice,previousPrice,-50);
+            }
+
             const aggLog = aggregatedTradeLogs(ticker,currentPrice,tradeLogs.filter(v=>v.ticker===ticker));
             aggLogsMap.set(ticker,aggLog);
             pnl += aggLog.currentProfits;
-
-            
         }
 
         this.setState({},async ()=>{
@@ -363,11 +396,23 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     private onSaveIndicatorInfo = (indicators:ChartIndicator[]) => {
         ChartOrchestrator.updateIndicators(indicators);
         this.resetAllChart();
-        this.setState({indicators,showIndiactorInfoModal:false});
+        this.setState({indicators});
+        this.closeModal();
     }
 
     private openIndicatorModal = () => {
         this.setState({showIndiactorInfoModal:true});
+    }
+
+    private onSaveTradeOrderModal = (ticker:string,priceType:PriceType) => {
+        const { priceMarkerMap}  = this.state;
+        priceMarkerMap.set(ticker,priceType);
+        this.setState({traderOrderTicker:null})
+        this.closeModal();
+    }
+
+    private closeModal = () => {
+        this.setState({showIndiactorInfoModal:false,showTradeOrderModal:false});
     }
 
     private getActiveCaptialInTrade():number {
@@ -378,67 +423,18 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
         },0)
     }
 
+    private openOrderHistoryModal = (ticker:string) => {
+        this.setState({showTradeOrderModal:true,traderOrderTicker:ticker},()=>{this.forceUpdate()});
+    }
+
     public render() {
-        const { tradingClock, showSessionInfoModal, tradeLogs, sessionInfoWrapper } = this.state;
-        const isClockRunning = tradingClock.isClockRunning();
-        const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
-        const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
-        const disabled = false;//sessionInfoWrapper!=null;// && sessionInfoWrapper.isServerSideSession();
+        const { showSessionInfoModal } = this.state;
 
         return (
             <React.Fragment>
                 <div id="practice-tool" style={{height:"100vh"}}>
                     <TopBar title="Practice Tool" icon="book">
-                        {!showSessionInfoModal && <React.Fragment>
-                            <div className="practice-tool-chart-dropdown-container">
-                                <DropdownButton 
-                                    id="practice-tool-chart-size-button" 
-                                    title={`${this.state.chartDataArr.length} Charts`} 
-                                    size="sm"
-                                    onSelect={this.onChartSizeSelected}>
-                                    {VALID_CHART_SIZES.map((numberOfCharts)=> {
-                                        return <Dropdown.Item 
-                                                    key={`practice-tool-chart-dropdown-button-${numberOfCharts}`} 
-                                                    eventKey={numberOfCharts.toString()}>{numberOfCharts}</Dropdown.Item>;
-                                    })}
-                                </DropdownButton>
-                                <Datetime 
-                                    inputProps={{disabled:disabled}}
-                                    initialValue={this.state.tradingDayTime}
-                                    onChange={(value)=>{this.onTradingDayTimeChanged(moment(value).toDate())}}  
-                                />
-                                <i className={`refresh-chart fa fa-refresh`} onClick={this.resetAllChartsInState}/>
-                                <i className={pauseplayClass} onClick={tradingClock.toggleClock}/>
-                                <p className={clockClass}>{moment(tradingClock.getClock()).format('hh:mm:ss A')}</p>
-                                <DropdownButton 
-                                    disabled={disabled}
-                                    id="practice-tool-chart-clockspeed-button" 
-                                    title={`${this.state.tradingClock.getClockSpeedMultipler()}x`} 
-                                    size="sm"
-                                    onSelect={this.onClockSpeedSelected}>
-                                    {VALID_CLOCK_SPEED_MULTIPLIERS.map((speed)=> {
-                                        return <Dropdown.Item 
-                                                    key={`practice-tool-chart-clockspeed-button-${speed}`} 
-                                                    eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
-                                    })}
-                                </DropdownButton>
-                                <Button 
-                                    className="indicator-button" 
-                                    variant="primary" 
-                                    size="sm"
-                                    onClick={()=>{this.openIndicatorModal()}}
-                                    disabled={false}><i className="fa fa-flask"/></Button>	
-                                <Button 
-                                    className="download-trade-log-button" 
-                                    variant="primary" 
-                                    size="sm"
-                                    onClick={()=>{downloadDataToFile(`TradeLog-${new Date().toLocaleString()}.csv`,convertJsonToCsvString(tradeLogs))}}
-                                    disabled={!tradeLogs || tradeLogs.length===0}><i className="fa fa-dollar"/><i className="fa fa-dollar"/><i className="fa fa-dollar"/></Button>	
-                                <p className="active-capital-info">Active: ${this.getActiveCaptialInTrade().toFixed(2)}</p>
-                            </div>
-                            <p className="session-id">{!!sessionInfoWrapper.sessionId?`SERVER: ${sessionInfoWrapper.sessionId}`:'CLIENT'}</p>
-                        </React.Fragment>
-                        }
+                        {!showSessionInfoModal && this.renderSessionInfoModal() }
                     </TopBar>
                     <div className="practice-tool-container-outter">
                         <Container fluid={true} className="practice-tool-container">
@@ -450,6 +446,64 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                 {this.renderNonPageEmbedded()}
             </React.Fragment>
         );
+    }
+
+    public renderSessionInfoModal() {
+        const { tradingClock, tradeLogs, sessionInfoWrapper } = this.state;
+        const isClockRunning = tradingClock.isClockRunning();
+        const pauseplayClass = classNames('pauseplay-chart','fa',{'paused fa-pause':isClockRunning,'playing fa-play':!isClockRunning});
+        const clockClass = classNames('clock-chart',{'paused':isClockRunning,'playing':!isClockRunning});
+        const disabled = false;//sessionInfoWrapper!=null;// && sessionInfoWrapper.isServerSideSession();
+
+        return (<React.Fragment>
+            <div className="practice-tool-chart-dropdown-container">
+                <DropdownButton 
+                    id="practice-tool-chart-size-button" 
+                    title={`${this.state.chartDataArr.length} Charts`} 
+                    size="sm"
+                    onSelect={this.onChartSizeSelected}>
+                    {VALID_CHART_SIZES.map((numberOfCharts)=> {
+                        return <Dropdown.Item 
+                                    key={`practice-tool-chart-dropdown-button-${numberOfCharts}`} 
+                                    eventKey={numberOfCharts.toString()}>{numberOfCharts}</Dropdown.Item>;
+                    })}
+                </DropdownButton>
+                <Datetime 
+                    inputProps={{disabled:disabled}}
+                    initialValue={this.state.tradingDayTime}
+                    onChange={(value)=>{this.onTradingDayTimeChanged(moment(value).toDate())}}  
+                />
+                <i className={`refresh-chart fa fa-refresh`} onClick={this.resetAllChartsInState}/>
+                <i className={pauseplayClass} onClick={tradingClock.toggleClock}/>
+                <p className={clockClass}>{moment(tradingClock.getClock()).format('hh:mm:ss A')}</p>
+                <DropdownButton 
+                    disabled={disabled}
+                    id="practice-tool-chart-clockspeed-button" 
+                    title={`${this.state.tradingClock.getClockSpeedMultipler()}x`} 
+                    size="sm"
+                    onSelect={this.onClockSpeedSelected}>
+                    {VALID_CLOCK_SPEED_MULTIPLIERS.map((speed)=> {
+                        return <Dropdown.Item 
+                                    key={`practice-tool-chart-clockspeed-button-${speed}`} 
+                                    eventKey={speed.toString()}>{speed}x</Dropdown.Item>;
+                    })}
+                </DropdownButton>
+                <Button 
+                    className="indicator-button" 
+                    variant="primary" 
+                    size="sm"
+                    onClick={()=>{this.openIndicatorModal()}}
+                    disabled={false}><i className="fa fa-flask"/></Button>	
+                <Button 
+                    className="download-trade-log-button" 
+                    variant="primary" 
+                    size="sm"
+                    onClick={()=>{downloadDataToFile(`TradeLog-${new Date().toLocaleString()}.csv`,convertJsonToCsvString(tradeLogs))}}
+                    disabled={!tradeLogs || tradeLogs.length===0}><i className="fa fa-dollar"/><i className="fa fa-dollar"/><i className="fa fa-dollar"/></Button>	
+                <p className="active-capital-info">Active: ${this.getActiveCaptialInTrade().toFixed(2)}</p>
+            </div>
+            <p className="session-id">{!!sessionInfoWrapper.sessionId?`SERVER: ${sessionInfoWrapper.sessionId}`:'CLIENT'}</p>
+        </React.Fragment>);
     }
     
     public renderCharts() {
@@ -481,6 +535,8 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                                     buyPrices={priceMarkerMap.get(chartData.chartSelection.ticker)?.BUY|| []}
                                     aggLog={aggLogsMap.get(chartData.chartSelection.ticker)}
 
+                                    viewOrderHistory={this.openOrderHistoryModal}
+
                                     onPriceClicked={this.onPriceClicked}
                                 /> 
                             </div>
@@ -492,8 +548,7 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
     }
 
     private renderNonPageEmbedded() {
-        const { showSessionInfoModal, showIndiactorInfoModal, indicators } = this.state;
-
+        const { showSessionInfoModal, showIndiactorInfoModal, indicators, showTradeOrderModal, priceMarkerMap, traderOrderTicker } = this.state;
         return (
             <React.Fragment>
                 <ToastContainer
@@ -513,6 +568,13 @@ export class PracticeTool extends React.Component<PracticeToolProps,PracticeTool
                     show={showIndiactorInfoModal} 
                     save={this.onSaveIndicatorInfo}
                     initialIndicator={indicators}
+                />}
+
+                {showTradeOrderModal && <TradeOrderModal 
+                    show={showTradeOrderModal} 
+                    initialPriceType={priceMarkerMap.get(traderOrderTicker)}
+                    save={this.onSaveTradeOrderModal}
+                    ticker={traderOrderTicker}
                 />}
             </React.Fragment>
         );

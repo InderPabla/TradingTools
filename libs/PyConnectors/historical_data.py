@@ -32,7 +32,7 @@ if __name__ == '__main__':
     today_month = today.month
     today_day = today.day
     #today_year = 2022
-    #today_month = 8
+    #today_month = 9
     #today_day = 2
     
     print("Year:"+str(today_year)+", Month:"+str(today_month)+", Day:"+str(today_day))
@@ -186,7 +186,29 @@ if __name__ == '__main__':
     #08/04 'QQQ','SPY','AMC','AMD','LCID','OXY','COIN'
     #08/05 'QQQ','SPY','AMD','AMC','DKNG','OXY','PLUG'
     #08/09 'QQQ','SPY','COIN','PLUG','BBBY','AMD'
-    tickers = ['QQQ','SPY','COIN','PLUG','BBBY','AMD']
+    #08/12 'QQQ','SPY','AMC','META','AMD'
+    #08/15 'QQQ','SPY','AMC','META','AMD'
+    #08/19 'QQQ','SPY','FL','MARA','AMC','DKNG'
+    #08/23 'QQQ','SPY','XPEV','TWTR','OXY'
+    #08/24 'QQQ','SPY','OXY','NIO','TWTR'
+    #08/25 'QQQ','SPY','PTON','PLUG','NIO'
+    #08/30 'QQQ','SPY','PDD','AMD','NIO','OXY'
+    #08/31 'QQQ','SPY','META','SNAP','NIO','AMD'
+    #09/01 'QQQ','SPY','PLUG','SNAP','NIO','AMD'
+    #09/02 'QQQ','SPY','OXY','AMD','NIO','BBBY'
+    #09/06 'QQQ','SPY','OXY','AMD','NIO','BBBY'
+    #09/07 'QQQ','SPY','OXY','PATH','NIO','VERU'
+    #09/08 'QQQ','SPY','AMLX','OXY','NIO','RIVN'
+    #09/09 'QQQ','SPY','HOOD','OXY','NIO','AMD'
+    #09/12 'QQQ','SPY','OXY','NIO','RBLX','AMC'
+    #09/13 'QQQ','SPY','OXY','NIO','TWTR','AMD'
+    #09/14 'QQQ','SPY','OXY','NIO','AMD','SOFI'
+    #09/15 'QQQ','SPY','OXY','NIO','AMD','AFRM'
+    #09/16 'QQQ','SPY','OXY','NIO','SHOP','AMD'
+    #09/19 'QQQ','SPY','OXY','NIO','SHOP','AMD'
+    #09/20 'QQQ','SPY','OXY','NIO','NCLH','AMD'
+    #09/21 'QQQ','SPY','OXY','NIO','XPEV','AMD'
+    tickers = ['QQQ','SPY','OXY','NIO','LI','AMD']
     primary_exchange = {'ALF':'NASDAQ','SPCE':'NYSE','ABNB':'NASDAQ','MINM':'NASDAQ','OPEN':'NASDAQ','CSCO':'NASDAQ','LIFE':'NASDAQ','RFL':'NYSE','TIGR':'NASDAQ','PLAN':'NYSE','META':'NASDAQ'}
     
     end_date = datetime.datetime(today_year, today_month, today_day, 23, 59, 59)

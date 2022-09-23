@@ -29,7 +29,7 @@ export interface ChartProps {
 	onCandleStickDurationSelected:(chartKey:string,duration:string)=>void;
 	onChartDataLoad:(chartKey:string)=>Promise<void>;
 	tradeEvent:(ticker:string,quantity:number,orch:ChartOrchestrator)=>void;
-
+	viewOrderHistory:(ticker:string)=>void;
 	onPriceClicked:(ticker:string,price:number,clickType:"MARK"|"BUY"|"SELL",callback:Function)=>void;
 }
 
@@ -113,18 +113,24 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 		this.setState({showTradeMarkers:!this.state.showTradeMarkers});
 	}
 
+	private viewOrderHistory() {
+		const {viewOrderHistory,selection} = this.props;
+		viewOrderHistory(selection.ticker);
+	}
+
 	private onShareSizeChanged(_shareSize:string) {
 		if(_shareSize)
 			this.setState({shareSize:parseInt(_shareSize)});
 	}
 
 	render() {
-        const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected, aggLog } = this.props;
+        const { selection, chartKey, onTickerChanged, onTickerSelected, onCandleStickDurationSelected, aggLog, buyPrices, sellPrices } = this.props;
 		const { shareSize } = this.state;
 		const _isChartActive = this.isChartActive();
-        let candlestickDurationTitle = selection.candlestickDuration || 'Duration';
+        const candlestickDurationTitle = selection.candlestickDuration || 'Duration';
 		const chartDivId = `${chartKey}-duration-dropdown`;
-		
+		const  viewOrderDisabled:boolean = !_isChartActive || (buyPrices.length + sellPrices.length) == 0
+
 		return (<React.Fragment key={`fragment-chart-${chartKey}`}>
             <div className="chart-container">
                 <div className="chart-topbar">
@@ -186,6 +192,12 @@ export class Chart extends React.Component<ChartProps,ChartState> {
 						size="sm"
 						onClick={()=>{this.toggleShowTradeMarkers()}}
 						disabled={!_isChartActive}><span className="fa fa-eye"/> T</Button>	
+					<Button 
+						className="chart-trade-button chart-show-orders-button" 
+						variant="primary" 
+						size="sm"
+						onClick={()=>{this.viewOrderHistory()}}
+						disabled={viewOrderDisabled}><span className="fa fa-gavel"/> O</Button>	
 
 					{aggLog && <p className="chart-id-name">{this.displayProfit(aggLog.currentProfits,aggLog.commissions)}, {this.displayOpen(aggLog.currentOpen)}</p>}
 					{/* <p className="chart-id-name">{selection.chartId}</p> */}

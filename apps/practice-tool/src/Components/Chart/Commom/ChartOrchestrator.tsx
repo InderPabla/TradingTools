@@ -95,6 +95,10 @@ export class ChartOrchestrator {
 			}
 		}
     }
+
+    public static getAnyChartOrchestratorForTicker(ticker:string):ChartOrchestrator {
+        return ChartOrchestrator.orchForCurrentPrice.get(ticker);
+    }
     
     public static getCurrentPrice(ticker:string) {
         if(ChartOrchestrator.orchForCurrentPrice.has(ticker)) 

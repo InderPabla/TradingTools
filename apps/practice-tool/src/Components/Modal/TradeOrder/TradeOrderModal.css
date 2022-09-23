@@ -1,0 +1,46 @@
+#trade-order-modal {
+    color:black;
+}
+
+#trade-order-modal .modal-body {
+    padding: 6px;
+    background: lightgray;
+}
+
+#trade-order-modal .row {
+    background: lightgray;
+}
+
+#trade-order-modal .trade-order-container {
+    margin: 5px;
+    padding: 5px;
+    background: lightgray;
+    border: black 1px dashed;
+}
+
+#trade-order-modal .modal-body {
+    background: white;
+}
+
+#trade-order-modal .trade-order-container .trade-order-type{
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
+}
+
+#trade-order-modal .trade-order-container .trade-order-num{
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    margin-right: 15px;
+}
+
+#trade-order-modal .trade-order-container .trade-order-num .fa-close{
+    cursor: pointer;
+    color:black;
+}
+
+#trade-order-modal .trade-order-container .trade-order-num .fa-close:hover{
+    color:red;
+}
+
